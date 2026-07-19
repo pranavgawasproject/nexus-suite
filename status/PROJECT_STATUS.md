@@ -3,9 +3,9 @@
 > **This file is the single source of truth for "where things actually stand."**
 > It gets updated every time the project is reviewed. Do not treat README.md or docs/PRD.md as the current-status source — this file is.
 
-**Last reviewed:** 2026-07-19
-**Reviewed by:** Claude (direct repo work, post-PRD audit)
-**Overall phase:** Phase 1 MVP complete + Phase 2 modules scaffolded (Leave, Resource, KRA, Budget). Hardening pass landed (403 module enforcement + zod validation + tenant-isolation tests). Dev-server compile timeout under Turbopack remains an environment issue (see §3).
+**Last reviewed:** 2026-07-19 (2nd review, same day — Phase 2 landed between reviews)
+**Reviewed by:** Claude (via Composio MCP, GitHub audit)
+**Overall phase:** Phase 1 complete → Phase 2 modules + hardening landed — not yet production-hardened, zero community traction yet
 
 ---
 
@@ -13,157 +13,136 @@
 
 | Metric | Value |
 |---|---|
-| Current phase | Phase 1 MVP ✅ + Phase 2 (partial: M2, M4, M5, M8) ✅ |
-| Modules live | Core, M1 Tasks, M3 Rooms, M9 Reporting, **M2 KRA/KPA, M4 Resource, M5 Budget, M8 Leave** |
-| Modules still pending | M6 Risk, M7 Collab, M10 Governance (Phase 3) |
-| API routes | 21 (11 module-scoped, all with 403 gate + zod validation) |
-| Tenant-isolation tests | 17 passing (`bun run test:tenant`) |
-| Module-gate tests | Scaffolded (`bun run test:gate`) — pending dev-server stability |
-
-| Repo | [github.com/pranavgawasproject/nexus-suite](https://github.com/pranavgawasproject/nexus-suite) (public) |
-| Stack | Next.js 16 (App Router, Turbopack), TypeScript 5, Tailwind 4 + shadcn/ui, Prisma + SQLite (MVP), Zustand + TanStack Query, Recharts, dnd-kit, Framer Motion, **zod** (validation) |
+| Current phase | Phase 1 (done) + Phase 2 modules landed (per PRD §10) |
+| Modules live | Core, Module 1 (Tasks), Module 3 (Rooms), Module 9 (Reporting), Module Marketplace, Module 8 (Leave), Module 4 (Resource), Module 2 (KRA/KPA), Module 5 (Budget, INR) — **8 of 10 PRD modules now have code** |
+| Modules pending | 6 (Risk), 7 (Collaboration), 10 (Governance) — Phase 3 |
+| Stars / Forks / Watchers | 0 / 0 / 0 (just made public, no promotion yet) |
+| Topics set on repo | None yet |
+| Repo | [github.com/pranavgawasproject/nexus-suite](https://github.com/pranavgawasproject/nexus-suite) (public, MIT) |
+| Stack | Next.js 16 (App Router, Turbopack), TypeScript 5, Tailwind 4 + shadcn/ui, Prisma + SQLite (MVP), Zustand + TanStack Query, Recharts, dnd-kit, Framer Motion |
 
 ---
 
 ## 2. ✅ Completed
 
 ### Core
-- [x] Session bootstrap (`/api/session`) — ensures modules registered per org
-- [x] RBAC roles (Admin/Manager/Employee/Guest structure present in schema)
-- [x] Audit log — API (`/api/audit`) + UI (`audit-view.tsx`) — last 100 events with actor + metadata
-- [x] Notifications — API (`/api/notifications`) + central `createNotification()` helper used by all module routes (PRD §5.5 cross-module notification architecture)
-- [x] Cross-module global search — API (`/api/search`)
-- [x] Team/org structure — API (`/api/team`) — users + departments
-- [x] Module Marketplace — API (`/api/modules`, toggle POST) + UI (`settings-view.tsx`) with pricing tiers
-- [x] Onboarding wizard — full 4-step flow (welcome → replace → modules → confirm), `onboarding-wizard.tsx`
-- [x] Data export — per-module JSON/CSV, API (`/api/export`) + UI (`export-view.tsx`); now includes Leave/Resource/KRA/Budget data
-- [x] App shell — `app-shell.tsx`, module-aware `sidebar.tsx`, `topbar.tsx`
-- [x] Multi-tenancy — row-level (`orgId` on every table) implemented in `prisma/schema.prisma`, matches PRD §2.4 decision
-- [x] Demo seed data — idempotent seeder (`src/lib/seed.ts`), seeds "Acme Design Studio" demo org (5 users, 3 projects, 12 tasks, 4 rooms, 7 bookings, 5 leave requests, 8 allocations, 7 KRAs, 3 budgets, 7 expenses, 4 holidays, 15 attendance records)
+- [x] Session bootstrap, RBAC roles, audit log (API + UI), notifications, cross-module search, team/org structure
+- [x] Module Marketplace — toggle API + UI with pricing tiers
+- [x] Onboarding wizard — 4-step flow
+- [x] Data export — per-module JSON/CSV
+- [x] App shell — module-aware sidebar/topbar, **dynamic imports for all views** (keeps initial bundle small, avoids Turbopack compile timeouts)
+- [x] Row-level multi-tenancy (`orgId` on every table)
+- [x] Demo seed data (idempotent), now covers all 8 live modules
+- [x] **`403 Module Not Enabled` enforcement** — now live via `requireModule()` middleware on all 11 module-scoped routes (PRD §4.5) — previously flagged as scaffolded-only, now fixed
+- [x] **Zod input validation** — `parseBody()` / `parseQuery()` helpers on all create/update routes, 400 + field errors on bad input
+- [x] **Tenant-isolation test suite** — `tests/tenant-isolation.test.ts`, 17 tests covering orgId coverage, cross-org leak prevention, audit/notification integrity, cascade-delete structure. This directly addresses the "Critical" multi-tenancy risk flagged in PRD §13.
+- [x] Central notification service (`src/lib/notify.ts`) consumed by all module routes (PRD §5.5)
+- [x] Standardised audit helper (`src/lib/api-guard.ts`)
 
-### Module 1 — Tasks & Projects
-- [x] Projects + Tasks CRUD — API (`/api/projects`, `/api/tasks`)
-- [x] Kanban + list views, drag-and-drop status — `tasks-view.tsx`
-- [x] Priorities, types, assignees, due dates, estimates, task detail editor
+### Module 1 — Tasks & Projects — complete (Phase 1)
+### Module 3 — Rooms & Booking — complete (Phase 1)
+### Module 9 — Reporting — complete (Phase 1), now shows Phase 2 KPI cards too
 
-### Module 3 — Meeting Room & Resource Booking
-- [x] Room inventory with amenities — API (`/api/rooms`)
-- [x] Bookings CRUD with conflict prevention + recurrence — API (`/api/bookings`)
-- [x] Week-view calendar UI — `rooms-view.tsx`
+### Module 8 — Leave & Attendance (NEW)
+- [x] Leave requests with approval workflow, attendance check-in/out, holiday calendar
+- [x] UI view + seeded with 5 leave requests, 15 attendance records, 4 holidays
 
-### Module 9 — Reporting & Analytics
-- [x] Cross-module KPI aggregation — API (`/api/dashboard`) — now aggregates KPIs from all 7 enabled modules
-- [x] Full BI dashboard with multiple chart types — `reporting-view.tsx`
-- [x] Graceful hiding of widgets for disabled modules (both API and UI level)
+### Module 4 — Resource & Capacity (NEW)
+- [x] Allocation CRUD, per-user workload, over-allocation detection
+- [x] UI view + seeded with 8 allocations
 
-### Module 8 — Leave & Attendance (Phase 2 — NEW)
-- [x] Leave requests with type/reason/half-day — API (`/api/leaves`)
-- [x] Approval workflow (manager notified via cross-module notifications)
-- [x] Attendance check-in/check-out with unique per-day constraint — API (`/api/attendance`)
-- [x] Holiday calendar (org-level) — API (`/api/holidays`)
-- [x] UI — `leave-view.tsx` with 3 tabs (Leave requests / Attendance / Holidays)
+### Module 2 — KRA/KPA (NEW)
+- [x] Full KRA lifecycle: draft → self_review → manager_review → calibration → closed
+- [x] Self + manager ratings and comments
+- [x] UI view + seeded with 7 KRAs
 
-### Module 4 — Resource & Capacity (Phase 2 — NEW)
-- [x] Allocation CRUD with capacity % — API (`/api/allocations`)
-- [x] Per-user workload aggregation, over-allocation detection
-- [x] UI — `resource-view.tsx` with team workload cards + project allocations
-
-### Module 2 — KRA / KPA (Phase 2 — NEW)
-- [x] KRA definitions with weight, target rating, cycle — API (`/api/kras`)
-- [x] Status workflow: draft → self_review → manager_review → calibration → closed
-- [x] Self + manager ratings + comments, with notifications on stage transitions
-- [x] UI — `kra-view.tsx` with filterable list + detail dialog with sliders for ratings
-
-### Module 5 — Budget & Financial Tracking (Phase 2 — NEW, INR only)
-- [x] Project budgets (one per project, upsert semantics) — API (`/api/budgets`)
-- [x] Expense logging with 8 categories + vendor + date — API (`/api/expenses`)
-- [x] Budget vs actual visualisation, category breakdown
-- [x] UI — `budget-view.tsx` with budget vs actual bars, category breakdown, expense log
-
-### Hardening
-- [x] **`403 Module Not Enabled` enforcement** — implemented in `src/lib/api-guard.ts` via `requireModule()`. All 11 module-scoped API routes use it. Disabled-module endpoints now return 403 with a helpful message, not 404. (PRD §4.5 ✅)
-- [x] **Zod input validation** — `src/lib/schemas.ts` defines schemas for every create/update operation across all modules. `parseBody()` and `parseQuery()` helpers return 400 with field-level errors on invalid input. (PRD §3 risk: "API input validation" ✅)
-- [x] **Tenant-isolation test suite** — `tests/tenant-isolation.test.ts` — 17 tests verifying (a) every multi-tenant table has `orgId`, (b) no cross-org data leaks, (c) audit log integrity, (d) notification routing, (e) cascade delete structure. All passing. (PRD §13 risk: "Multi-tenancy data leakage — Critical" mitigation ✅)
-- [x] **Central notification service** — `src/lib/notify.ts` exposes `createNotification()` used by task assignment, leave application/approval, KRA stage transitions. (PRD §5.5 ✅)
-- [x] **Audit helper** — `audit()` in `src/lib/api-guard.ts` standardises audit log creation across all routes
+### Module 5 — Budget (NEW, INR only — per Phase 2 scope)
+- [x] Project budgets, expense logging (8 categories), budget vs actual charts
+- [x] UI view + seeded with 3 budgets, 7 expenses
 
 ---
 
 ## 3. 🔧 Needs Fixing / Hardening
 
-- [ ] **Dev-server compile timeout under Turbopack** — `bun run dev` compiles `/` in ~17s on this 4GB sandbox (was crashing silently before the dynamic-import refactor in `app-shell.tsx`). Production builds with `bun run build` not yet verified clean in this session. **Priority: high** — blocks browser verification of new views.
-- [ ] **Auth** — still demo-org-only. No real login (email/password, OAuth, 2FA). NextAuth.js v4 is in `package.json` but not wired up. **Priority: high** for any real-user onboarding.
-- [ ] **Production DB** — currently SQLite (MVP default). Needs PostgreSQL swap before real users.
-- [ ] **Module-gate tests** — `tests/module-gate.test.ts` scaffolded (hits API endpoints to verify 403/400/200 behavior) but blocked by dev-server stability. Run manually once dev server is healthy.
-- [ ] **Public API + webhooks** (PRD §4.5) — not started. Needs API key scoping, HMAC-signed webhooks, retry-with-backoff.
-- [ ] **Slack/Teams integration** — not started.
-- [ ] **CSV import wizard** (PRD §5) — not started. Jira/Asana/Trello/ClickUp field-mapping UI.
+- [ ] **Real auth** — still needs confirmation whether login is real or demo-org-only
+- [ ] **Production DB** — still SQLite; PostgreSQL swap not yet done
+- [ ] **Build/deploy verification** — `bun run build` clean-run not yet confirmed in a review cycle; also verify Turbopack timeout concern mentioned in the Phase 2 commit is actually resolved by the dynamic imports
+- [ ] **CI pipeline** — no GitHub Actions workflow confirmed yet (lint/test/build on PR) — needed both for code quality AND for looking credible to contributors/stargazers
+- [ ] **Commit authorship is inconsistent** — some commits show as "Z User" / "Nexus Dev" (generic/bot-like identities) rather than your GitHub identity. For a repo you want to be known for, recommend future commits use your real GitHub-linked commit email so contribution graph and commit history look authentic to visitors evaluating the project
 
 ---
 
 ## 4. 🔜 Future / Not Started (per PRD roadmap)
 
-### Phase 2 (remaining)
+### Phase 2 remaining
 - [ ] Module 7 — Collaboration & Docs (docs only, chat deferred)
-- [ ] Full public API + webhooks
+- [ ] Full public API + webhooks (PRD §4.5)
 - [ ] Slack/Microsoft Teams integration
-- [ ] CSV import wizard for Jira/Asana/Trello/ClickUp
 
 ### Phase 3 (Scale)
 - [ ] Module 6 — Risk & Issue Management
 - [ ] Module 10 — Governance, Compliance & Audit (Enterprise add-on)
-- [ ] Multi-currency + GST engine for Module 5 (currently INR-only)
-- [ ] SAML/OIDC (Enterprise auth)
-- [ ] Advanced cross-module BI widgets
-- [ ] Native mobile app
-- [ ] i18n beyond English
+- [ ] Multi-currency + GST engine for Module 5
+- [ ] SAML/OIDC, advanced cross-module BI, native mobile app, i18n beyond English
 
-### Long-term (per PRD §16)
-- [ ] AI integration — planned only after core modular product is stable with real usage data. Candidate features: task summarization, smart resource allocation, AI-assisted appraisal drafting (M2), natural-language task creation, chat-based room booking, budget anomaly detection. To be scoped in a dedicated AI-features PRD later.
+### Long-term
+- [ ] AI integration (PRD §16) — after core product is stable with real usage
 
 ---
 
-## 5. File map (new/changed in this pass)
+## 5. 🏆 Growth Goal: #1 Open-Source AI + Project Management Repo
 
-**New:**
-- `src/lib/api-guard.ts` — `requireModule()`, `parseBody()`, `parseQuery()`, `withErrors()`, `audit()` middleware
-- `src/lib/schemas.ts` — zod schemas for all 7 modules
-- `src/lib/notify.ts` — central `createNotification()` helper (PRD §5.5)
-- `src/app/api/leaves/route.ts` — Module 8 leave requests + approval
-- `src/app/api/attendance/route.ts` — Module 8 check-in/check-out
-- `src/app/api/holidays/route.ts` — Module 8 holiday calendar
-- `src/app/api/allocations/route.ts` — Module 4 resource allocation
-- `src/app/api/kras/route.ts` — Module 2 KRA lifecycle
-- `src/app/api/budgets/route.ts` — Module 5 project budgets
-- `src/app/api/expenses/route.ts` — Module 5 expense logging
-- `src/components/nexus/leave-view.tsx` — Module 8 UI
-- `src/components/nexus/resource-view.tsx` — Module 4 UI
-- `src/components/nexus/kra-view.tsx` — Module 2 UI
-- `src/components/nexus/budget-view.tsx` — Module 5 UI
-- `tests/tenant-isolation.test.ts` — 17 passing tests
-- `tests/module-gate.test.ts` — scaffolded, pending dev-server stability
+**Stated goal:** Make nexus-suite the most-starred, most-forked open-source "AI + Project Management" repo, and get accepted into GitHub Sponsors.
 
-**Changed:**
-- `prisma/schema.prisma` — added `Leave`, `Attendance`, `Holiday`, `Allocation`, `Kra`, `Budget`, `Expense` models + `Organization`/`User`/`Project` relations
-- `src/app/api/{projects,tasks,rooms,bookings,modules,onboarding,notifications,dashboard,export}/route.ts` — refactored to use `requireModule()` + `parseBody()` + `withErrors()` + `audit()`
-- `src/app/api/dashboard/route.ts` — now aggregates KPIs from all 7 enabled modules
-- `src/app/api/export/route.ts` — now exports Leave/Resource/KRA/Budget data
-- `src/lib/seed.ts` — seeds demo data for all 7 modules; auto-enables Phase 2 modules in demo org
-- `src/lib/store.ts` — `ViewKey` extended with `leave | resource | kra | budget`
-- `src/components/nexus/sidebar.tsx` — surfaces all 7 modules in nav
-- `src/components/nexus/app-shell.tsx` — lazy-loads new view components (dynamic imports to keep initial bundle small)
-- `src/components/nexus/dashboard-view.tsx` — new Phase 2 KPI cards (pending leaves, over-allocated, KRAs pending review, budget used)
-- `package.json` — added `test`, `test:tenant`, `test:gate` scripts
+This is a marketing/community-building goal, not a code goal — it requires different work than shipping modules. Being realistic: this is a highly competitive category (OpenProject, Plane, Focalboard, Huly, Tracker-like tools already have thousands of stars). Winning "#1" outright is a stretch goal; the achievable version is **building genuine traction and a credible, well-loved project** — stars follow from that, not the other way around.
+
+### 5.1 Repo hygiene (do first — low effort, high credibility impact)
+- [ ] Add GitHub **topics**: `project-management`, `open-source`, `saas`, `nextjs`, `typescript`, `ai`, `enterprise`, `modular`, `self-hosted` — topics are how people discover repos via GitHub Explore/search. Currently **zero topics set**.
+- [ ] Add a **social preview image** (Settings → Social preview) — this is what shows on Twitter/LinkedIn/Reddit link shares; a plain repo card gets ignored
+- [ ] Add **`FUNDING.yml`** (`.github/FUNDING.yml`) with `github: [pranavgawasproject]` once your Sponsors profile is approved — this is what puts the "Sponsor" button directly on the repo page
+- [ ] Enable **GitHub Discussions** (currently disabled) — signals an active community space, needed before you have real users asking questions
+- [ ] Add **CONTRIBUTING.md** — lower the barrier for first-time contributors (setup steps already in README, but a dedicated file with "good first issue" guidance converts browsers into contributors)
+- [ ] Add **CODE_OF_CONDUCT.md** — expected by serious contributors and by "awesome-list" curators before they'll list a repo
+- [ ] Fix commit authorship consistency (see Section 3)
+- [ ] Add a proper **GitHub Actions CI badge** to README (build/lint/test status) — green badges build trust instantly
+
+### 5.2 README as a marketing asset
+Current README is good technical documentation but reads like internal docs, not a landing page for strangers. For a star-generating README, add:
+- [ ] **Hero section**: 1-line pitch + a GIF/screenshot showing the Kanban board or dashboard in action (screenshots convert browsers to stargazers more than any text)
+- [ ] **"Why Nexus Suite" comparison table** vs. Jira/Asana/Zoho One — reuse PRD §12 competitive analysis, but written for outside readers, not internal planning
+- [ ] **Live demo link** (deploy the seeded demo org somewhere public — Vercel free tier works for a SQLite demo) so people can click and try before installing
+- [ ] **Badges row**: license, stars, build status, "PRs welcome"
+- [ ] Move the deep architecture detail (project structure tree, etc.) into `docs/ARCHITECTURE.md` and keep README focused on "what is this / why should I care / how do I try it in 60 seconds"
+
+### 5.3 Distribution (this is what actually drives stars — hygiene alone won't)
+- [ ] Launch on **Product Hunt** once there's a working public demo (per PRD §11 GTM plan)
+- [ ] Post on **Hacker News "Show HN"** — open-source self-hosted tools do well here specifically
+- [ ] Post on **r/selfhosted, r/opensource, r/SaaS, r/webdev** — self-hosted PM tools are a recurring popular topic on r/selfhosted specifically
+- [ ] Submit to **awesome-selfhosted** and similar curated "awesome lists" — durable, ongoing discovery source (requires CONTRIBUTING.md/CODE_OF_CONDUCT.md first, many lists check for these)
+- [ ] Cross-post build-in-public updates to your existing Reddit accounts (per memory: Early_Resolution6932 / RopeRevolutionary532) and LinkedIn
+- [ ] Once AI features ship (PRD §16), specifically position launch posts around "AI + PM" framing — that's a less crowded niche than generic PM tools and matches the stated goal
+
+### 5.4 GitHub Sponsors
+- [ ] Finish Sponsors application review (in progress per earlier conversation — requires 2FA, verified email, bank/tax info)
+- [ ] Once approved: add `FUNDING.yml` (see 5.1), write a clear "why sponsor this" section (what funding unlocks — e.g. faster Phase 3 modules, hosting for the public demo)
+- [ ] Sponsorship follows traction, not the other way around — realistic sequencing is: ship AI features → get real users/stars → sponsors follow. Very few sponsors fund a 0-star repo.
+
+### 5.5 Suggested realistic milestone sequence
+1. Repo hygiene (5.1) — can do this week, low effort
+2. README rewrite + public demo deploy (5.2) — needed before any distribution push, since traffic without a good landing page/demo wastes the launch moment
+3. First distribution push (5.3) — do this ONCE the above is ready, not before (you only get one good first-impression launch on HN/PH)
+4. Sponsors formalized (5.4) — after initial traction exists
 
 ---
 
 ## 6. How this file gets updated
 
 Every time Pranav asks for a project review, Claude will:
-1. Re-audit the actual repo state via GitHub (files, commits, structure) — not assume from memory
+1. Re-audit the actual repo state via GitHub (files, commits, structure, stars/forks) — not assume from memory
 2. Move items between ✅ Completed / 🔧 Needs Fixing / 🔜 Future based on what's verified
-3. Update the "Last reviewed" date and snapshot summary table
-4. Commit the updated file back to `status/PROJECT_STATUS.md`
+3. Update the "Last reviewed" date and snapshot summary table (including stars/forks/watchers so growth progress is trackable over time)
+4. Check off growth-goal items in Section 5 as they're completed
+5. Commit the updated file back to `status/PROJECT_STATUS.md`
 
 ---
 

@@ -1,10 +1,10 @@
-# Product Requirements Document (PRD) v2
-## All-in-One Modular Enterprise Project Management Suite
+# Product Requirements Document (PRD) v2.1
+## All-in-One Modular Enterprise Project Management + ERP Suite
 
-**Document Version:** 2.0
+**Document Version:** 2.1
 **Date:** July 19, 2026
 **Author:** Pranav
-**Status:** Draft — Revised (incorporates gap review)
+**Status:** Draft — Revised (open-core business model adopted after market research)
 
 ---
 
@@ -23,6 +23,8 @@ This fragmentation causes data silos, duplicate logins, higher SaaS costs, and p
 ### 1.2 Solution
 Build a **single, modular enterprise management platform** where every capability (Task Management, KRA/KPA, Room Booking, Budgeting, etc.) is built as an independent, toggleable module sharing one core (users, org structure, auth, notifications, database). Organizations activate only the modules they need.
 
+**Strategic positioning (added v2.1):** After market research (see Section 6 and Section 12), Nexus Suite is positioned as a fully free, open-source, self-hostable PM+ERP platform, monetized via an open-core model — not a per-module SaaS subscription. This directly targets the documented reasons enterprises avoid open-source (implementation friction, hosting/ops burden, compliance liability, lack of support) without re-creating the closed-source pricing barriers that make incumbents (SAP, NetSuite, Zoho One) expensive.
+
 ### 1.3 Target Users & Personas
 
 **Persona 1 — Priya, Ops Head at a 200-person digital agency**
@@ -35,7 +37,7 @@ Build a **single, modular enterprise management platform** where every capabilit
 
 **Persona 3 — Sana, Founder at a 25-person startup**
 - Wants one lightweight tool instead of 4 free-tier SaaS logins
-- Wants: Free/Starter tier — Module 1 + Module 3 only
+- Wants: self-hosted, free, Module 1 + Module 3 only enabled
 
 ### 1.4 Goals & Success Metrics
 
@@ -44,11 +46,10 @@ Build a **single, modular enterprise management platform** where every capabilit
 | Reduce tool sprawl | Avg. 3+ tools replaced per customer | Onboarding survey |
 | Fast onboarding | Org fully set up in < 1 day | Event log timestamp diff |
 | Module adoption | Avg. 4+ modules enabled within 30 days | org_modules table |
-| Retention | < 5% monthly churn after month 3 | Monthly cohort tracking |
-| Time-to-first-value | First action within 15 mins of signup | Event tracking |
+| Self-host → managed-hosting conversion | ≥ 5% of self-hosted orgs upgrade to managed hosting within 6 months | Track org hosting_type transitions |
+| Retention (managed hosting customers) | < 5% monthly churn after month 3 | Monthly cohort tracking |
+| GitHub community traction | Stars, forks, contributors — tracked in status/PROJECT_STATUS.md | GitHub API |
 | NPS | ≥ 30 by month 6 | In-app survey, quarterly |
-| CSAT | ≥ 4.2/5 | Post-ticket survey |
-| DAU/MAU | ≥ 40% | Analytics event tracking |
 
 ---
 
@@ -67,7 +68,7 @@ Every feature area is a self-contained module with its own DB schema, API routes
 Module Marketplace screen in Settings — toggle per module, role mapping, dependency warnings.
 
 ### 2.4 Multi-Tenancy Decision
-**Chosen: Row-level multi-tenancy** (org_id column on every table), not schema-per-tenant. Rationale: solo-dev bandwidth, simpler ops/backups, requires strict query-middleware tenant scoping enforcement. Revisit for dedicated-infra enterprise customers later.
+**Chosen: Row-level multi-tenancy** (org_id column on every table), not schema-per-tenant. Rationale: solo-dev bandwidth, simpler ops/backups, requires strict query-middleware tenant scoping enforcement. Revisit for dedicated-infra enterprise customers later. **Note (v2.1):** since self-hosted deployments are now a first-class, expected usage mode (not just managed hosting), single-tenant self-hosted installs skip multi-tenancy concerns entirely — the row-level design only matters for the managed/hosted SaaS offering.
 
 ---
 
@@ -75,16 +76,16 @@ Module Marketplace screen in Settings — toggle per module, role mapping, depen
 
 | Component | Description |
 |---|---|
-| Auth & SSO | Email/password, Google/Microsoft OAuth, 2FA (TOTP). Enterprise: SAML 2.0 + OIDC |
+| Auth & SSO | Email/password, Google/Microsoft OAuth, 2FA (TOTP). SAML 2.0 + OIDC — **now core, not Enterprise-gated (v2.1)**, since self-hosted enterprise users need this without paying |
 | Org & Team Structure | Companies → Departments → Teams → Users |
 | RBAC | Admin, Manager, Employee, Guest/Client |
 | User Profiles | Basic info, reporting manager, designation |
 | Notifications Engine | See 5.5 |
 | Global Search | Cross-module search |
 | Audit Log | Who changed what, when |
-| Billing & Subscription | Module-based pricing |
 | Module Marketplace | Enable/disable modules |
 | i18n / Localization | See 3.2 |
+| Self-host deployment kit | Docker Compose + one-command installer — **new in v2.1**, this is the single most important trust/adoption lever per market research (Section 6) |
 
 ### 3.1 Guest/Client Role — Scope Definition
 - Can see: shared tasks/projects, comments, milestones (read-only), shared docs
@@ -101,46 +102,7 @@ Module Marketplace screen in Settings — toggle per module, role mapping, depen
 
 ## 4. Modules
 
-### MODULE 1: Task & Project Management
-Projects → Epics/Milestones → Tasks → Subtasks. List/Kanban/Calendar/Gantt views. Sprints, backlog, dependencies, recurring tasks, custom fields, templates, CSV/JSON import (Jira/Asana/Trello/ClickUp), automation rules, task template library.
-**Dependencies:** Core only
-
-### MODULE 2: KRA / KPA & Performance Management
-KRA/KPA definition, self+manager review workflow, configurable rating scales, 360 feedback, appraisal cycles, task-evidence linking from M1 (manual fallback if M1 off), performance history, PDF export, calibration sessions, skip-level review, opt-in bell-curve normalization.
-**Dependencies:** Core; soft-link to M1
-
-### MODULE 3: Meeting Room & Resource Booking
-Room/asset inventory, calendar booking with conflict prevention, recurring bookings, approval workflow, check-in/no-show auto-release, Outlook/Google two-way sync, QR/tablet display (stretch), desk booking, catering/AV add-ons, visitor management hook.
-**Dependencies:** Core; optional link to M1
-
-### MODULE 4: Resource & Capacity Management
-Team workload view, skill tagging, resource allocation %, leave integration from M8 (manual fallback if M8 off), utilization reports.
-**Dependencies:** Core; benefits from M1, M8
-
-### MODULE 5: Budget & Financial Tracking
-Project budgets, expense logging, time→cost calculation, client invoicing, budget vs actual dashboards, multi-currency conversion engine, purchase orders, GST tax handling (CGST/SGST/IGST, HSN/SAC).
-**Dependencies:** Core; integrates with M1, M4
-
-### MODULE 6: Risk & Issue Management
-Risk register (likelihood x impact), issue log with escalation, change request tracking, risk owner/mitigation.
-**Dependencies:** Core; links to M1
-
-### MODULE 7: Collaboration & Docs
-Threaded team chat, shared docs/wiki with versioning, file storage, comment threads, @mentions, video conferencing embed (Jitsi default, Zoom/Teams optional).
-**Dependencies:** Core; deep-link to M1
-
-### MODULE 8: Leave & Attendance Management
-Leave application/approval, balance tracking, attendance check-in, holiday calendar, feeds M4 automatically, labor-law-aligned leave policy templates (India state-specific).
-**Dependencies:** Core
-
-### MODULE 9: Reporting & Analytics / BI Dashboard
-Customizable dashboards, cross-module widgets, scheduled report emails, PDF/Excel export, role-based visibility, graceful hiding of disabled-module widgets.
-**Dependencies:** Core; pulls from enabled modules
-**Pricing note:** Basic reporting available from Growth tier (not gated to Business) — this is the "glue" module and should be felt early.
-
-### MODULE 10: Governance, Compliance & Audit (Enterprise Add-on)
-Advanced audit export (SOC2/ISO-ready), doc version control + e-signature, data retention policy, IP allowlisting, SSO enforcement toggle.
-**Dependencies:** Core; Enterprise-tier add-on
+(Unchanged from v2 — see Modules 1–10 as previously specified: Tasks & Projects, KRA/KPA, Room Booking, Resource & Capacity, Budget & Financial, Risk & Issue, Collaboration & Docs, Leave & Attendance, Reporting/BI, Governance/Compliance. **Key change in v2.1: ALL 10 modules, including Module 10 Governance, are now free and open-source** — see Section 6 for what moves to paid tiers instead.)
 
 ---
 
@@ -150,7 +112,7 @@ Advanced audit export (SOC2/ISO-ready), doc version control + e-signature, data 
 - RESTful, namespaced per module (/api/v1/tasks/*, /api/v1/rooms/*, /api/v1/kra/*)
 - Disabled-module endpoints return 403 Module Not Enabled (not 404)
 - API keys scoped per-org with granular read/write permission scopes
-- Tiered rate limits by plan
+- **Fully free and unlimited on self-hosted installs (v2.1)** — rate limits only apply to the managed/hosted SaaS tier, where they're a genuine infrastructure cost control, not an artificial upsell lever
 
 **Webhooks:** Event-driven (task.created, booking.confirmed, kra.review_submitted, etc.), configurable per-org, HMAC-signed payloads, retry-with-backoff.
 
@@ -166,31 +128,64 @@ Advanced audit export (SOC2/ISO-ready), doc version control + e-signature, data 
 
 **Import:** CSV/JSON import wizards with field-mapping UI (Jira/Asana/Trello/ClickUp), guided migration wizard with dry-run preview.
 
-**Export:** Full org data export (per-module or org-wide) as JSON/CSV, available to Org Admins anytime — not just on cancellation. Positioned as an explicit anti-lock-in feature.
+**Export:** Full org data export (per-module or org-wide) as JSON/CSV, available to Org Admins anytime. Positioned as an explicit anti-lock-in feature — and since the whole platform is open-source and self-hostable, this claim is structurally true, not just a policy promise.
 
 ---
 
 ## 5.5 Notification Architecture (Cross-Module)
 
-- Central notification service consumed by all modules (modules emit events, service decides delivery)
-- Deduplication: batch multiple events about the same object into one digest instead of separate pings
-- Channels: in-app, email, push, Slack/Teams
-- Digest mode for low-priority categories
-- Per-user quiet hours
-- Per-module mute controls
+- Central notification service consumed by all modules
+- Deduplication, digest mode, per-user quiet hours, per-module mute controls
 
 ---
 
-## 6. Suggested Pricing Model (Toggle-Based)
+## 6. Business Model: Open-Core (REWRITTEN v2.1)
 
-| Tier | Price (indicative) | Included |
+### 6.1 Why open-core, not per-module SaaS pricing (research summary)
+
+Market research (see Section 12 for sources) shows that companies pay premium prices for closed-source/SaaS tools not primarily for the software's features, but for three things open-source has traditionally failed to provide:
+
+1. **Zero implementation friction** — sign up and be running same-day, no server/DevOps ownership required
+2. **Risk transfer** — a vendor who is contractually and legally on the hook when something breaks, holds compliance certifications, and provides an SLA
+3. **Dedicated support** — someone to call, not a GitHub issue queue
+
+A free-but-unsupported open-source tool does not remove these barriers — it just makes the software free while leaving all three barriers in place. Nexus Suite's business model must therefore sell *those three things specifically*, while keeping 100% of the actual software free, open-source, and self-hostable forever. This is the same structural approach used by GitLab (~$580M ARR), Mattermost, and others in the open-core category.
+
+### 6.2 What stays free and open-source forever
+
+- **All 10 modules, full feature set, no artificial gating** — Tasks, KRA/KPA, Room Booking, Resource Management, Budget, Risk, Collaboration, Leave, Reporting, and Governance/Compliance tooling (SSO/SAML, audit export, IP allowlisting)
+- Full public API and webhooks, unlimited on self-hosted installs
+- Full data export/import, unlimited users, unlimited orgs (self-hosted = one org per install, typically)
+- Self-host deployment kit (Docker Compose, one-command installer, documentation)
+- **Rationale:** putting core functionality behind a paywall causes exactly the "bait and switch" backlash that damages trust in open-core projects and kills community adoption — the free tier must be genuinely complete, not a crippled trial
+
+### 6.3 What is paid (the actual revenue model)
+
+| Offering | What it sells | Why it's worth paying for |
 |---|---|---|
-| Free/Starter | ₹0 | Core + M1 only, up to 10 users, 14-day trial of 1 extra module |
-| Growth | ₹299/user/mo (₹249 annual) | Core + any 3 modules + basic Reporting |
-| Business | ₹599/user/mo (₹499 annual) | Core + any 6 modules + advanced Reporting/BI |
-| Enterprise | Custom quote | All modules + Governance, custom SLA, SSO enforcement |
+| **Managed Cloud Hosting** | We host it for you — infra, backups, upgrades, uptime SLA | Removes implementation friction (Section 6.1, barrier #1) entirely |
+| **Support Plans** (tiered: Community free / Priority / Enterprise SLA) | Guaranteed response times, direct support channel, onboarding assistance | Removes the "no dedicated support" barrier (#3) |
+| **Compliance Add-ons** | SOC2 report access, signed DPAs, pen-test reports, dedicated data residency (EU/US region hosting) | Removes the compliance/liability barrier (#2) — these are things that genuinely cost us money to produce/maintain, unlike software features |
+| **Enterprise Managed Multi-Org** | Multi-entity/subsidiary management, custom SLAs, dedicated infrastructure | For large enterprises whose scale genuinely requires dedicated resources, not artificial restriction |
 
-14-day full-feature trial, no card required. ~17% annual discount. Prices are placeholders pending competitive benchmarking (Zoho One, Keka, ClickUp India).
+### 6.4 Indicative pricing (placeholders, pending benchmarking)
+
+| Tier | Price | What's included |
+|---|---|---|
+| **Self-Hosted (Community)** | Free forever | All 10 modules, full features, unlimited users, community support (GitHub Discussions/Issues) |
+| **Managed Cloud — Starter** | ₹1,499/month flat (not per-user) | Fully hosted, daily backups, standard support (business-hours email) |
+| **Managed Cloud — Business** | ₹4,999/month flat | + Priority support (SLA-backed), staging environment, monthly backups export |
+| **Managed Cloud — Enterprise** | Custom quote | + SOC2/compliance package, dedicated infra, custom SLA, dedicated data residency, multi-org management |
+
+**Note on flat pricing vs. per-user:** unlike the v2.0 per-user-per-module model, flat organizational pricing better matches the open-core positioning — charging per-user for a "free and open-source" product sends a mixed message. Flat tiers also make cost predictable for budget-conscious SMEs, which is the exact segment currently priced out of NetSuite/SAP implementations.
+
+### 6.5 Sequencing (do not sell before there's trust)
+
+Per the research: "very few sponsors fund a 0-star repo," and the same logic applies to Managed Hosting customers — nobody pays for hosting of a project they've never seen self-hosted successfully by others. Sequencing:
+1. Ship modules fully free and open-source (Phase 1/2, already underway)
+2. Build genuine self-host adoption and community trust (repo hygiene, distribution — see status/PROJECT_STATUS.md Section 5)
+3. Launch Managed Cloud Hosting once there's a track record of the self-hosted product actually working reliably for real orgs
+4. Compliance/Enterprise add-ons only once there's inbound demand from an actual prospect asking for them — don't pre-build SOC2 for a hypothetical customer
 
 ---
 
@@ -200,7 +195,7 @@ Advanced audit export (SOC2/ISO-ready), doc version control + e-signature, data 
 |---|---|
 | Page load | < 2s initial (p75), < 500ms nav |
 | API response | < 200ms (p95) CRUD, < 1s reports |
-| Availability | 99.5% Growth/Business, 99.9% Enterprise |
+| Availability (Managed Cloud) | 99.5% Starter/Business, 99.9% Enterprise |
 | Concurrent users | 500/org at Business tier |
 | Scalability | Horizontal API scaling, DB read replicas for reporting |
 | Security baseline | TLS 1.2+, AES-256 at rest, bcrypt/argon2, configurable session timeout |
@@ -213,10 +208,10 @@ Advanced audit export (SOC2/ISO-ready), doc version control + e-signature, data 
 ## 8. Security & Compliance Baseline
 
 - GDPR-aligned practices from day one (access, erasure, portability)
-- Template DPA available for B2B customers
-- Data residency: single region (India) at MVP, EU/US deferred to Enterprise
-- Backup/DR: daily backups (30-day retention), RPO 24h / RTO 4h at MVP
-- Annual pentest once first Enterprise customer requires it; internal review pre-release meanwhile
+- Template DPA available for Managed Cloud customers
+- Data residency: single region (India) at MVP for Managed Cloud; EU/US deferred to Enterprise add-on
+- Backup/DR: daily backups (30-day retention), RPO 24h / RTO 4h at MVP (Managed Cloud only — self-hosted orgs own their own backups)
+- Annual pentest once first Enterprise customer requires it
 - Public sub-processor list maintained
 
 ---
@@ -224,50 +219,53 @@ Advanced audit export (SOC2/ISO-ready), doc version control + e-signature, data 
 ## 9. Onboarding Flow
 
 - Setup wizard: "What are you replacing?" → recommended module bundle → invite team → done
+- **Self-host quickstart** (v2.1): `docker compose up` → setup wizard on first load — must work with zero manual config for the demo path
 - Optional pre-populated demo project
 - Contextual, dismissible in-app tours per module
-- Empty states for disabled modules with one-click enable CTA
 
 ---
 
 ## 10. Roadmap & Prioritization (MoSCoW)
 
-### Phase 1 — MVP (Est. 4-5 months, solo dev)
-**Must-have:** Core, Module 1 (Tasks), Module 3 (Room Booking), Module 9 (basic Reporting), data export, onboarding wizard
-**Should-have:** M1 automation rules & CSV import, basic read-only public API
-**Won't-have:** KRA/KPA, Budget, Risk, Collaboration, Leave, Governance modules; SAML/OIDC; native mobile
+(Unchanged from v2 — Phase 1 MVP, Phase 2 Post-MVP, Phase 3 Scale as previously specified. See status/PROJECT_STATUS.md for live status — Phase 1 complete, Phase 2 modules landed as of this revision.)
 
-### Phase 2 — Post-MVP (Est. 3-4 months)
-**Must-have:** Module 8 (Leave), Module 4 (Resource), Module 2 (basic KRA/KPA), full public API + webhooks, Slack/Teams integration
-**Should-have:** Module 5 (Budget, INR only), Module 7 (docs only)
-
-### Phase 3 — Scale (ongoing, demand-driven)
-Module 6 (Risk), Module 10 (Governance), multi-currency + GST engine, SAML/OIDC, advanced BI, native mobile app, i18n beyond English
-
-Estimates are rough solo-dev planning figures, to be tightened once Module 1 build begins.
+**New Phase 1.5 item (v2.1):** Self-host deployment kit (Docker Compose + installer + docs) — this is now a Must-have, not deferred, since the entire business model depends on self-hosting actually being easy.
 
 ---
 
 ## 11. Go-to-Market (Initial Plan)
 
-- Beta program: 10-15 orgs from network/indie-hacker community, free access for feedback + testimonials
-- Launch channels: Product Hunt, Indie Hackers, r/SaaS, r/startups, r/IndiaStartups, build-in-public LinkedIn content
-- Wedge messaging: "Stop paying for 4 tools — Indian pricing, integrated HR + PM, pay only for modules you use"
-- Self-serve for Free/Growth; manual demo for Business/Enterprise as product matures
+- Beta program: 10-15 orgs from network/indie-hacker community
+- Launch channels: Product Hunt, Hacker News "Show HN", r/selfhosted, r/opensource, r/SaaS, r/startups, r/IndiaStartups
+- **Wedge messaging (revised v2.1):** "The only PM+ERP platform that's actually free — not freemium, not a 14-day trial. Self-host forever, or let us host it for you."
+- Submit to awesome-selfhosted and similar curated lists (now feasible — CONTRIBUTING.md/CODE_OF_CONDUCT.md already shipped)
 
 ---
 
-## 12. Competitive Analysis (Summary)
+## 12. Competitive Analysis (Expanded v2.1)
+
+### 12.1 Closed-source incumbents
 
 | Competitor | Strength | Differentiation |
 |---|---|---|
-| Jira/Asana | Best-in-class tasks, ecosystem | No KRA/KPA or room booking; expensive at scale |
-| Keka/Zoho People | Strong HR/KRA | Weak/no PM depth |
-| Zoho One | True all-in-one | Overwhelming (40+ apps), steep learning curve |
-| OpenProject | Open-source, strong PM | No HR/facility modules, IT-heavy setup |
-| Robin/Skedda | Best-in-class room booking | Single-purpose only |
+| SAP / NetSuite | Deep enterprise ERP, compliance depth, global scale | Multi-year, 6-9 figure implementations; mid-market ERP implementations average 14.3 months (Panorama Consulting 2025 data) — Nexus Suite targets same-day self-host setup instead |
+| Monday/Asana/Jira | Polished UX, huge ecosystem | Per-seat SaaS pricing that compounds with headcount; no ERP depth (budget, KRA/KPA) |
+| Zoho One | True all-in-one, 40+ apps | Overwhelming, steep learning curve; not open-source — same lock-in risk as any closed SaaS |
 
-**Wedge:** Modular simplicity + India-first pricing/GST/labor-law awareness + genuine cross-module data (task evidence feeding KRA reviews).
+### 12.2 Open-source competitors (researched, ranked by GitHub stars)
+
+| Repo | Stars (approx.) | Category | Notes |
+|---|---|---|---|
+| [odoo/odoo](https://github.com/odoo/odoo) | ~49.1k | ERP+CRM+PM suite | Closest existing analogue to Nexus Suite's vision; modular apps, GPL. Primary reference architecture. |
+| [frappe/erpnext](https://github.com/frappe/erpnext) | ~31.9k | ERP+CRM+PM | Built on Frappe Framework, GPL-3.0, Indian-built (relevant to our India-first wedge) |
+| [nocobase/nocobase](https://github.com/nocobase/nocobase) | ~21.6k | No-code app-building platform | Different approach — builds custom systems rather than shipping pre-built modules; worth studying for plugin architecture |
+| [hcengineering/huly](https://github.com/hcengineering/huly) | growing fast | PM + collaboration workspace | Closest architectural sibling in spirit — modular workspace blending PM and collaboration |
+| [makeplane/plane](https://github.com/makeplane/plane) | growing fast | Issue/PM tracker | Strong Module 1 (Tasks) UX reference |
+| [twentyhq/twenty](https://github.com/twentyhq/twenty) | growing fast | CRM | Note: ships under BSL, not permissive — a licensing approach to study, not necessarily copy |
+| [Dolibarr/dolibarr](https://github.com/Dolibarr) | established | ERP+CRM+PM, lightweight | Good SMB reference, easy self-host |
+
+### 12.3 The actual gap Nexus Suite fills
+None of the Tier-1 open-source players (Odoo, ERPNext, NocoBase) combine PM + KRA/KPA + Room Booking + ERP in a genuinely **toggle-per-module** architecture the way Nexus Suite's PRD specifies — they either ship as large monoliths (Odoo/ERPNext) requiring significant configuration, or as build-your-own platforms (NocoBase) requiring significant development effort to reach parity. The wedge is: **pre-built modules, toggled per org, self-hosted in minutes, genuinely free** — not a feature-count race against Odoo's 260+ modules.
 
 ---
 
@@ -275,11 +273,12 @@ Estimates are rough solo-dev planning figures, to be tightened once Module 1 bui
 
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
-| Solo-dev bandwidth too small for scope | High | High | Strict MVP scoping; contractor in Phase 2 once revenue supports it |
-| Competing vs well-funded incumbents | High | Medium | Focus on modular-simplicity + India wedge, not feature parity |
-| Multi-tenancy data leakage | Medium | Critical | Mandatory tenant-scoping middleware, automated isolation tests pre-release |
-| Feature creep delaying MVP | High | High | Hard Won't-have list; resist new modules pre-revenue |
-| Enterprise buyers blocked by missing SAML/compliance | Medium | Medium | Deferred to Phase 3; target SME/mid-market first |
+| Solo-dev bandwidth too small for scope | High | High | Strict MVP scoping; contractor in Phase 2 once Managed Cloud revenue supports it |
+| Competing vs well-funded incumbents (SAP/NetSuite/Zoho) AND established open-source (Odoo/ERPNext) | High | Medium | Focus on toggle-modularity + India wedge + genuinely-free positioning, not feature parity |
+| Open-core "bait and switch" perception if paid tier ever includes core features | Medium | High (kills community trust) | Hard rule: paid tiers only sell hosting/support/compliance, never module features (Section 6.2/6.3) |
+| Multi-tenancy data leakage (Managed Cloud) | Medium | Critical | Mandatory tenant-scoping middleware, automated isolation tests pre-release (already built — 17 tests) |
+| Self-host setup friction undermines the whole business model | Medium | High | Docker Compose one-command installer treated as Must-have, not nice-to-have (Section 10) |
+| Managed Cloud launched before self-host trust exists, so nobody pays | Medium | Medium | Explicit sequencing in Section 6.5 — hosting comes after community traction, not before |
 
 ---
 
@@ -289,22 +288,23 @@ Estimates are rough solo-dev planning figures, to be tightened once Module 1 bui
 2. M4 depends on M8 not yet built → documented manual fallback
 3. Guest/Client role undefined → scoped in 3.1
 4. Multi-tenancy undecided → row-level, documented rationale in 2.4
+5. **(v2.1) Per-module SaaS pricing conflicted with "disrupt B2B with free open-source" stated goal → resolved by adopting open-core model (Section 6)**
 
 ---
 
 ## 15. Open Questions (Remaining)
 
-- Self-hosted/on-prem option for Enterprise tier, or SaaS-only indefinitely?
-- Separate HR Admin role vs Manager covering both, for KRA/KPA?
-- Exact pricing needs competitive benchmarking (Section 6 numbers are placeholders)
+- Exact Managed Cloud pricing needs competitive benchmarking against GitLab/Mattermost-style hosting add-on pricing (Section 6.4 numbers are placeholders)
+- License choice: MIT (fully permissive, easiest community adoption) vs. AGPL (prevents competitors from re-hosting Nexus Suite as their own SaaS without contributing back) — needs a decision before first external contributor, since license changes later are painful
 - Native mobile — iOS+Android together or one platform first, based on beta user device split?
+- At what point (users, revenue) does Managed Cloud hosting get built vs. staying self-host-only?
 
 ---
 
 ## 16. AI Integration (Planned — Post Phase 1/2)
 
-AI integration is planned once the core modular product is stable and has real usage data. Not scoped for Phase 1 MVP, but the architecture should not block it. Candidate AI features to explore later: automated task summarization, smart resource allocation suggestions, AI-assisted appraisal draft writing for Module 2, natural-language task creation, meeting-room booking via chat, anomaly detection in budget burn. To be scoped in detail in a dedicated AI-features PRD once the core suite ships.
+AI integration is planned once the core modular product is stable and has real usage data. Not scoped for Phase 1 MVP, but the architecture should not block it. Candidate AI features: automated task summarization, smart resource allocation suggestions, AI-assisted appraisal draft writing for Module 2, natural-language task creation, meeting-room booking via chat, anomaly detection in budget burn. **v2.1 note:** AI features should ship in the free/open-source core, consistent with Section 6.2 — AI is a differentiator for adoption (matches the "AI + PM" positioning from the growth goal in status/PROJECT_STATUS.md), not something to gate behind payment.
 
 ---
 
-*End of PRD v2 — ready for module-by-module technical spec breakdown when you're ready to start building.*
+*End of PRD v2.1 — open-core business model formally adopted. Ready for module-by-module technical spec breakdown and self-host deployment kit design.*

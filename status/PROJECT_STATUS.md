@@ -3,9 +3,9 @@
 > **This file is the single source of truth for "where things actually stand."**
 > It gets updated every time the project is reviewed. Do not treat README.md or docs/PRD.md as the current-status source — this file is.
 
-**Last reviewed:** 2026-07-19 (3rd update, same day — first growth-goal hygiene items executed)
+**Last reviewed:** 2026-07-19 (4th update, same day — open-core business model adopted, PRD v2.1)
 **Reviewed by:** Claude (via Composio MCP, GitHub audit)
-**Overall phase:** Phase 1 complete → Phase 2 modules + hardening landed — not yet production-hardened, zero community traction yet
+**Overall phase:** Phase 1 complete → Phase 2 modules + hardening landed → strategic pivot to open-core business model (PRD v2.1)
 
 ---
 
@@ -13,13 +13,14 @@
 
 | Metric | Value |
 |---|---|
-| Current phase | Phase 1 (done) + Phase 2 modules landed (per PRD §10) |
-| Modules live | Core, Module 1 (Tasks), Module 3 (Rooms), Module 9 (Reporting), Module Marketplace, Module 8 (Leave), Module 4 (Resource), Module 2 (KRA/KPA), Module 5 (Budget, INR) — **8 of 10 PRD modules now have code** |
-| Modules pending | 6 (Risk), 7 (Collaboration), 10 (Governance) — Phase 3 |
-| Stars / Forks / Watchers | 0 / 0 / 0 (just made public, no promotion yet) |
-| Topics set on repo | 13 topics set: `ai`, `enterprise`, `hrms`, `kanban`, `modular`, `nextjs`, `open-source`, `prisma`, `project-management`, `react`, `saas`, `self-hosted`, `typescript` |
+| Current phase | Phase 1 (done) + Phase 2 modules landed; business model reset to open-core (PRD §6, v2.1) |
+| Modules live | 8 of 10 PRD modules have code: Core, Tasks, Rooms, Reporting, Marketplace, Leave, Resource, KRA/KPA, Budget |
+| Modules pending | 6 (Risk), 7 (Collaboration), 10 (Governance UI — note: Governance is now free/open-source per v2.1, not Enterprise-only) |
+| Business model | **Open-core (v2.1)** — all modules free & self-hostable forever; revenue only from Managed Cloud Hosting, Support SLAs, Compliance add-ons. Replaces the earlier per-module SaaS tier plan (PRD v2.0 §6, now superseded). |
+| Stars / Forks / Watchers | 0 / 0 / 0 |
+| Topics set on repo | 13 topics set |
 | Repo | [github.com/pranavgawasproject/nexus-suite](https://github.com/pranavgawasproject/nexus-suite) (public, MIT) |
-| Stack | Next.js 16 (App Router, Turbopack), TypeScript 5, Tailwind 4 + shadcn/ui, Prisma + SQLite (MVP), Zustand + TanStack Query, Recharts, dnd-kit, Framer Motion |
+| Stack | Next.js 16, TypeScript 5, Tailwind 4 + shadcn/ui, Prisma + SQLite (MVP), Zustand + TanStack Query, Recharts, dnd-kit, Framer Motion |
 
 ---
 
@@ -27,38 +28,29 @@
 
 ### Core
 - [x] Session bootstrap, RBAC roles, audit log (API + UI), notifications, cross-module search, team/org structure
-- [x] Module Marketplace — toggle API + UI with pricing tiers
+- [x] Module Marketplace — toggle API + UI
 - [x] Onboarding wizard — 4-step flow
 - [x] Data export — per-module JSON/CSV
-- [x] App shell — module-aware sidebar/topbar, dynamic imports for all views (keeps initial bundle small, avoids Turbopack compile timeouts)
+- [x] App shell — module-aware sidebar/topbar, dynamic imports
 - [x] Row-level multi-tenancy (`orgId` on every table)
-- [x] Demo seed data (idempotent), now covers all 8 live modules
-- [x] `403 Module Not Enabled` enforcement — live via `requireModule()` middleware on all 11 module-scoped routes (PRD §4.5)
-- [x] Zod input validation — `parseBody()` / `parseQuery()` helpers on all create/update routes
-- [x] Tenant-isolation test suite — `tests/tenant-isolation.test.ts`, 17 tests (PRD §13 Critical risk mitigation)
-- [x] Central notification service (`src/lib/notify.ts`) (PRD §5.5)
-- [x] Standardised audit helper (`src/lib/api-guard.ts`)
+- [x] Demo seed data (idempotent), covers all 8 live modules
+- [x] `403 Module Not Enabled` enforcement (PRD §4.5)
+- [x] Zod input validation on all create/update routes
+- [x] Tenant-isolation test suite — 17 tests (PRD §13 Critical risk mitigation)
+- [x] Central notification service, standardised audit helper
 
-### Module 1 — Tasks & Projects — complete (Phase 1)
-### Module 3 — Rooms & Booking — complete (Phase 1)
-### Module 9 — Reporting — complete (Phase 1), now shows Phase 2 KPI cards too
+### Modules
+- [x] Module 1 (Tasks), Module 3 (Rooms), Module 9 (Reporting) — Phase 1, complete
+- [x] Module 8 (Leave), Module 4 (Resource), Module 2 (KRA/KPA), Module 5 (Budget, INR) — Phase 2, complete
 
-### Module 8 — Leave & Attendance
-- [x] Leave requests with approval workflow, attendance check-in/out, holiday calendar; seeded
+### Growth / Community
+- [x] GitHub topics set (13 topics)
+- [x] `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` added
 
-### Module 4 — Resource & Capacity
-- [x] Allocation CRUD, per-user workload, over-allocation detection; seeded
-
-### Module 2 — KRA/KPA
-- [x] Full KRA lifecycle: draft → self_review → manager_review → calibration → closed; seeded
-
-### Module 5 — Budget (INR only — per Phase 2 scope)
-- [x] Project budgets, expense logging (8 categories), budget vs actual charts; seeded
-
-### Growth / Community (NEW — this review cycle)
-- [x] GitHub topics set (13 topics — see snapshot table)
-- [x] `CONTRIBUTING.md` added — dev setup + module development guidelines
-- [x] `CODE_OF_CONDUCT.md` added — Contributor Covenant v2.1
+### Strategy (NEW this cycle)
+- [x] **Market research completed** on why enterprises pay premium for SaaS PM (Monday/Asana) and closed ERP (SAP/NetSuite) instead of open-source alternatives — findings: implementation friction, risk/liability transfer, and dedicated support are what's actually being paid for, not the software itself
+- [x] **Open-core business model adopted** (PRD v2.1 §6) — all modules free/open-source forever; revenue from Managed Cloud Hosting + Support SLAs + Compliance add-ons only
+- [x] **Competitive landscape mapped** against real open-source players: Odoo (~49.1k stars), ERPNext (~31.9k), NocoBase (~21.6k), Huly, Plane, Twenty, Dolibarr — documented in PRD §12.2. Identified gap: none combine PM+ERP in a genuinely per-module-toggle architecture the way Nexus Suite's PRD specifies.
 
 ---
 
@@ -67,26 +59,34 @@
 - [ ] **Real auth** — still needs confirmation whether login is real or demo-org-only
 - [ ] **Production DB** — still SQLite; PostgreSQL swap not yet done
 - [ ] **Build/deploy verification** — `bun run build` clean-run not yet confirmed in a review cycle
-- [ ] **CI pipeline** — no GitHub Actions workflow confirmed yet (lint/test/build on PR) — needed both for code quality AND for looking credible to contributors/stargazers
-- [ ] **Commit authorship is inconsistent** — some commits show as "Z User" / "Nexus Dev" rather than your GitHub identity. Recommend future commits use your real GitHub-linked commit email so contribution graph looks authentic to visitors evaluating the project
+- [ ] **CI pipeline** — no GitHub Actions workflow confirmed yet
+- [ ] **Commit authorship is inconsistent** — some commits show as "Z User" / "Nexus Dev" rather than your GitHub identity
+- [ ] **License decision needed (NEW, urgent)** — PRD §15 flags MIT vs AGPL as an open question. This needs deciding **before the first external contributor or fork**, since license changes later are legally painful. AGPL prevents competitors from re-hosting Nexus Suite as their own SaaS without contributing back — relevant given the open-core model now depends on Managed Cloud Hosting being a real revenue lever.
+- [ ] **Self-host deployment kit does not exist yet (NEW, high priority)** — PRD v2.1 §3/§10 now marks Docker Compose + one-command installer as a Must-have, since the entire business model depends on self-hosting being genuinely easy. This is currently unbuilt.
 
 ---
 
-## 4. 🔜 Future / Not Started (per PRD roadmap)
+## 4. 🔜 Future / Not Started
 
 ### Phase 2 remaining
 - [ ] Module 7 — Collaboration & Docs
-- [ ] Full public API + webhooks (PRD §4.5)
+- [ ] Full public API + webhooks
 - [ ] Slack/Microsoft Teams integration
 
 ### Phase 3 (Scale)
 - [ ] Module 6 — Risk & Issue Management
-- [ ] Module 10 — Governance, Compliance & Audit
+- [ ] Module 10 — Governance UI (data model/logic can now ship free/open-source per v2.1, not Enterprise-gated)
 - [ ] Multi-currency + GST engine for Module 5
-- [ ] SAML/OIDC, advanced cross-module BI, native mobile app, i18n beyond English
+- [ ] Advanced cross-module BI, native mobile app, i18n beyond English
 
 ### Long-term
-- [ ] AI integration (PRD §16) — after core product is stable with real usage
+- [ ] AI integration — per PRD v2.1 §16, ships in the free core, not gated
+
+### Business model execution (NEW, per PRD v2.1 §6.5 sequencing)
+- [ ] Step 1: Self-host deployment kit (Docker Compose + installer)
+- [ ] Step 2: Build community trust/traction (growth goal, status Section 5)
+- [ ] Step 3: Launch Managed Cloud Hosting — explicitly NOT before Step 2 has real evidence
+- [ ] Step 4: Compliance/Enterprise add-ons — only once an actual prospect asks
 
 ---
 
@@ -94,44 +94,45 @@
 
 **Stated goal:** Make nexus-suite the most-starred, most-forked open-source "AI + Project Management" repo, and get accepted into GitHub Sponsors.
 
-This is a marketing/community-building goal, not a code goal. Being realistic: this is a highly competitive category (OpenProject, Plane, Focalboard, Huly already have thousands of stars). Winning "#1" outright is a stretch goal; the achievable version is **building genuine traction and a credible, well-loved project** — stars follow from that, not the other way around.
+**Updated framing (v2.1):** the growth goal and the open-core business model are now the same strategy, not two separate things — stars/community traction ARE the sales funnel for Managed Cloud Hosting (Section 6.5 sequencing). Every item below still applies.
 
-### 5.1 Repo hygiene (do first — low effort, high credibility impact)
-- [x] Add GitHub **topics** — done: `ai`, `enterprise`, `hrms`, `kanban`, `modular`, `nextjs`, `open-source`, `prisma`, `project-management`, `react`, `saas`, `self-hosted`, `typescript`
-- [ ] Add a **social preview image** (Settings → Social preview) — shows on Twitter/LinkedIn/Reddit link shares; a plain repo card gets ignored
-- [ ] Add **`FUNDING.yml`** (`.github/FUNDING.yml`) with `github: [pranavgawasproject]` once your Sponsors profile is approved — puts the "Sponsor" button on the repo page
-- [ ] Enable **GitHub Discussions** (currently disabled) — signals an active community space
-- [x] Add **CONTRIBUTING.md** — done, includes dev setup + module development guidelines
-- [x] Add **CODE_OF_CONDUCT.md** — done, Contributor Covenant v2.1
-- [ ] Fix commit authorship consistency (see Section 3)
-- [ ] Add a proper **GitHub Actions CI badge** to README (build/lint/test status) — green badges build trust instantly
+### 5.1 Repo hygiene
+- [x] GitHub topics (13 set)
+- [ ] Social preview image
+- [ ] `FUNDING.yml` (once Sponsors approved)
+- [ ] Enable GitHub Discussions
+- [x] `CONTRIBUTING.md`
+- [x] `CODE_OF_CONDUCT.md`
+- [ ] Fix commit authorship consistency
+- [ ] GitHub Actions CI badge
+- [ ] **License file clarity (NEW)** — once MIT vs AGPL is decided (see Section 3), make sure LICENSE and README both clearly state it, since license ambiguity is a known blocker for enterprise self-host adoption
 
 ### 5.2 README as a marketing asset
-Current README is good technical documentation but reads like internal docs, not a landing page for strangers. For a star-generating README, add:
-- [ ] **Hero section**: 1-line pitch + a GIF/screenshot showing the Kanban board or dashboard in action
-- [ ] **"Why Nexus Suite" comparison table** vs. Jira/Asana/Zoho One (reuse PRD §12, written for outside readers)
-- [ ] **Live demo link** (deploy the seeded demo org publicly — Vercel free tier works for a SQLite demo)
-- [ ] **Badges row**: license, stars, build status, "PRs welcome"
-- [ ] Move deep architecture detail into `docs/ARCHITECTURE.md`, keep README focused on "what is this / why should I care / how do I try it in 60 seconds"
+- [ ] Hero section with screenshot/GIF
+- [ ] "Why Nexus Suite" comparison table vs. Jira/Asana/Zoho One **and now also vs. Odoo/ERPNext** (per PRD §12.2 — open-source readers will compare you to these first, not to SAP)
+- [ ] Live demo link
+- [ ] Badges row
+- [ ] Move deep architecture detail to `docs/ARCHITECTURE.md`
+- [ ] **"Genuinely free" messaging (NEW)** — README should lead with "100% free and open-source, self-host forever" per the v2.1 wedge messaging (PRD §11), since this is now the core differentiator vs. Odoo/ERPNext (which are open-source but require heavy configuration) and vs. SaaS PM tools (which are not free)
 
-### 5.3 Distribution (this is what actually drives stars — hygiene alone won't)
-- [ ] Launch on **Product Hunt** once there's a working public demo (per PRD §11 GTM plan)
-- [ ] Post on **Hacker News "Show HN"**
-- [ ] Post on **r/selfhosted, r/opensource, r/SaaS, r/webdev**
-- [ ] Submit to **awesome-selfhosted** and similar curated lists (requires CONTRIBUTING.md/CODE_OF_CONDUCT.md — now done ✓)
-- [ ] Cross-post build-in-public updates to Reddit (Early_Resolution6932 / RopeRevolutionary532) and LinkedIn
-- [ ] Once AI features ship (PRD §16), position launch posts around "AI + PM" framing — less crowded niche, matches the stated goal
+### 5.3 Distribution
+- [ ] Product Hunt, Hacker News "Show HN", r/selfhosted, r/opensource, r/SaaS, r/webdev
+- [ ] Submit to awesome-selfhosted (CONTRIBUTING.md/CODE_OF_CONDUCT.md prerequisite now done ✓)
+- [ ] Cross-post to Reddit/LinkedIn
+- [ ] Position around "AI + PM" once AI ships
 
 ### 5.4 GitHub Sponsors
-- [ ] Finish Sponsors application review (requires 2FA, verified email, bank/tax info)
-- [ ] Once approved: add `FUNDING.yml`, write a clear "why sponsor this" section
-- [ ] Sponsorship follows traction, not the other way around — sequencing: ship AI features → get real users/stars → sponsors follow
+- [ ] Finish Sponsors application review
+- [ ] `FUNDING.yml` once approved
+- [ ] Sequencing: ship → traction → sponsors (unchanged)
 
-### 5.5 Suggested realistic milestone sequence
-1. Repo hygiene (5.1) — **in progress, 3 of 8 items done this cycle**
-2. README rewrite + public demo deploy (5.2) — needed before any distribution push
-3. First distribution push (5.3) — do this ONCE the above is ready, not before
-4. Sponsors formalized (5.4) — after initial traction exists
+### 5.5 Suggested realistic milestone sequence (revised v2.1)
+1. Repo hygiene — in progress
+2. **Self-host deployment kit** (NEW — must exist before any distribution push, since "self-host forever" is now the core pitch and needs to actually work)
+3. README rewrite + public demo deploy
+4. First distribution push
+5. Managed Cloud Hosting launch (business model execution, Section 4)
+6. Sponsors formalized
 
 ---
 
@@ -140,10 +141,10 @@ Current README is good technical documentation but reads like internal docs, not
 Every time Pranav asks for a project review, Claude will:
 1. Re-audit the actual repo state via GitHub (files, commits, structure, stars/forks) — not assume from memory
 2. Move items between ✅ Completed / 🔧 Needs Fixing / 🔜 Future based on what's verified
-3. Update the "Last reviewed" date and snapshot summary table (including stars/forks/watchers so growth progress is trackable over time)
+3. Update the "Last reviewed" date and snapshot summary table
 4. Check off growth-goal items in Section 5 as they're completed
 5. Commit the updated file back to `status/PROJECT_STATUS.md`
 
 ---
 
-*This file lives at `status/PROJECT_STATUS.md` — a dedicated folder so it's easy to find independent of `docs/` (which holds the PRD).*
+*This file lives at `status/PROJECT_STATUS.md`. See `docs/PRD.md` for the full product/business spec.*

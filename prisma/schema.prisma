@@ -42,6 +42,9 @@ model Organization {
   expenses      Expense[]
   budgets       Budget[]
   holidays      Holiday[]
+  apiKeys       ApiKey[]
+  webhooks      Webhook[]
+  documents     Document[]
 }
 
 model User {
@@ -346,3 +349,102 @@ model Expense {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
+
+// ============================================================
+// CORE: API Keys (Public API v1 auth — PRD §4.5)
+// ============================================================
+
+model ApiKey {
+  id          String   @id @default(cuid())
+  orgId       String
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  name        String   // human-readable label
+  keyHash     String   @unique // bcrypt hash of the key; the raw key is shown once at creation
+  keyPrefix   String   // first 8 chars, shown in lists so users can identify keys
+  scopes      String   @default("read") // comma-separated: read | write | webhooks
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  createdById String?
+  revokedAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================================
+// CORE: Webhooks (PRD §4.5 — HMAC-signed event delivery)
+// ============================================================
+
+model Webhook {
+  id            String   @id @default(cuid())
+  orgId         String
+  org           Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  url           String
+  secret        String   // HMAC signing secret, never exposed after creation
+  events        String   @default("*") // comma-separated event filters, or * for all
+  active        Boolean  @default(true)
+  lastResponseCode Int?
+  lastSuccessAt DateTime?
+  lastFailureAt DateTime?
+  failureCount  Int      @default(0)
+  deliveries    WebhookDelivery[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model WebhookDelivery {
+  id           String   @id @default(cuid())
+  webhookId    String
+  webhook      Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  event        String
+  payload      String   // JSON string
+  signature    String
+  status       String   @default("pending") // pending | delivered | failed | retrying
+  responseCode Int?
+  responseBody String?
+  attempt      Int      @default(0)
+  nextRetryAt  DateTime?
+  deliveredAt  DateTime?
+  createdAt    DateTime @default(now())
+
+  @@index([webhookId, status])
+  @@index([nextRetryAt])
+}
+
+// ============================================================
+// MODULE 7: Collaboration & Docs (Phase 2 — docs only, chat deferred)
+// ============================================================
+
+model Document {
+  id          String   @id @default(cuid())
+  orgId       String
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  title       String
+  slug        String   // url-friendly title
+  content     String   @default("") // markdown
+  parentId    String?  // for nested pages
+  parent      Document? @relation("DocumentTree", fields: [parentId], references: [id])
+  children    Document[] @relation("DocumentTree")
+  versions    DocumentVersion[]
+  createdById String?
+  updatedById String?
+  version     Int      @default(1)
+  isPublic    Boolean  @default(false) // visible to guests/clients
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([orgId, slug])
+}
+
+model DocumentVersion {
+  id          String   @id @default(cuid())
+  documentId  String
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  version     Int
+  content     String
+  editedById  String?
+  editedAt    DateTime @default(now())
+  changeSummary String?
+
+  @@unique([documentId, version])
+}
+

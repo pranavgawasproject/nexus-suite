@@ -1,119 +1,157 @@
+<div align="center">
+
+<img src="public/social-preview.png" alt="Nexus Suite — All-in-one modular enterprise PM + ERP suite" width="640" />
+
 # Nexus Suite
 
-All-in-one modular enterprise project management platform — tasks, KRA/KPA, room booking, resources, budget, and more, with toggleable modules. AI integration planned.
+**All-in-one modular enterprise PM + ERP suite. 100% free and open-source — self-host forever.**
 
-**Status:** Phase 1 MVP (in development per [PRD v2](docs/PRD.md))
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
+[![CI](https://github.com/pranavgawasproject/nexus-suite/actions/workflows/ci.yml/badge.svg)](https://github.com/pranavgawasproject/nexus-suite/actions/workflows/ci.yml)
+[![PRD v2.1](https://img.shields.io/badge/PRD-v2.1-emerald.svg)](docs/PRD.md)
+[![Self-hostable](https://img.shields.io/badge/self--host-ready-emerald.svg)](docs/SELF_HOSTING.md)
+[![Made in India](https://img.shields.io/badge/made%20in-India-orange.svg)](https://github.com/pranavgawasproject/nexus-suite)
 
-## What's in this build
+[Quickstart](#quickstart) · [Modules](#modules) · [Why Nexus Suite](#why-nexus-suite) · [Self-hosting](docs/SELF_HOSTING.md) · [Public API](docs/API.md) · [Status](status/PROJECT_STATUS.md)
 
-Per PRD §10 + Phase 2 additions:
+</div>
 
-**Phase 1 MVP:**
-- **Core** — org, users, departments, RBAC roles, audit log, notifications, cross-module search
-- **Module 1 (Tasks)** — projects, Kanban + list views, drag-and-drop status, priorities, types, assignees, due dates, estimates, task detail editor
-- **Module 3 (Rooms)** — room inventory with amenities, week-view calendar, conflict-free booking, recurring bookings
-- **Module 9 (Reporting)** — cross-module KPIs, status/priority/workload/room-utilisation charts, graceful hiding when modules disabled
-- **Module Marketplace** — toggle all 10 PRD modules on/off
-- **Onboarding wizard** — "What are you replacing?" → recommended bundle → confirm flow
-- **Data Export** — per-module JSON/CSV export (anti-lock-in feature, PRD §5)
-- **Audit Log** — last 100 events with actor + metadata
+---
 
-**Phase 2 (partial):**
-- **Module 8 (Leave & Attendance)** — leave requests with approval workflow, attendance check-in/out, holiday calendar
-- **Module 4 (Resource & Capacity)** — allocation %, per-user workload, over-allocation detection
-- **Module 2 (KRA/KPA)** — KRA lifecycle (draft → self_review → manager_review → calibration → closed), self + manager ratings + comments
-- **Module 5 (Budget)** — INR-only project budgets, expense logging with categories, budget vs actual dashboards
+## The pitch in one paragraph
 
-**Hardening:**
-- `403 Module Not Enabled` enforcement on all module API routes (PRD §4.5)
-- Zod input validation on all create/update operations
-- Tenant-isolation test suite (17 tests, all passing) — PRD §13 risk mitigation
-- Central notification service consumed by all modules (PRD §5.5)
+Organizations currently stitch together 3–5 separate tools to run their operations — a PM tool (Jira/Asana), an HR tool (Keka/Lattice), a room booking tool (Robin/Skedda), a budget spreadsheet, and a chat tool. Nexus Suite replaces all of them with **one modular platform** where every module is independently toggleable, sharing one core (users, org, auth, notifications, audit). And unlike every other "all-in-one" tool out there, it's **genuinely free and open-source under AGPL-3.0** — not freemium, not a 14-day trial. Self-host it forever, or let us host it for you.
 
-## Tech stack
+---
 
-- Next.js 16 (App Router, Turbopack) + TypeScript 5
-- Tailwind CSS 4 + shadcn/ui (New York)
-- Prisma ORM + SQLite (MVP) — swap for PostgreSQL in production
-- Zustand (client state) + TanStack Query (server state)
-- Recharts (charts), dnd-kit (Kanban DnD), Framer Motion (onboarding)
-- next-themes (dark mode), Sonner (toasts)
+## Why Nexus Suite
 
-## Architecture: Modular Toggle System (PRD §2)
+|  | Closed SaaS (Monday/Asana/Jira) | Open-source ERP (Odoo/ERPNext) | **Nexus Suite** |
+|---|---|---|---|
+| Pricing | Per-seat, compounds with headcount | Free, but configuration-heavy | **Free forever, flat-rate managed hosting** |
+| Module model | Fixed bundle | Monolithic, install apps you don't need | **Toggle per module — disable what you don't use** |
+| ERP depth | None | Deep (accounting, inventory, manufacturing) | **PM + HR + facilities + budget — the SME middle** |
+| Self-host | ❌ No (and even if you could, license forbids) | ✅ Yes, but heavy setup | **✅ One-command `docker compose up`** |
+| Open-source | ❌ Closed | ✅ GPL | **✅ AGPL-3.0 (network-use protected)** |
+| Set up in <1 day | ❌ Multi-week sales cycle | ❌ Multi-week implementation | **✅ Self-host in 2 minutes** |
 
-Every feature area is a self-contained module with its own DB schema, API routes, and UI section, sharing one core. Organizations activate only the modules they need.
+**The wedge:** pre-built modules, toggled per org, self-hosted in minutes, genuinely free — not a feature-count race against Odoo's 260+ modules.
 
-- **Multi-tenancy:** Row-level (`orgId` on every table), not schema-per-tenant (PRD §2.4)
-- **Module states:** `disabled | trial | active | archived`
-- **Disabled modules:** data preserved, hidden everywhere, one-click re-enable
-- **Disabled-module API endpoints:** return `403 Module Not Enabled` (PRD §4.5) — not yet enforced, scaffolded
+---
 
-## Getting started
+## Modules
+
+All 10 modules ship free and open-source. Toggle individually per org.
+
+| # | Module | Status | Description |
+|---|---|---|---|
+| 1 | **Tasks & Projects** | ✅ Live | Kanban + list, priorities, types, assignees, due dates, estimates, dependencies |
+| 2 | **KRA / KPA & Performance** | ✅ Live | KRA lifecycle (draft → self → manager → calibration → closed), ratings + comments |
+| 3 | **Meeting Room & Resource Booking** | ✅ Live | Room inventory, conflict-free calendar, recurring bookings, amenities |
+| 4 | **Resource & Capacity** | ✅ Live | Per-user allocation %, workload view, over-allocation detection |
+| 5 | **Budget & Financial Tracking** | ✅ Live (INR) | Project budgets, expense logging, budget vs actual, category breakdown |
+| 6 | Risk & Issue Management | 🔜 Phase 3 | Risk register (likelihood × impact), issue log, change requests |
+| 7 | **Collaboration & Docs** | ✅ Live (docs) | Markdown wiki with versioning, nested pages, public/guest sharing |
+| 8 | **Leave & Attendance** | ✅ Live | Leave requests with approval workflow, check-in/out, holiday calendar |
+| 9 | **Reporting & Analytics** | ✅ Live | Cross-module KPIs, charts, graceful hiding for disabled modules |
+| 10 | Governance, Compliance & Audit | 🔜 Phase 3 | Advanced audit export, e-signature, retention policies, IP allowlisting |
+
+**Status legend:** ✅ Live · 🔜 Phase 3 (per [PRD §10](docs/PRD.md))
+
+---
+
+## Quickstart
+
+### Self-host (2 minutes)
 
 ```bash
-# 1. Install deps
+git clone https://github.com/pranavgawasproject/nexus-suite.git
+cd nexus-suite
+
+export NEXTAUTH_SECRET=$(openssl rand -base64 32)
+
+docker compose up -d --build
+# Open http://localhost:3000 — done.
+```
+
+The first request auto-seeds a demo org ("Acme Design Studio") with 5 users, 3 projects, 12 tasks, 4 rooms, 7 bookings, plus sample data for every other enabled module. Log in with any demo user (e.g. `priya@acme.test`) — passwords aren't enforced in the demo flow.
+
+👉 **Full self-hosting guide (Postgres + backups + reverse proxy):** [`docs/SELF_HOSTING.md`](docs/SELF_HOSTING.md)
+
+### Local development
+
+```bash
 bun install
-
-# 2. Set up the database
 cp .env.example .env
-bun run db:push
-
-# 3. Run the dev server
-bun run dev
+bun run db:push     # apply schema + seed demo data
+bun run dev         # http://localhost:3000
 ```
 
-Open http://localhost:3000 — the first session call seeds a demo org (Acme Design Studio) with 5 users, 3 projects, 12 tasks, 4 rooms, and 7 bookings.
+---
 
-## Module roadmap (per PRD §10)
+## Architecture
 
-| Phase | Modules |
-|-------|---------|
-| 1 (MVP, this repo) | Tasks, Rooms, Reporting, Core, Marketplace, Export, Onboarding |
-| 2 (Post-MVP) | Leave (M8), Resource (M4), KRA/KPA (M2), Budget (M5, INR), Docs (M7), Slack/Teams, public API + webhooks |
-| 3 (Scale) | Risk (M6), Governance (M10), multi-currency + GST, SAML/OIDC, advanced BI, native mobile |
+- **Multi-tenancy:** row-level (`orgId` on every table) — see [`prisma/schema.prisma`](prisma/schema.prisma)
+- **Modular toggle system:** every module is a self-contained unit with its own DB schema + API routes + UI section. Disabled modules return `403 Module Not Enabled` from their API (not `404`) — see [PRD §4.5](docs/PRD.md).
+- **Public API:** RESTful `/api/v1/*` with API-key auth (read/write/webhooks scopes) + HMAC-signed webhooks with retry-with-backoff — see [`docs/API.md`](docs/API.md).
+- **Notifications:** central cross-module notification service consumed by all modules — see [PRD §5.5](docs/PRD.md).
+- **Tests:** 17 tenant-isolation tests covering orgId coverage, cross-org leak prevention, audit/notification integrity — see [`tests/tenant-isolation.test.ts`](tests/tenant-isolation.test.ts). Run with `bun run test`.
 
-## Pricing (PRD §6, toggle-based)
+### Tech stack
 
-| Tier | Price | Included |
-|------|-------|----------|
-| Starter | ₹0 | Core + Tasks · 10 users · 14-day trial of 1 extra module |
-| Growth | ₹299/user/mo | Core + any 3 modules + basic Reporting |
-| Business | ₹599/user/mo | Core + any 6 modules + advanced BI |
-| Enterprise | Custom | All modules + Governance + SSO + SLA |
+- **Framework:** Next.js 16 (App Router, Turbopack) + TypeScript 5
+- **DB:** Prisma ORM + SQLite (MVP) / PostgreSQL (production) — swap via `DATABASE_URL`
+- **UI:** Tailwind CSS 4 + shadcn/ui (New York) + Recharts + dnd-kit + Framer Motion
+- **Auth:** NextAuth.js v4 (Credentials provider, JWT sessions, bcrypt-hashed passwords)
+- **State:** Zustand (client) + TanStack Query (server)
+- **Validation:** zod on every API request body
+- **Runtime:** Bun (dev + scripts), Node.js (production standalone)
 
-## Project structure
+---
 
-```
-prisma/schema.prisma         # Core + M1 + M3 models, row-level multi-tenancy
-src/lib/
-  modules.ts                 # Central module registry (single source of truth)
-  store.ts                   # Zustand client store (session, modules, activeView)
-  seed.ts                    # Idempotent demo org seeder
-  api.ts                     # Fetch helper, date formatters
-src/app/api/
-  session/                   # Bootstrap session + ensure all modules registered
-  modules/                   # Toggle module state (POST)
-  onboarding/                # Complete onboarding wizard (POST)
-  projects/  tasks/          # Module 1: CRUD
-  rooms/     bookings/       # Module 3: CRUD + conflict prevention + recurrence
-  dashboard/                 # Module 9: cross-module aggregates
-  notifications/  audit/     # Core: notifications + audit log
-  search/                    # Cross-module global search
-  export/                    # Per-module JSON/CSV export
-  team/                      # Users + departments
-src/components/nexus/
-  app-shell.tsx              # Layout: sidebar + topbar + view router
-  sidebar.tsx  topbar.tsx    # Module-aware nav, global search, notifications
-  onboarding-wizard.tsx      # 4-step wizard (welcome → replace → modules → confirm)
-  dashboard-view.tsx         # KPI tiles + cross-module charts
-  tasks-view.tsx             # Kanban + list with DnD, create/edit dialogs
-  rooms-view.tsx             # Week calendar, room cards, booking dialog
-  reporting-view.tsx         # Full BI dashboard with multiple chart types
-  settings-view.tsx          # Module Marketplace with pricing tiers
-  export-view.tsx            # Data export center
-  audit-view.tsx             # Audit log stream
-```
+## Business model: open-core
+
+Per [PRD v2.1 §6](docs/PRD.md), Nexus Suite is **open-core** — not freemium:
+
+- **Free forever (AGPL-3.0):** all 10 modules, full features, unlimited users, unlimited orgs, full public API + webhooks, self-host deployment kit
+- **Paid (Managed Cloud Hosting):** we host it for you — infra, backups, upgrades, uptime SLA. Flat per-org pricing (not per-seat).
+- **Paid (Support plans):** guaranteed response times, direct support channel
+- **Paid (Compliance add-ons):** SOC2 reports, signed DPAs, dedicated data residency
+
+**Hard rule:** paid tiers only sell hosting/support/compliance — never module features. Bait-and-switch kills community trust.
+
+---
+
+## Roadmap
+
+See [`status/PROJECT_STATUS.md`](status/PROJECT_STATUS.md) for live status.
+
+- ✅ **Phase 1 MVP:** Core, Tasks, Rooms, Reporting, Marketplace, Onboarding, Export, Audit
+- ✅ **Phase 2:** Leave & Attendance, Resource & Capacity, KRA/KPA, Budget (INR), Docs
+- 🔜 **Phase 2 remaining:** Public API + webhooks (✅ built), Slack/Teams integration, CSV import wizard
+- 🔜 **Phase 3:** Risk module, Governance UI, multi-currency + GST engine, SAML/OIDC, advanced BI, native mobile, i18n
+- 🔜 **AI integration:** task summarization, smart resource allocation, NL task creation, chat-based room booking — ships in the free core per [PRD §16](docs/PRD.md)
+
+---
+
+## Contributing
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md). PRs welcome!
+
+---
 
 ## License
 
-See [LICENSE](LICENSE).
+**AGPL-3.0-or-later** — see [`LICENSE`](LICENSE).
+
+You're free to self-host, modify, and redistribute Nexus Suite commercially, provided that if you expose the service to users over a network (AGPL §13), you keep the source code open.
+
+This license choice (over MIT) is deliberate: it prevents competitors from re-hosting Nexus Suite as their own SaaS without contributing back — protecting the open-core business model documented in [PRD §6](docs/PRD.md).
+
+---
+
+<div align="center">
+
+Built in India 🇮🇳 · [PRD v2.1](docs/PRD.md) · [Status](status/PROJECT_STATUS.md) · [Self-hosting guide](docs/SELF_HOSTING.md)
+
+</div>

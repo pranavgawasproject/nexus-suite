@@ -1,0 +1,34 @@
+# Build artifacts
+.next
+node_modules
+.git
+.gitignore
+
+# Local dev only
+dev.log
+server.log
+*.log
+.zscripts
+.claude
+.z-ai-config
+
+# Local DBs and seed clones (must not leak into image)
+db/*.db
+db/*.db-journal
+nexus-suite/
+
+# Env files (compose reads from environment, not .env file)
+.env
+.env.local
+.env*.local
+
+# Misc
+.DS_Store
+*.tsbuildinfo
+download/
+tests/
+scripts/
+mini-services/
+examples/
+status/
+docs/

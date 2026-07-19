@@ -322,9 +322,47 @@ export async function seedDemoOrg() {
 
   // Mark Phase 2 modules as active in the demo org
   await db.orgModule.updateMany({
-    where: { orgId, moduleKey: { in: ['leave', 'resource', 'kra', 'budget'] }, state: 'disabled' },
+    where: { orgId, moduleKey: { in: ['leave', 'resource', 'kra', 'budget', 'collab'] }, state: 'disabled' },
     data: { state: 'active', enabledAt: new Date() },
   })
+
+  // ----- MODULE 7: Collaboration & Docs — seed a few wiki pages -----
+  const docCount = await db.document.count({ where: { orgId } })
+  if (docCount === 0) {
+    await db.document.createMany({
+      data: [
+        {
+          orgId, title: 'Engineering Handbook', slug: 'engineering-handbook',
+          content: '# Engineering Handbook\n\nWelcome to the team. This doc covers:\n\n- Code review process\n- Branching strategy\n- Deployment pipeline\n\n## Code review process\n\nAll PRs require 1 approval from a senior engineer. Use the PR template.\n\n## Branching\n\n- `main` is always deployable\n- Feature branches: `feat/<ticket>`\n- Bugfix branches: `fix/<ticket>`\n\n## Deployment\n\nWe ship to staging on every merge to `main`. Production deploys are manual via the deploy button.',
+          isPublic: false, version: 1, createdById: rahul.id, updatedById: rahul.id,
+        },
+        {
+          orgId, title: 'Brand Guidelines', slug: 'brand-guidelines',
+          content: '# Brand Guidelines\n\n## Logo usage\n\n- Minimum size: 120px wide\n- Clear space: 1x the height of the logo\n- Don\'t stretch or recolor\n\n## Colors\n\n| Role | Hex |\n|---|---|\n| Primary | #10b981 |\n| Accent | #f59e0b |\n| Background | #ffffff |\n\n## Typography\n\n- Headings: Inter Bold\n- Body: Inter Regular\n- Mono: JetBrains Mono',
+          isPublic: true, version: 1, createdById: sana.id, updatedById: sana.id,
+        },
+        {
+          orgId, title: 'Onboarding Checklist', slug: 'onboarding-checklist',
+          content: '# New Hire Onboarding\n\n## Day 1\n- [ ] Laptop + peripherals setup\n- [ ] Accounts: Google, Slack, GitHub, Nexus Suite\n- [ ] Meet your manager and team\n\n## Week 1\n- [ ] Read Engineering Handbook\n- [ ] Ship a small PR\n- [ ] 1:1s with 5 teammates\n\n## Month 1\n- [ ] Own a small feature end-to-end\n- [ ] First performance check-in',
+          isPublic: false, version: 1, createdById: priya.id, updatedById: priya.id,
+        },
+      ],
+    })
+
+    // Create initial version snapshots for each doc
+    const docs = await db.document.findMany({ where: { orgId } })
+    for (const d of docs) {
+      await db.documentVersion.create({
+        data: {
+          documentId: d.id,
+          version: 1,
+          content: d.content,
+          editedById: d.updatedById,
+          changeSummary: 'Initial version',
+        },
+      })
+    }
+  }
 
   return org
 }

@@ -46,6 +46,14 @@ const BudgetView = dynamic(
   () => import('./budget-view').then((m) => m.BudgetView),
   { ssr: false, loading: () => <ViewLoading /> }
 )
+const DocsView = dynamic(
+  () => import('./docs-view').then((m) => m.DocsView),
+  { ssr: false, loading: () => <ViewLoading /> }
+)
+const ApiKeysView = dynamic(
+  () => import('./apikeys-view').then((m) => m.ApiKeysView),
+  { ssr: false, loading: () => <ViewLoading /> }
+)
 const SettingsView = dynamic(
   () => import('./settings-view').then((m) => m.SettingsView),
   { ssr: false, loading: () => <ViewLoading /> }
@@ -130,6 +138,8 @@ export function AppShell() {
             {activeView === 'resource' && <ResourceView />}
             {activeView === 'kra' && <KraView />}
             {activeView === 'budget' && <BudgetView />}
+            {activeView === 'docs' && <DocsView />}
+            {activeView === 'apikeys' && <ApiKeysView />}
             {activeView === 'settings' && <SettingsView />}
             {activeView === 'export' && <ExportView />}
             {activeView === 'audit' && <AuditView />}

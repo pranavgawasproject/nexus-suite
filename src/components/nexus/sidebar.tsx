@@ -23,9 +23,10 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   ]
 
   const moduleNav: NavItem[] = MODULE_REGISTRY.filter((m) =>
-    ['tasks', 'rooms', 'reporting', 'leave', 'resource', 'kra', 'budget'].includes(m.key)
+    ['tasks', 'rooms', 'reporting', 'leave', 'resource', 'kra', 'budget', 'collab'].includes(m.key)
   ).map((m) => ({
-    view: m.key as ViewKey,
+    // Module key 'collab' maps to view 'docs' (only docs are built for Phase 2)
+    view: (m.key === 'collab' ? 'docs' : m.key) as ViewKey,
     label: m.shortName,
     icon: m.icon as keyof typeof Icons,
     moduleKey: m.key,
@@ -33,6 +34,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
   const settingsNav: NavItem[] = [
     { view: 'settings', label: 'Module Marketplace', icon: 'Store' },
+    { view: 'apikeys', label: 'API Keys & Webhooks', icon: 'KeyRound' },
     { view: 'export', label: 'Data Export', icon: 'Download' },
     { view: 'audit', label: 'Audit Log', icon: 'History' },
   ]

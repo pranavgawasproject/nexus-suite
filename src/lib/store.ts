@@ -13,10 +13,12 @@ export type ViewKey =
   | 'resource'
   | 'kra'
   | 'budget'
+  | 'docs'
   | 'settings'
   | 'onboarding'
   | 'export'
   | 'audit'
+  | 'apikeys'
 
 export interface OrgState {
   id: string

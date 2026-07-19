@@ -1,0 +1,94 @@
+# Nexus Suite — Self-Host Deployment
+# ============================================================
+# Two profiles:
+#   1) Default (SQLite) — single container, zero external deps.
+#      Best for personal/small-org self-hosters.
+#      `docker compose up -d`
+#
+#   2) Postgres profile — managed-cloud-grade setup with Postgres
+#      and daily backups.
+#      `docker compose --profile postgres up -d`
+#
+# After first boot, open http://localhost:3000 — the app auto-seeds
+# a demo org (Acme Design Studio) so you can explore immediately.
+# Run `bun run db:reset-seed` (or delete the volume) to clear it.
+# ============================================================
+
+services:
+  nexus:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nexus-suite:latest
+    container_name: nexus-suite
+    restart: unless-stopped
+    ports:
+      - "${NEXUS_PORT:-3000}:3000"
+    environment:
+      # ─── Database ───────────────────────────────────────────────
+      # Default: SQLite in named volume. Override for Postgres (see profile below).
+      DATABASE_URL: "${DATABASE_URL:-file:/app/data/nexus.db}"
+      # ─── Auth (NextAuth.js) ─────────────────────────────────────
+      # Generate with: `openssl rand -base64 32`
+      NEXTAUTH_SECRET: "${NEXTAUTH_SECRET:-change-me-in-production-please}"
+      NEXTAUTH_URL: "${NEXTAUTH_URL:-http://localhost:3000}"
+      # ─── Optional: disable auto-seed for production ─────────────
+      NEXUS_AUTO_SEED: "${NEXUS_AUTO_SEED:-true}"
+    volumes:
+      - nexus-data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/session"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    profiles: [""]
+
+  # ── Postgres profile (managed-cloud-grade) ────────────────────
+  # Activate with: `docker compose --profile postgres up -d`
+  # Then set DATABASE_URL=postgresql://nexus:nexus@postgres:5432/nexus
+  postgres:
+    image: postgres:17-alpine
+    container_name: nexus-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER:-nexus}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-nexus}"
+      POSTGRES_DB: "${POSTGRES_DB:-nexus}"
+    volumes:
+      - nexus-pg:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nexus} -d ${POSTGRES_DB:-nexus}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles: ["postgres"]
+
+  # ── Backup sidecar (only with postgres profile) ──────────────
+  # Runs pg_dump nightly at 02:00, keeps 30 days of backups.
+  pg-backup:
+    image: prodrigestivill/postgres-backup-local:16-alpine
+    container_name: nexus-pg-backup
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: "${POSTGRES_USER:-nexus}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-nexus}"
+      POSTGRES_DB: "${POSTGRES_DB:-nexus}"
+      SCHEDULE: "@daily"
+      BACKUP_KEEP_DAYS: "30"
+      BACKUP_KEEP_WEEKS: "8"
+      BACKUP_KEEP_MONTHS: "6"
+    volumes:
+      - nexus-pg-backups:/backups
+    profiles: ["postgres"]
+
+volumes:
+  nexus-data:
+  nexus-pg:
+  nexus-pg-backups:

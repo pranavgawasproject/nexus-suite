@@ -4,10 +4,11 @@ All-in-one modular enterprise project management platform — tasks, KRA/KPA, ro
 
 **Status:** Phase 1 MVP (in development per [PRD v2](docs/PRD.md))
 
-## What's in the Phase 1 MVP
+## What's in this build
 
-Per PRD §10, Phase 1 ships:
+Per PRD §10 + Phase 2 additions:
 
+**Phase 1 MVP:**
 - **Core** — org, users, departments, RBAC roles, audit log, notifications, cross-module search
 - **Module 1 (Tasks)** — projects, Kanban + list views, drag-and-drop status, priorities, types, assignees, due dates, estimates, task detail editor
 - **Module 3 (Rooms)** — room inventory with amenities, week-view calendar, conflict-free booking, recurring bookings
@@ -16,6 +17,18 @@ Per PRD §10, Phase 1 ships:
 - **Onboarding wizard** — "What are you replacing?" → recommended bundle → confirm flow
 - **Data Export** — per-module JSON/CSV export (anti-lock-in feature, PRD §5)
 - **Audit Log** — last 100 events with actor + metadata
+
+**Phase 2 (partial):**
+- **Module 8 (Leave & Attendance)** — leave requests with approval workflow, attendance check-in/out, holiday calendar
+- **Module 4 (Resource & Capacity)** — allocation %, per-user workload, over-allocation detection
+- **Module 2 (KRA/KPA)** — KRA lifecycle (draft → self_review → manager_review → calibration → closed), self + manager ratings + comments
+- **Module 5 (Budget)** — INR-only project budgets, expense logging with categories, budget vs actual dashboards
+
+**Hardening:**
+- `403 Module Not Enabled` enforcement on all module API routes (PRD §4.5)
+- Zod input validation on all create/update operations
+- Tenant-isolation test suite (17 tests, all passing) — PRD §13 risk mitigation
+- Central notification service consumed by all modules (PRD §5.5)
 
 ## Tech stack
 

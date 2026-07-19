@@ -23,7 +23,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   ]
 
   const moduleNav: NavItem[] = MODULE_REGISTRY.filter((m) =>
-    ['tasks', 'rooms', 'reporting'].includes(m.key)
+    ['tasks', 'rooms', 'reporting', 'leave', 'resource', 'kra', 'budget'].includes(m.key)
   ).map((m) => ({
     view: m.key as ViewKey,
     label: m.shortName,

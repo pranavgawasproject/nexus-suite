@@ -25,6 +25,21 @@ export async function GET(req: NextRequest) {
     payload.rooms = await db.room.findMany({ where: { orgId: ctx.org.id } })
     payload.bookings = await db.booking.findMany({ where: { orgId: ctx.org.id }, include: { room: true, bookedBy: true } })
   }
+  if (includeAll || moduleKey === 'leave') {
+    payload.leaves = await db.leave.findMany({ where: { orgId: ctx.org.id } })
+    payload.attendance = await db.attendance.findMany({ where: { orgId: ctx.org.id } })
+    payload.holidays = await db.holiday.findMany({ where: { orgId: ctx.org.id } })
+  }
+  if (includeAll || moduleKey === 'resource') {
+    payload.allocations = await db.allocation.findMany({ where: { orgId: ctx.org.id } })
+  }
+  if (includeAll || moduleKey === 'kra') {
+    payload.kras = await db.kra.findMany({ where: { orgId: ctx.org.id } })
+  }
+  if (includeAll || moduleKey === 'budget') {
+    payload.budgets = await db.budget.findMany({ where: { orgId: ctx.org.id } })
+    payload.expenses = await db.expense.findMany({ where: { orgId: ctx.org.id } })
+  }
   if (includeAll || moduleKey === 'team') {
     payload.users = await db.user.findMany({ where: { orgId: ctx.org.id } })
     payload.departments = await db.department.findMany({ where: { orgId: ctx.org.id } })
@@ -35,7 +50,6 @@ export async function GET(req: NextRequest) {
   }
 
   if (format === 'csv') {
-    // Flatten first array into CSV
     const firstArrayKey = Object.keys(payload).find((k) => Array.isArray(payload[k]))
     if (!firstArrayKey) {
       return NextResponse.json({ error: 'no_array_data' }, { status: 400 })

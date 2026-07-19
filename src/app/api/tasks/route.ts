@@ -1,122 +1,129 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { getDemoContext } from '@/lib/seed'
+import { requireModule, parseBody, parseQuery, audit, withErrors } from '@/lib/api-guard'
+import { createTaskSchema, updateTaskSchema, taskQuerySchema } from '@/lib/schemas'
+import { createNotification } from '@/lib/notify'
 
 export async function GET(req: NextRequest) {
-  const ctx = await getDemoContext()
-  if (!ctx) return NextResponse.json({ tasks: [] })
-  const { searchParams } = new URL(req.url)
-  const projectId = searchParams.get('projectId')
-  const status = searchParams.get('status')
-  const assigneeId = searchParams.get('assigneeId')
+  return withErrors(async () => {
+    const g = await requireModule('tasks')
+    if (g.response) return g.response
 
-  const tasks = await db.task.findMany({
-    where: {
-      orgId: ctx.org.id,
-      ...(projectId && projectId !== 'all' ? { projectId } : {}),
-      ...(status && status !== 'all' ? { status } : {}),
-      ...(assigneeId && assigneeId !== 'all' ? { assigneeId } : {}),
-    },
-    include: {
-      assignee: { select: { id: true, name: true, email: true, avatarUrl: true } },
-      reporter: { select: { id: true, name: true, email: true } },
-      project: { select: { id: true, name: true, color: true } },
-    },
-    orderBy: { position: 'asc' },
+    const { data, error } = await parseQuery(req, taskQuerySchema)
+    if (error) return error
+
+    const tasks = await db.task.findMany({
+      where: {
+        orgId: g.ctx!.org.id,
+        ...(data.projectId && data.projectId !== 'all' ? { projectId: data.projectId } : {}),
+        ...(data.status && data.status !== 'all' ? { status: data.status } : {}),
+        ...(data.assigneeId && data.assigneeId !== 'all' ? { assigneeId: data.assigneeId } : {}),
+      },
+      include: {
+        assignee: { select: { id: true, name: true, email: true, avatarUrl: true } },
+        reporter: { select: { id: true, name: true, email: true } },
+        project: { select: { id: true, name: true, color: true } },
+      },
+      orderBy: { position: 'asc' },
+    })
+    return NextResponse.json({ tasks })
   })
-  return NextResponse.json({ tasks })
 }
 
 export async function POST(req: NextRequest) {
-  const ctx = await getDemoContext()
-  if (!ctx) return NextResponse.json({ error: 'no_org' }, { status: 400 })
-  const body = await req.json()
-  const maxPos = await db.task.aggregate({
-    where: { projectId: body.projectId, status: body.status || 'todo' },
-    _max: { position: true },
-  })
-  const task = await db.task.create({
-    data: {
-      orgId: ctx.org.id,
-      projectId: body.projectId,
-      title: body.title,
-      description: body.description || null,
-      status: body.status || 'todo',
-      priority: body.priority || 'medium',
-      type: body.type || 'task',
-      assigneeId: body.assigneeId || null,
-      reporterId: body.reporterId || ctx.user!.id,
-      dueDate: body.dueDate ? new Date(body.dueDate) : null,
-      estimateHours: body.estimateHours ? Number(body.estimateHours) : null,
-      tags: body.tags || null,
-      position: (maxPos._max.position ?? -1) + 1,
-    },
-    include: {
-      assignee: { select: { id: true, name: true, email: true, avatarUrl: true } },
-      reporter: { select: { id: true, name: true, email: true } },
-      project: { select: { id: true, name: true, color: true } },
-    },
-  })
-  await db.auditLog.create({
-    data: {
-      orgId: ctx.org.id,
-      actorId: ctx.user?.id,
-      action: 'task.created',
-      entityType: 'Task',
-      entityId: task.id,
-      metadata: JSON.stringify({ title: task.title, projectId: task.projectId }),
-    },
-  })
-  if (body.assigneeId && body.assigneeId !== ctx.user?.id) {
-    await db.notification.create({
+  return withErrors(async () => {
+    const g = await requireModule('tasks')
+    if (g.response) return g.response
+
+    const { data, error } = await parseBody(req, createTaskSchema)
+    if (error) return error
+
+    const maxPos = await db.task.aggregate({
+      where: { projectId: data.projectId, status: data.status },
+      _max: { position: true },
+    })
+    const task = await db.task.create({
       data: {
-        orgId: ctx.org.id,
-        userId: body.assigneeId,
+        orgId: g.ctx!.org.id,
+        projectId: data.projectId,
+        title: data.title,
+        description: data.description || null,
+        status: data.status,
+        priority: data.priority,
+        type: data.type,
+        assigneeId: data.assigneeId || null,
+        reporterId: data.reporterId || g.ctx!.user!.id,
+        dueDate: data.dueDate ? new Date(data.dueDate) : null,
+        estimateHours: data.estimateHours ?? null,
+        tags: data.tags || null,
+        position: (maxPos._max.position ?? -1) + 1,
+      },
+      include: {
+        assignee: { select: { id: true, name: true, email: true, avatarUrl: true } },
+        reporter: { select: { id: true, name: true, email: true } },
+        project: { select: { id: true, name: true, color: true } },
+      },
+    })
+    await audit(g.ctx!.org.id, g.ctx!.user?.id, 'task.created', 'Task', task.id, {
+      title: task.title,
+      projectId: task.projectId,
+    })
+    if (data.assigneeId && data.assigneeId !== g.ctx!.user?.id) {
+      await createNotification(g.ctx!.org.id, data.assigneeId, {
         title: 'New task assigned',
         body: `“${task.title}” was assigned to you.`,
         category: 'task',
-        severity: 'info',
         link: 'tasks',
-      },
-    })
-  }
-  return NextResponse.json({ task })
+      })
+    }
+    return NextResponse.json({ task })
+  })
 }
 
 export async function PATCH(req: NextRequest) {
-  const ctx = await getDemoContext()
-  if (!ctx) return NextResponse.json({ error: 'no_org' }, { status: 400 })
-  const body = await req.json()
-  const task = await db.task.update({
-    where: { id: body.id, orgId: ctx.org.id },
-    data: {
-      ...(body.title !== undefined && { title: body.title }),
-      ...(body.description !== undefined && { description: body.description }),
-      ...(body.status !== undefined && { status: body.status }),
-      ...(body.priority !== undefined && { priority: body.priority }),
-      ...(body.type !== undefined && { type: body.type }),
-      ...(body.assigneeId !== undefined && { assigneeId: body.assigneeId || null }),
-      ...(body.dueDate !== undefined && { dueDate: body.dueDate ? new Date(body.dueDate) : null }),
-      ...(body.estimateHours !== undefined && { estimateHours: body.estimateHours ? Number(body.estimateHours) : null }),
-      ...(body.spentHours !== undefined && { spentHours: Number(body.spentHours) || 0 }),
-      ...(body.tags !== undefined && { tags: body.tags }),
-      ...(body.position !== undefined && { position: Number(body.position) }),
-    },
-    include: {
-      assignee: { select: { id: true, name: true, email: true, avatarUrl: true } },
-      reporter: { select: { id: true, name: true, email: true } },
-      project: { select: { id: true, name: true, color: true } },
-    },
+  return withErrors(async () => {
+    const g = await requireModule('tasks')
+    if (g.response) return g.response
+
+    const { data, error } = await parseBody(req, updateTaskSchema)
+    if (error) return error
+
+    const task = await db.task.update({
+      where: { id: data.id, orgId: g.ctx!.org.id },
+      data: {
+        ...(data.title !== undefined && { title: data.title }),
+        ...(data.description !== undefined && { description: data.description }),
+        ...(data.status !== undefined && { status: data.status }),
+        ...(data.priority !== undefined && { priority: data.priority }),
+        ...(data.type !== undefined && { type: data.type }),
+        ...(data.assigneeId !== undefined && { assigneeId: data.assigneeId || null }),
+        ...(data.dueDate !== undefined && { dueDate: data.dueDate ? new Date(data.dueDate) : null }),
+        ...(data.estimateHours !== undefined && { estimateHours: data.estimateHours ?? null }),
+        ...(data.spentHours !== undefined && { spentHours: data.spentHours }),
+        ...(data.tags !== undefined && { tags: data.tags }),
+        ...(data.position !== undefined && { position: data.position }),
+      },
+      include: {
+        assignee: { select: { id: true, name: true, email: true, avatarUrl: true } },
+        reporter: { select: { id: true, name: true, email: true } },
+        project: { select: { id: true, name: true, color: true } },
+      },
+    })
+    return NextResponse.json({ task })
   })
-  return NextResponse.json({ task })
 }
 
 export async function DELETE(req: NextRequest) {
-  const ctx = await getDemoContext()
-  if (!ctx) return NextResponse.json({ error: 'no_org' }, { status: 400 })
-  const { searchParams } = new URL(req.url)
-  const id = searchParams.get('id')
-  if (!id) return NextResponse.json({ error: 'no_id' }, { status: 400 })
-  await db.task.delete({ where: { id, orgId: ctx.org.id } })
-  return NextResponse.json({ ok: true })
+  return withErrors(async () => {
+    const g = await requireModule('tasks')
+    if (g.response) return g.response
+
+    const { searchParams } = new URL(req.url)
+    const id = searchParams.get('id')
+    if (!id) return NextResponse.json({ error: 'no_id' }, { status: 400 })
+
+    await db.task.delete({ where: { id, orgId: g.ctx!.org.id } })
+    await audit(g.ctx!.org.id, g.ctx!.user?.id, 'task.deleted', 'Task', id)
+    return NextResponse.json({ ok: true })
+  })
 }

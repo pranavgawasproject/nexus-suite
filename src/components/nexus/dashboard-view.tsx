@@ -33,6 +33,14 @@ interface DashboardData {
     teamSize: number
     activeModules: number
     totalModules: number
+    pendingLeaves?: number
+    onLeaveToday?: number
+    checkedInToday?: number
+    overAllocated?: number
+    krasTotal?: number
+    krasPendingReview?: number
+    totalBudget?: number
+    totalSpent?: number
   }
   statusCounts: Record<string, number>
   priorityCounts: Record<string, number>
@@ -172,6 +180,53 @@ export function DashboardView() {
           onClick={() => setActiveView('tasks')}
         />
       </div>
+
+      {/* Phase 2 module KPI cards — only render when the relevant module is enabled */}
+      {(isModuleOn('leave') || isModuleOn('resource') || isModuleOn('kra') || isModuleOn('budget')) && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {isModuleOn('leave') && (
+            <KpiCard
+              label="Pending leaves"
+              value={kpis.pendingLeaves ?? 0}
+              sublabel={`${kpis.onLeaveToday ?? 0} on leave today · ${kpis.checkedInToday ?? 0} checked in`}
+              icon="CalendarOff"
+              accent="amber"
+              onClick={() => setActiveView('leave')}
+            />
+          )}
+          {isModuleOn('resource') && (
+            <KpiCard
+              label="Over-allocated"
+              value={kpis.overAllocated ?? 0}
+              sublabel={kpis.overAllocated ? 'Needs rebalancing' : 'Capacity balanced'}
+              icon="Users"
+              accent="violet"
+              onClick={() => setActiveView('resource')}
+            />
+          )}
+          {isModuleOn('kra') && (
+            <KpiCard
+              label="KRAs pending review"
+              value={kpis.krasPendingReview ?? 0}
+              sublabel={`${kpis.krasTotal ?? 0} total KRAs`}
+              icon="Award"
+              accent="rose"
+              onClick={() => setActiveView('kra')}
+            />
+          )}
+          {isModuleOn('budget') && (
+            <KpiCard
+              label="Budget used"
+              value={`${kpis.totalBudget ? Math.round(((kpis.totalSpent ?? 0) / kpis.totalBudget) * 100) : 0}%`}
+              sublabel={`₹${(kpis.totalSpent ?? 0).toLocaleString('en-IN')} of ₹${(kpis.totalBudget ?? 0).toLocaleString('en-IN')}`}
+              icon="Wallet"
+              accent="emerald"
+              onClick={() => setActiveView('budget')}
+            />
+          )}
+        </div>
+      )}
+
 
       {/* Charts row */}
       <div className="grid gap-4 lg:grid-cols-3">

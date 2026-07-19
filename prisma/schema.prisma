@@ -1,5 +1,6 @@
 // Nexus Suite — Prisma Schema
-// Phase 1 MVP: Core + Module 1 (Tasks) + Module 3 (Room Booking) + Module 9 (Reporting)
+// Phase 1 MVP: Core + Module 1 (Tasks) + Module 3 (Rooms) + Module 9 (Reporting)
+// Phase 2 additions: Module 8 (Leave) + Module 4 (Resource) + Module 2 (KRA) + Module 5 (Budget)
 
 generator client {
   provider = "prisma-client-js"
@@ -34,6 +35,13 @@ model Organization {
   notifications Notification[]
   auditLogs     AuditLog[]
   tasks         Task[]
+  leaves        Leave[]
+  attendance    Attendance[]
+  allocations   Allocation[]
+  kras          Kra[]
+  expenses      Expense[]
+  budgets       Budget[]
+  holidays      Holiday[]
 }
 
 model User {
@@ -58,6 +66,12 @@ model User {
   bookings           Booking[]
   notifications      Notification[]
   auditLogs          AuditLog[]
+  leaves             Leave[]
+  approvedLeaves     Leave[]      @relation("LeaveApprover")
+  attendance         Attendance[]
+  allocations        Allocation[]
+  kras               Kra[]
+  expenses           Expense[]
 }
 
 model Department {
@@ -95,7 +109,7 @@ model Notification {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   title     String
   body      String
-  category  String   @default("general") // task | booking | system | mention
+  category  String   @default("general") // task | booking | system | mention | leave | kra | budget
   severity  String   @default("info")    // info | success | warning | error
   readAt    DateTime?
   link      String?
@@ -132,6 +146,9 @@ model Project {
   createdById String
   createdBy   User     @relation(fields: [createdById], references: [id])
   tasks       Task[]
+  allocations Allocation[]
+  expenses    Expense[]
+  budgets     Budget[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -195,4 +212,137 @@ model Booking {
   attendees   Int      @default(1)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// ============================================================
+// MODULE 8: Leave & Attendance
+// ============================================================
+
+model Holiday {
+  id        String   @id @default(cuid())
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  name      String
+  date      DateTime
+  optional  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@unique([orgId, date])
+}
+
+model Leave {
+  id           String   @id @default(cuid())
+  orgId        String
+  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type         String   // casual | sick | earned | comp_off | maternity | paternity | unpaid | work_from_home
+  startDate    DateTime
+  endDate      DateTime
+  halfDay      Boolean  @default(false)
+  status       String   @default("pending") // pending | approved | rejected | cancelled
+  reason       String?
+  approverId   String?
+  approver     User?    @relation("LeaveApprover", fields: [approverId], references: [id])
+  approverNote String?
+  appliedAt    DateTime @default(now())
+  decidedAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Attendance {
+  id          String   @id @default(cuid())
+  orgId       String
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date        DateTime  // the calendar day (midnight UTC)
+  checkIn     DateTime?
+  checkOut    DateTime?
+  workMode    String   @default("office") // office | remote | hybrid
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([orgId, userId, date])
+}
+
+// ============================================================
+// MODULE 4: Resource & Capacity Management
+// ============================================================
+
+model Allocation {
+  id            String   @id @default(cuid())
+  orgId         String
+  org           Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  allocationPct Int      @default(100) // 0-100
+  role          String?  // e.g. "Frontend Engineer", "Lead"
+  startDate     DateTime
+  endDate       DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ============================================================
+// MODULE 2: KRA / KPA & Performance Management
+// ============================================================
+
+model Kra {
+  id             String   @id @default(cuid())
+  orgId          String
+  org            Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title          String
+  description    String?
+  cycle          String   // e.g. "Q1-2026"
+  status         String   @default("draft") // draft | self_review | manager_review | calibration | closed
+  weight         Float    @default(25)  // 0-100
+  targetRating   Int      @default(3)   // 1-5
+  selfRating     Int?
+  managerRating  Int?
+  selfComment    String?
+  managerComment String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// ============================================================
+// MODULE 5: Budget & Financial Tracking
+// ============================================================
+
+model Budget {
+  id          String   @id @default(cuid())
+  orgId       String
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  totalAmount Float
+  currency    String   @default("INR")
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Expense {
+  id           String   @id @default(cuid())
+  orgId        String
+  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  projectId    String
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  incurredById String
+  incurredBy   User     @relation(fields: [incurredById], references: [id])
+  title        String
+  amount       Float
+  currency     String   @default("INR")
+  category     String   @default("other") // software | hardware | travel | meals | contractor | marketing | training | other
+  incurredDate DateTime
+  vendor       String?
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }

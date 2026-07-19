@@ -200,6 +200,132 @@ export async function seedDemoOrg() {
     })
   }
 
+  // ----- MODULE 8: Leave & Attendance -----
+  const leaveCount = await db.leave.count({ where: { orgId } })
+  if (leaveCount === 0) {
+    await db.leave.createMany({
+      data: [
+        { orgId, userId: vikram.id, type: 'casual', startDate: day(2, 0, 0), endDate: day(3, 23, 59), status: 'approved', reason: 'Family function', approverId: rahul.id, decidedAt: new Date(), appliedAt: day(-3) },
+        { orgId, userId: anjali.id, type: 'sick', startDate: day(1, 0, 0), endDate: day(1, 23, 59), status: 'approved', reason: 'Fever', approverId: sana.id, decidedAt: new Date(), appliedAt: day(-1) },
+        { orgId, userId: rahul.id, type: 'earned', startDate: day(7, 0, 0), endDate: day(10, 23, 59), status: 'pending', reason: 'Pre-planned vacation', appliedAt: day(-1) },
+        { orgId, userId: sana.id, type: 'work_from_home', startDate: day(0, 0, 0), endDate: day(0, 23, 59), status: 'pending', reason: 'Plumber visit', appliedAt: day(0) },
+        { orgId, userId: priya.id, type: 'comp_off', startDate: day(-5, 0, 0), endDate: day(-5, 23, 59), status: 'approved', reason: 'Worked on weekend for launch', approverId: priya.id, decidedAt: day(-4), appliedAt: day(-6) },
+      ],
+    })
+  }
+
+  const holidayCount = await db.holiday.count({ where: { orgId } })
+  if (holidayCount === 0) {
+    await db.holiday.createMany({
+      data: [
+        { orgId, name: 'Independence Day', date: day(20, 0, 0), optional: false },
+        { orgId, name: 'Ganesh Chaturthi', date: day(35, 0, 0), optional: false },
+        { orgId, name: 'Diwali', date: day(85, 0, 0), optional: false },
+        { orgId, name: 'Christmas', date: day(155, 0, 0), optional: false },
+      ],
+    })
+  }
+
+  // Attendance — seed for the last 3 working days for all 5 users
+  const attendanceCount = await db.attendance.count({ where: { orgId } })
+  if (attendanceCount === 0) {
+    const allUsers = [priya, rahul, anjali, vikram, sana]
+    const records: Array<{ orgId: string; userId: string; date: Date; checkIn: Date; checkOut: Date; workMode: string }> = []
+    for (let i = 1; i <= 3; i++) {
+      const d = new Date()
+      d.setDate(d.getDate() - i)
+      d.setUTCHours(0, 0, 0, 0)
+      // Skip weekends
+      if (d.getDay() === 0 || d.getDay() === 6) continue
+      for (const [idx, u] of allUsers.entries()) {
+        const checkIn = new Date(d)
+        checkIn.setHours(9 + idx, 15 + (idx * 7) % 30, 0, 0)
+        const checkOut = new Date(d)
+        checkOut.setHours(18 + (idx % 2), 30 + (idx * 11) % 30, 0, 0)
+        records.push({
+          orgId,
+          userId: u.id,
+          date: d,
+          checkIn,
+          checkOut,
+          workMode: idx === 2 ? 'remote' : 'office',
+        })
+      }
+    }
+    if (records.length > 0) {
+      await db.attendance.createMany({ data: records })
+    }
+  }
+
+  // ----- MODULE 4: Resource & Capacity -----
+  const allocCount = await db.allocation.count({ where: { orgId } })
+  if (allocCount === 0) {
+    await db.allocation.createMany({
+      data: [
+        { orgId, userId: vikram.id, projectId: nexusApp.id, allocationPct: 80, role: 'Frontend Engineer', startDate: day(-14) },
+        { orgId, userId: vikram.id, projectId: clientPortal.id, allocationPct: 20, role: 'Frontend Engineer', startDate: day(-30) },
+        { orgId, userId: anjali.id, projectId: brandRefresh.id, allocationPct: 70, role: 'Senior Designer', startDate: day(-7) },
+        { orgId, userId: anjali.id, projectId: nexusApp.id, allocationPct: 30, role: 'Senior Designer', startDate: day(-14) },
+        { orgId, userId: rahul.id, projectId: nexusApp.id, allocationPct: 50, role: 'Engineering Lead', startDate: day(-14) },
+        { orgId, userId: sana.id, projectId: brandRefresh.id, allocationPct: 60, role: 'Design Lead', startDate: day(-7) },
+        { orgId, userId: priya.id, projectId: clientPortal.id, allocationPct: 40, role: 'Operations Head', startDate: day(-30) },
+        { orgId, userId: priya.id, projectId: nexusApp.id, allocationPct: 30, role: 'Operations Head', startDate: day(-14) },
+      ],
+    })
+  }
+
+  // ----- MODULE 2: KRA/KPA -----
+  const kraCount = await db.kra.count({ where: { orgId } })
+  if (kraCount === 0) {
+    await db.kra.createMany({
+      data: [
+        // Vikram's KRAs for Q3-2026
+        { orgId, userId: vikram.id, title: 'Ship Nexus App v1', description: 'Lead mobile app development through launch.', cycle: 'Q3-2026', weight: 40, targetRating: 4, status: 'self_review', selfRating: 4, selfComment: 'App shipped on time with 95% crash-free sessions.' },
+        { orgId, userId: vikram.id, title: 'Mentor 2 junior engineers', description: 'Onboard and grow 2 new hires.', cycle: 'Q3-2026', weight: 25, targetRating: 3, status: 'self_review', selfRating: 3, selfComment: 'Both onboarded; one promoted to mid-level.' },
+        { orgId, userId: vikram.id, title: 'Reduce auth API p95 latency', description: 'Get p95 under 200ms.', cycle: 'Q3-2026', weight: 35, targetRating: 4, status: 'manager_review', selfRating: 4, selfComment: 'Achieved 180ms p95 via query optimization.' },
+        // Anjali's KRAs
+        { orgId, userId: anjali.id, title: 'Brand refresh completion', description: 'Deliver new visual identity.', cycle: 'Q3-2026', weight: 50, targetRating: 4, status: 'self_review', selfRating: 4, selfComment: 'Logo concepts approved; site hero in progress.' },
+        { orgId, userId: anjali.id, title: 'Design system v2', description: 'Refresh component library.', cycle: 'Q3-2026', weight: 50, targetRating: 3, status: 'draft' },
+        // Rahul's KRAs
+        { orgId, userId: rahul.id, title: 'Engineering OKR delivery', description: 'Hit 80% of quarterly OKRs.', cycle: 'Q3-2026', weight: 60, targetRating: 4, status: 'manager_review', selfRating: 4, selfComment: 'Hit 7 of 8 OKRs.' },
+        { orgId, userId: rahul.id, title: 'Hire 2 backend engineers', description: 'Close 2 reqs by end of quarter.', cycle: 'Q3-2026', weight: 40, targetRating: 3, status: 'draft' },
+      ],
+    })
+  }
+
+  // ----- MODULE 5: Budget & Expenses -----
+  const budgetCount = await db.budget.count({ where: { orgId } })
+  if (budgetCount === 0) {
+    await db.budget.createMany({
+      data: [
+        { orgId, projectId: nexusApp.id, totalAmount: 850000, currency: 'INR', notes: 'Includes dev + design + QA for Q3' },
+        { orgId, projectId: brandRefresh.id, totalAmount: 350000, currency: 'INR', notes: 'Agency + freelance design' },
+        { orgId, projectId: clientPortal.id, totalAmount: 1200000, currency: 'INR', notes: 'On hold — pending pilot client signoff' },
+      ],
+    })
+  }
+
+  const expenseCount = await db.expense.count({ where: { orgId } })
+  if (expenseCount === 0) {
+    await db.expense.createMany({
+      data: [
+        { orgId, projectId: nexusApp.id, incurredById: priya.id, title: 'Apple Developer Program', amount: 9900, currency: 'INR', category: 'software', incurredDate: day(-10), vendor: 'Apple' },
+        { orgId, projectId: nexusApp.id, incurredById: priya.id, title: 'Sentry (annual)', amount: 22000, currency: 'INR', category: 'software', incurredDate: day(-12), vendor: 'Sentry' },
+        { orgId, projectId: nexusApp.id, incurredById: rahul.id, title: 'Test devices — iPhone 14 + Pixel 7', amount: 145000, currency: 'INR', category: 'hardware', incurredDate: day(-8), vendor: 'Amazon' },
+        { orgId, projectId: brandRefresh.id, incurredById: sana.id, title: 'Adobe CC (3 seats, monthly)', amount: 7500, currency: 'INR', category: 'software', incurredDate: day(-5), vendor: 'Adobe' },
+        { orgId, projectId: brandRefresh.id, incurredById: sana.id, title: 'Font licence — Söhne', amount: 38000, currency: 'INR', category: 'software', incurredDate: day(-3), vendor: 'Klim Type Foundry' },
+        { orgId, projectId: nexusApp.id, incurredById: rahul.id, title: 'Team dinner — sprint wrap', amount: 6800, currency: 'INR', category: 'meals', incurredDate: day(-1), vendor: 'Local restaurant' },
+        { orgId, projectId: clientPortal.id, incurredById: priya.id, title: 'Client kickoff catering', amount: 4200, currency: 'INR', category: 'meals', incurredDate: day(-2), vendor: 'The Table' },
+      ],
+    })
+  }
+
+  // Mark Phase 2 modules as active in the demo org
+  await db.orgModule.updateMany({
+    where: { orgId, moduleKey: { in: ['leave', 'resource', 'kra', 'budget'] }, state: 'disabled' },
+    data: { state: 'active', enabledAt: new Date() },
+  })
+
   return org
 }
 

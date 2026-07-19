@@ -30,6 +30,22 @@ const ReportingView = dynamic(
   () => import('./reporting-view').then((m) => m.ReportingView),
   { ssr: false, loading: () => <ViewLoading /> }
 )
+const LeaveView = dynamic(
+  () => import('./leave-view').then((m) => m.LeaveView),
+  { ssr: false, loading: () => <ViewLoading /> }
+)
+const ResourceView = dynamic(
+  () => import('./resource-view').then((m) => m.ResourceView),
+  { ssr: false, loading: () => <ViewLoading /> }
+)
+const KraView = dynamic(
+  () => import('./kra-view').then((m) => m.KraView),
+  { ssr: false, loading: () => <ViewLoading /> }
+)
+const BudgetView = dynamic(
+  () => import('./budget-view').then((m) => m.BudgetView),
+  { ssr: false, loading: () => <ViewLoading /> }
+)
 const SettingsView = dynamic(
   () => import('./settings-view').then((m) => m.SettingsView),
   { ssr: false, loading: () => <ViewLoading /> }
@@ -110,6 +126,10 @@ export function AppShell() {
             {activeView === 'tasks' && <TasksView />}
             {activeView === 'rooms' && <RoomsView />}
             {activeView === 'reporting' && <ReportingView />}
+            {activeView === 'leave' && <LeaveView />}
+            {activeView === 'resource' && <ResourceView />}
+            {activeView === 'kra' && <KraView />}
+            {activeView === 'budget' && <BudgetView />}
             {activeView === 'settings' && <SettingsView />}
             {activeView === 'export' && <ExportView />}
             {activeView === 'audit' && <AuditView />}

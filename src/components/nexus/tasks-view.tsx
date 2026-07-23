@@ -76,6 +76,7 @@ interface Task {
   spentHours?: number
   tags?: string | null
   position: number
+  assigneeId?: string | null
   assignee?: User | null
   reporter?: User | null
   project?: Project | null

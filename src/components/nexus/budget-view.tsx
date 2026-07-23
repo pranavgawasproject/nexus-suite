@@ -38,6 +38,7 @@ interface Expense {
   incurredDate: string
   vendor?: string | null
   notes?: string | null
+  projectId: string
   project: Project
   incurredBy: { id: string; name: string; email: string }
 }

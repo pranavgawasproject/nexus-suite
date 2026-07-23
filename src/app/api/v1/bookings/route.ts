@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await parsePublicBody(req, createBookingSchema)
   if (error) return error
+  if (!data) return apiError('No data', 'invalid_json', 400)
 
   const startTime = new Date(data.startTime)
   const endTime = new Date(data.endTime)

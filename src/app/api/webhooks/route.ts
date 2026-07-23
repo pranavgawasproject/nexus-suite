@@ -61,6 +61,7 @@ export async function POST(req: NextRequest) {
 
     const { data, error } = await parseBody(req, createWebhookSchema)
     if (error) return error
+    if (!data) return NextResponse.json({ error: 'invalid_json' }, { status: 400 })
 
     const secret = 'whsec_' + randomBytes(24).toString('hex')
 

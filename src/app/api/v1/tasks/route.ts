@@ -53,6 +53,7 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await parsePublicBody(req, createTaskSchema)
   if (error) return error
+  if (!data) return apiError('No data', 'invalid_json', 400)
 
   // Verify the project belongs to this org
   const project = await db.project.findFirst({

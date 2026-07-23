@@ -61,8 +61,9 @@ export const CURRENCIES: Record<string, { symbol: string; decimals: number; name
 
 /**
  * Approximate FX rates relative to INR (base = INR).
- * In production, fetch from RBI/rbi.org.in or a paid FX API daily.
- * These are placeholder rates for offline functionality.
+ * These are FALLBACK rates used when no live API is configured.
+ * In production, set FX_API_URL + FX_API_KEY env vars to fetch live rates
+ * daily from RBI or a paid FX API (openexchangerates.org, fixer.io, etc.).
  */
 export const FX_RATES_TO_INR: Record<string, number> = {
   INR: 1,
@@ -74,6 +75,59 @@ export const FX_RATES_TO_INR: Record<string, number> = {
   AUD: 55.1,
   CAD: 61.3,
   JPY: 0.55,
+}
+
+// Cache for live rates — refreshed every 6 hours
+let liveRatesCache: { rates: Record<string, number>; fetchedAt: number } | null = null
+const LIVE_CACHE_TTL_MS = 6 * 60 * 60 * 1000 // 6 hours
+
+/**
+ * Fetch live FX rates from the configured API, if any.
+ * Falls back to static FX_RATES_TO_INR if no API is configured or fetch fails.
+ *
+ * Supported APIs (set via env):
+ *   - FX_API_URL=https://openexchangerates.org/api/latest.json?app_id=YOUR_ID&base=INR
+ *   - FX_API_URL=https://api.fixer.io/latest?base=INR&access_key=YOUR_KEY
+ *
+ * The response must include a `rates` object mapping currency codes to rates.
+ */
+async function getLiveRates(): Promise<Record<string, number>> {
+  const now = Date.now()
+  if (liveRatesCache && now - liveRatesCache.fetchedAt < LIVE_CACHE_TTL_MS) {
+    return liveRatesCache.rates
+  }
+
+  const apiUrl = process.env.FX_API_URL
+  if (!apiUrl) {
+    return FX_RATES_TO_INR
+  }
+
+  try {
+    const res = await fetch(apiUrl, { signal: AbortSignal.timeout(5000) })
+    if (!res.ok) throw new Error(`FX API returned ${res.status}`)
+    const json = await res.json()
+    // OpenExchangeRates format: { rates: { USD: 0.012, EUR: 0.011, ... } }
+    // Fixer format: { rates: { USD: 0.012, EUR: 0.011, ... } }
+    // Both use base=INR if configured, so rates are 1 INR → X foreign
+    // We need the inverse: X foreign → 1 INR
+    const apiRates = json.rates as Record<string, number>
+    if (!apiRates) throw new Error('No "rates" field in FX API response')
+
+    // Convert: API gives 1 INR = X foreign; we want 1 foreign = Y INR
+    const ratesToINR: Record<string, number> = { INR: 1 }
+    for (const [currency, rateFromINR] of Object.entries(apiRates)) {
+      if (rateFromINR > 0) {
+        ratesToINR[currency] = 1 / rateFromINR
+      }
+    }
+
+    liveRatesCache = { rates: ratesToINR, fetchedAt: now }
+    console.log(`[fx] Live rates fetched for ${Object.keys(ratesToINR).length} currencies`)
+    return ratesToINR
+  } catch (err) {
+    console.warn(`[fx] Live fetch failed, using static rates:`, err instanceof Error ? err.message : err)
+    return FX_RATES_TO_INR
+  }
 }
 
 export interface GstBreakdown {
@@ -144,10 +198,32 @@ export function lookupHsnRate(hsnSac: string | null | undefined): number | null 
 }
 
 /**
- * Convert an amount from one currency to another using static FX rates.
+ * Convert an amount from one currency to another.
+ * Uses live FX rates if FX_API_URL is configured, otherwise falls back to static rates.
  * Returns the converted amount and the rate used.
  */
-export function convertCurrency(
+export async function convertCurrency(
+  amount: number,
+  from: string,
+  to: string
+): Promise<{ converted: number; rate: number }> {
+  if (from === to) return { converted: amount, rate: 1 }
+  const rates = await getLiveRates()
+  const fromRate = rates[from]
+  const toRate = rates[to]
+  if (!fromRate || !toRate) {
+    throw new Error(`Unsupported currency pair: ${from} → ${to}`)
+  }
+  // Convert via INR as base
+  const rate = fromRate / toRate
+  return { converted: round2(amount * rate), rate }
+}
+
+/**
+ * Synchronous version using static rates only (for backwards compat).
+ * Prefer `convertCurrency` (async) for live rates.
+ */
+export function convertCurrencyStatic(
   amount: number,
   from: string,
   to: string
@@ -158,7 +234,6 @@ export function convertCurrency(
   if (!fromRate || !toRate) {
     throw new Error(`Unsupported currency pair: ${from} → ${to}`)
   }
-  // Convert via INR as base
   const rate = fromRate / toRate
   return { converted: round2(amount * rate), rate }
 }

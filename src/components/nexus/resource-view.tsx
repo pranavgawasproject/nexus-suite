@@ -28,6 +28,7 @@ interface Allocation {
   role?: string | null
   startDate: string
   endDate?: string | null
+  userId: string
   user: User
   project: Project
 }

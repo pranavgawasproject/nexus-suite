@@ -183,11 +183,12 @@ export async function requirePublicApi(
 
 /**
  * Validate JSON body against a zod schema. Returns 400 on failure.
+ * Discriminated union: when error is null, data is guaranteed non-null.
  */
 export async function parsePublicBody<T>(
   req: NextRequest,
   schema: ZodSchema<T>
-): Promise<{ data: T | null; error: NextResponse | null }> {
+): Promise<{ data: T; error: null } | { data: null; error: NextResponse }> {
   try {
     const json = await req.json()
     const data = schema.parse(json)

@@ -72,7 +72,8 @@ export function AuditView() {
         <CardContent className="p-0">
           <div className="divide-y max-h-[600px] overflow-y-auto scrollbar-thin">
             {filtered.map((log) => {
-              const Icon = Icons[ACTION_ICON[log.action] || 'Circle']
+              const iconName = ACTION_ICON[log.action] || 'Circle'
+              const Icon = (Icons as unknown as Record<string, Icons.LucideIcon>)[iconName] || Icons.Circle
               const meta = log.metadata ? (() => { try { return JSON.parse(log.metadata) } catch { return null } })() : null
               return (
                 <div key={log.id} className="flex items-start gap-3 px-4 py-3">

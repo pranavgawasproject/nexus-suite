@@ -18,7 +18,6 @@ export async function GET(req: NextRequest) {
       },
       include: {
         project: { select: { id: true, name: true, color: true } },
-        _count: { select: { expenses: true } },
       },
       orderBy: { createdAt: 'desc' },
     })

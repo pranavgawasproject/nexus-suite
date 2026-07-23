@@ -16,8 +16,8 @@
     "db:reset": "prisma migrate reset",
     "test:tenant": "bun run tests/tenant-isolation.test.ts",
     "test:gate": "bun run tests/module-gate.test.ts",
-    "test:all": "bun run test:tenant",
-    "test": "bun run tests/tenant-isolation.test.ts"
+    "test:all": "bun run tests/tenant-isolation.test.ts && bun run tests/module-gate.test.ts",
+    "test": "bun run test:all"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

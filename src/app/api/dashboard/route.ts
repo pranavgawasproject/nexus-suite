@@ -40,8 +40,10 @@ export async function GET() {
       ])
     }
 
-    let leaves: Awaited<ReturnType<typeof db.leave.findMany>> = []
-    let attendanceToday: Awaited<ReturnType<typeof db.attendance.findMany>> = []
+     
+    let leaves: any[] = []
+     
+    let attendanceToday: any[] = []
     if (enabled.has('leave')) {
       const today = new Date()
       today.setUTCHours(0, 0, 0, 0)
@@ -73,8 +75,10 @@ export async function GET() {
       })
     }
 
-    let expenses: Awaited<ReturnType<typeof db.expense.findMany>> = []
-    let budgets: Awaited<ReturnType<typeof db.budget.findMany>> = []
+     
+    let expenses: any[] = []
+     
+    let budgets: any[] = []
     if (enabled.has('budget')) {
       ;[expenses, budgets] = await Promise.all([
         db.expense.findMany({ where: { orgId: ctx.org.id } }),

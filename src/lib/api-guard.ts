@@ -41,11 +41,15 @@ export async function requireModule(moduleKey: ModuleKey) {
 /**
  * Parse and validate a JSON request body against a zod schema.
  * On failure, returns a 400 NextResponse with field-level errors.
+ *
+ * Type-narrowing helper: when `error` is null, `data` is guaranteed non-null.
+ * Use as: `const { data, error } = await parseBody(req, schema); if (error) return error;`
+ * — TypeScript will narrow `data` to `T` (not `T | null`) after the `if (error) return` guard.
  */
 export async function parseBody<T>(
   req: NextRequest,
   schema: ZodSchema<T>
-): Promise<{ data: T | null; error: NextResponse | null }> {
+): Promise<{ data: T; error: null } | { data: null; error: NextResponse }> {
   try {
     const json = await req.json()
     const data = schema.parse(json)
@@ -82,7 +86,7 @@ export async function parseBody<T>(
 export async function parseQuery<T>(
   req: NextRequest,
   schema: ZodSchema<T>
-): Promise<{ data: T | null; error: NextResponse | null }> {
+): Promise<{ data: T; error: null } | { data: null; error: NextResponse }> {
   try {
     const params = Object.fromEntries(new URL(req.url).searchParams.entries())
     const data = schema.parse(params)

@@ -44,6 +44,15 @@ export async function GET(req: NextRequest) {
     payload.users = await db.user.findMany({ where: { orgId: ctx.org.id } })
     payload.departments = await db.department.findMany({ where: { orgId: ctx.org.id } })
   }
+  if (includeAll || moduleKey === 'risk') {
+    payload.risks = await db.risk.findMany({ where: { orgId: ctx.org.id } })
+    payload.issues = await db.issue.findMany({ where: { orgId: ctx.org.id } })
+    payload.changeRequests = await db.changeRequest.findMany({ where: { orgId: ctx.org.id } })
+  }
+  if (includeAll || moduleKey === 'governance') {
+    payload.policies = await db.policy.findMany({ where: { orgId: ctx.org.id } })
+    payload.signatures = await db.signature.findMany({ where: { orgId: ctx.org.id } })
+  }
   if (includeAll) {
     payload.modules = await db.orgModule.findMany({ where: { orgId: ctx.org.id } })
     payload.auditLogs = await db.auditLog.findMany({ where: { orgId: ctx.org.id } })

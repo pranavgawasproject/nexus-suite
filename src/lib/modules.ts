@@ -126,7 +126,7 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     description: 'Advanced audit export (SOC2/ISO-ready), e-signature, data retention, IP allowlisting, SSO enforcement.',
     icon: 'Lock',
     phase: 3,
-    tier: 'enterprise',
+    tier: 'starter', // free/open-source per PRD v2.1
     color: 'bg-slate-700',
   },
 ]

@@ -23,7 +23,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   ]
 
   const moduleNav: NavItem[] = MODULE_REGISTRY.filter((m) =>
-    ['tasks', 'rooms', 'reporting', 'leave', 'resource', 'kra', 'budget', 'collab'].includes(m.key)
+    ['tasks', 'rooms', 'reporting', 'leave', 'resource', 'kra', 'budget', 'collab', 'risk', 'governance'].includes(m.key)
   ).map((m) => ({
     // Module key 'collab' maps to view 'docs' (only docs are built for Phase 2)
     view: (m.key === 'collab' ? 'docs' : m.key) as ViewKey,

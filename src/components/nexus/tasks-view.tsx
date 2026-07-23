@@ -234,6 +234,7 @@ export function TasksView() {
             {view === 'kanban' ? <Icons.List className="h-4 w-4" /> : <Icons.Columns3 className="h-4 w-4" />}
             <span className="ml-1.5 hidden sm:inline">{view === 'kanban' ? 'List' : 'Kanban'}</span>
           </Button>
+          <AiTaskButton projects={projects} team={team} onCreated={() => load()} />
           <CreateTaskDialog
             open={createOpen}
             onOpenChange={setCreateOpen}
@@ -843,5 +844,135 @@ function DisabledState({ moduleKey }: { moduleKey: 'tasks' | 'rooms' | 'reportin
         </Button>
       </CardContent>
     </Card>
+  )
+}
+
+function AiTaskButton({ projects, team, onCreated }: { projects: Project[]; team: User[]; onCreated: () => void }) {
+  const [open, setOpen] = React.useState(false)
+  const [input, setInput] = React.useState('')
+  const [parsed, setParsed] = React.useState<null | {
+    title: string
+    description?: string
+    priority?: string
+    type?: string
+    assigneeName?: string
+    dueDate?: string
+    tags?: string[]
+    confidence: string
+    rawInterpretation: string
+  }>(null)
+  const [loading, setLoading] = React.useState(false)
+  const [creating, setCreating] = React.useState(false)
+
+  const parse = async () => {
+    if (!input.trim()) return
+    setLoading(true)
+    try {
+      const d = await api<{ parsed: NonNullable<typeof parsed> }>('/api/ai/parse-task', {
+        method: 'POST',
+        body: JSON.stringify({ input: input.trim() }),
+      })
+      setParsed(d.parsed)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'AI parse failed')
+    } finally { setLoading(false) }
+  }
+
+  const create = async () => {
+    if (!parsed || !projects[0]) { toast.error('Nothing to create'); return }
+    // Match assignee by name
+    const matchedAssignee = parsed.assigneeName
+      ? team.find((u) => u.name.toLowerCase().includes(parsed.assigneeName!.toLowerCase()))
+      : undefined
+    setCreating(true)
+    try {
+      await api('/api/tasks', {
+        method: 'POST',
+        body: JSON.stringify({
+          projectId: projects[0].id,
+          title: parsed.title,
+          description: parsed.description || null,
+          priority: parsed.priority || 'medium',
+          type: parsed.type || 'task',
+          assigneeId: matchedAssignee?.id || null,
+          dueDate: parsed.dueDate ? new Date(parsed.dueDate).toISOString() : null,
+          tags: parsed.tags?.join(',') || null,
+        }),
+      })
+      toast.success(`AI created: ${parsed.title}`)
+      setOpen(false); setInput(''); setParsed(null)
+      onCreated()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed')
+    } finally { setCreating(false) }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline" className="border-violet-300 text-violet-700 hover:bg-violet-50 dark:text-violet-300 dark:hover:bg-violet-950/20">
+          <Icons.Sparkles className="h-4 w-4" />
+          <span className="ml-1.5 hidden sm:inline">AI</span>
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[520px]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Icons.Sparkles className="h-4 w-4 text-violet-600" />
+            Natural-language task creation
+          </DialogTitle>
+          <DialogDescription>
+            Describe the task in plain English. AI parses title, priority, type, assignee, due date, and tags.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <Label htmlFor="ai-input">Describe the task</Label>
+            <Textarea
+              id="ai-input"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              rows={3}
+              placeholder="e.g. Create a high-priority bug for Vikram to fix the iPad crash by Friday, tag it mobile and auth"
+              autoFocus
+            />
+          </div>
+          <Button onClick={parse} disabled={loading || !input.trim()} variant="outline" className="w-full">
+            {loading ? <><Icons.Loader2 className="mr-2 h-4 w-4 animate-spin" /> Parsing…</> : <><Icons.Sparkles className="mr-2 h-4 w-4" /> Parse with AI</>}
+          </Button>
+
+          {parsed && (
+            <div className="rounded-md border bg-muted/40 p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase text-muted-foreground">AI interpretation</span>
+                <Badge variant="outline" className={cn(
+                  'text-[10px] capitalize',
+                  parsed.confidence === 'high' ? 'text-emerald-600' :
+                  parsed.confidence === 'medium' ? 'text-amber-600' : 'text-slate-500'
+                )}>{parsed.confidence} confidence</Badge>
+              </div>
+              <div className="text-sm font-medium">{parsed.title}</div>
+              {parsed.rawInterpretation && <div className="text-xs text-muted-foreground italic">{parsed.rawInterpretation}</div>}
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {parsed.priority && <Badge variant="outline" className="text-[10px] capitalize">{parsed.priority}</Badge>}
+                {parsed.type && parsed.type !== 'task' && <Badge variant="outline" className="text-[10px] capitalize">{parsed.type}</Badge>}
+                {parsed.assigneeName && <Badge variant="outline" className="text-[10px]">@{parsed.assigneeName}</Badge>}
+                {parsed.dueDate && <Badge variant="outline" className="text-[10px]">Due {parsed.dueDate}</Badge>}
+                {parsed.tags?.map((t) => <Badge key={t} variant="secondary" className="text-[10px]">#{t}</Badge>)}
+              </div>
+              {parsed.assigneeName && !team.find((u) => u.name.toLowerCase().includes(parsed.assigneeName!.toLowerCase())) && (
+                <div className="text-[10px] text-amber-600">⚠ No team member matched "{parsed.assigneeName}" — task will be unassigned.</div>
+              )}
+            </div>
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={create} disabled={!parsed || creating || !projects[0]}>
+            {creating ? <><Icons.Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating…</> : <>Create task</>}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

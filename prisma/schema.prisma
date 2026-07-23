@@ -45,6 +45,11 @@ model Organization {
   apiKeys       ApiKey[]
   webhooks      Webhook[]
   documents     Document[]
+  risks         Risk[]
+  issues        Issue[]
+  changeRequests ChangeRequest[]
+  policies      Policy[]
+  signatures    Signature[]
 }
 
 model User {
@@ -152,6 +157,9 @@ model Project {
   allocations Allocation[]
   expenses    Expense[]
   budgets     Budget[]
+  risks       Risk[]
+  issues      Issue[]
+  changeRequests ChangeRequest[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -342,10 +350,25 @@ model Expense {
   title        String
   amount       Float
   currency     String   @default("INR")
+  // FX: original amount in original currency before conversion to org currency
+  originalAmount Float?
+  originalCurrency String?
+  fxRate       Float?   // rate used to convert to org currency
   category     String   @default("other") // software | hardware | travel | meals | contractor | marketing | training | other
   incurredDate DateTime
   vendor       String?
+  vendorGstin  String?  // vendor GSTIN for tax compliance
   notes        String?
+  // GST fields (PRD §4 — CGST/SGST/IGST, HSN/SAC)
+  hsnSac       String?  // HSN/SAC code
+  gstType      String   @default("none") // none | intra (CGST+SGST) | inter (IGST)
+  cgstRate     Float    @default(0)      // %
+  sgstRate     Float    @default(0)      // %
+  igstRate     Float    @default(0)      // %
+  cgstAmount   Float    @default(0)
+  sgstAmount   Float    @default(0)
+  igstAmount   Float    @default(0)
+  totalWithTax Float    @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
@@ -446,5 +469,107 @@ model DocumentVersion {
   changeSummary String?
 
   @@unique([documentId, version])
+}
+
+// ============================================================
+// MODULE 6: Risk & Issue Management (Phase 3)
+// ============================================================
+
+model Risk {
+  id          String   @id @default(cuid())
+  orgId       String
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  title       String
+  description String?
+  category    String   @default("operational") // operational | financial | strategic | compliance | technical | external
+  likelihood  Int      @default(3) // 1-5
+  impact      Int      @default(3) // 1-5
+  // severity is computed: likelihood * impact (1-25), but stored for filtering
+  severity    Int      @default(9) // stored: likelihood * impact
+  status      String   @default("open") // open | mitigating | monitoring | closed | accepted
+  ownerId     String?
+  mitigation  String?
+  dueDate     DateTime?
+  identifiedAt DateTime @default(now())
+  closedAt    DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Issue {
+  id             String   @id @default(cuid())
+  orgId          String
+  org            Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  projectId      String?
+  project        Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  title          String
+  description    String?
+  severity       String   @default("medium") // low | medium | high | critical
+  status         String   @default("open") // open | in_progress | resolved | closed
+  reporterId     String?
+  assigneeId     String?
+  escalationLevel Int    @default(0) // 0=none, 1=L1, 2=L2, 3=L3
+  dueDate        DateTime?
+  resolvedAt     DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model ChangeRequest {
+  id              String   @id @default(cuid())
+  orgId           String
+  org             Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  projectId       String?
+  project         Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  title           String
+  description     String?
+  type            String   @default("minor") // minor | major | emergency
+  status          String   @default("pending") // pending | approved | rejected | implemented
+  requestedById   String?
+  impactAssessment String?
+  implementationNotes String?
+  dueDate         DateTime?
+  decidedAt       DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ============================================================
+// MODULE 10: Governance, Compliance & Audit (Phase 3)
+// All features ship free/open-source per PRD v2.1 — not Enterprise-gated.
+// ============================================================
+
+model Policy {
+  id            String   @id @default(cuid())
+  orgId         String
+  org           Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  type          String   // retention | ip_allowlist | sso_enforcement | data_residency | password
+  name          String
+  config        String   // JSON string with policy-specific fields
+  active        Boolean  @default(true)
+  updatedById   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([orgId, type])
+}
+
+model Signature {
+  id           String   @id @default(cuid())
+  orgId        String
+  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  documentType String   // document | kra | expense | change_request
+  documentId   String
+  signerId     String
+  signerEmail  String
+  status       String   @default("pending") // pending | signed | declined | expired
+  signedAt     DateTime?
+  signatureHash String?  // hash of signer + timestamp + document content for tamper-evidence
+  ipAddress    String?
+  userAgent    String?
+  expiresAt    DateTime?
+  createdAt    DateTime @default(now())
 }
 

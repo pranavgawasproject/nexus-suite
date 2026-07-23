@@ -40,6 +40,22 @@ const EXPORT_MODULES = [
     color: 'bg-violet-500',
     size: 'JSON · CSV',
   },
+  {
+    key: 'risk',
+    name: 'Risk, Issues & Change Requests',
+    description: 'Risk register, issue log, change requests — full audit trail.',
+    icon: 'ShieldAlert',
+    color: 'bg-rose-500',
+    size: 'JSON · CSV',
+  },
+  {
+    key: 'governance',
+    name: 'Governance Policies & Signatures',
+    description: 'Compliance policies (retention, IP allowlist, SSO, etc.) + e-signature audit trail.',
+    icon: 'Lock',
+    color: 'bg-slate-700',
+    size: 'JSON · CSV',
+  },
 ]
 
 export function ExportView() {
@@ -65,7 +81,7 @@ export function ExportView() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {EXPORT_MODULES.map((m) => {
           const Icon = Icons[m.icon as keyof typeof Icons] as Icons.LucideIcon
           return (

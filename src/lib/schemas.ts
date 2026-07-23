@@ -277,3 +277,132 @@ export const bookingQuerySchema = z.object({
   from: z.string().optional(),
   to: z.string().optional(),
 })
+
+// ============================================================
+// Risk / Issue / ChangeRequest schemas (Module 6)
+// ============================================================
+
+export const riskStatusEnum = z.enum(['open', 'mitigating', 'monitoring', 'closed', 'accepted'])
+export const riskCategoryEnum = z.enum([
+  'operational', 'financial', 'strategic', 'compliance', 'technical', 'external',
+])
+
+export const createRiskSchema = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().max(2000).optional().nullable(),
+  projectId: z.string().optional().nullable(),
+  category: riskCategoryEnum.optional().default('operational'),
+  likelihood: z.number().int().min(1).max(5).optional().default(3),
+  impact: z.number().int().min(1).max(5).optional().default(3),
+  status: riskStatusEnum.optional().default('open'),
+  ownerId: z.string().optional().nullable(),
+  mitigation: z.string().max(2000).optional().nullable(),
+  dueDate: z.string().datetime().optional().nullable(),
+})
+
+export const updateRiskSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1).max(200).optional(),
+  description: z.string().max(2000).optional().nullable(),
+  category: riskCategoryEnum.optional(),
+  likelihood: z.number().int().min(1).max(5).optional(),
+  impact: z.number().int().min(1).max(5).optional(),
+  status: riskStatusEnum.optional(),
+  ownerId: z.string().optional().nullable(),
+  mitigation: z.string().max(2000).optional().nullable(),
+  dueDate: z.string().datetime().optional().nullable(),
+})
+
+export const issueSeverityEnum = z.enum(['low', 'medium', 'high', 'critical'])
+export const issueStatusEnum = z.enum(['open', 'in_progress', 'resolved', 'closed'])
+
+export const createIssueSchema = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().max(2000).optional().nullable(),
+  projectId: z.string().optional().nullable(),
+  severity: issueSeverityEnum.optional().default('medium'),
+  status: issueStatusEnum.optional().default('open'),
+  reporterId: z.string().optional().nullable(),
+  assigneeId: z.string().optional().nullable(),
+  escalationLevel: z.number().int().min(0).max(3).optional().default(0),
+  dueDate: z.string().datetime().optional().nullable(),
+})
+
+export const updateIssueSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1).max(200).optional(),
+  description: z.string().max(2000).optional().nullable(),
+  severity: issueSeverityEnum.optional(),
+  status: issueStatusEnum.optional(),
+  assigneeId: z.string().optional().nullable(),
+  escalationLevel: z.number().int().min(0).max(3).optional(),
+  dueDate: z.string().datetime().optional().nullable(),
+})
+
+export const crTypeEnum = z.enum(['minor', 'major', 'emergency'])
+export const crStatusEnum = z.enum(['pending', 'approved', 'rejected', 'implemented'])
+
+export const createChangeRequestSchema = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().max(2000).optional().nullable(),
+  projectId: z.string().optional().nullable(),
+  type: crTypeEnum.optional().default('minor'),
+  impactAssessment: z.string().max(2000).optional().nullable(),
+  dueDate: z.string().datetime().optional().nullable(),
+})
+
+export const updateChangeRequestSchema = z.object({
+  id: z.string().min(1),
+  status: crStatusEnum,
+  impactAssessment: z.string().max(2000).optional().nullable(),
+  implementationNotes: z.string().max(2000).optional().nullable(),
+})
+
+// ============================================================
+// Policy schemas (Module 10 — Governance)
+// ============================================================
+
+export const policyTypeEnum = z.enum([
+  'retention', 'ip_allowlist', 'sso_enforcement', 'data_residency', 'password',
+])
+
+export const upsertPolicySchema = z.object({
+  type: policyTypeEnum,
+  name: z.string().min(1).max(120),
+  config: z.record(z.string(), z.unknown()),
+  active: z.boolean().optional().default(true),
+})
+
+// ============================================================
+// GST / multi-currency schemas (Module 5 enhancements)
+// ============================================================
+
+export const gstTypeEnum = z.enum(['none', 'intra', 'inter'])
+
+export const createExpenseV2Schema = z.object({
+  projectId: z.string().min(1),
+  title: z.string().min(1).max(200),
+  amount: z.number().min(0),
+  currency: z.string().length(3).optional().default('INR'),
+  category: expenseCategoryEnum.optional().default('other'),
+  incurredDate: z.string().datetime(),
+  vendor: z.string().max(200).optional().nullable(),
+  vendorGstin: z.string().max(15).optional().nullable(),
+  notes: z.string().max(2000).optional().nullable(),
+  // GST fields
+  hsnSac: z.string().max(15).optional().nullable(),
+  gstType: gstTypeEnum.optional().default('none'),
+  cgstRate: z.number().min(0).max(100).optional().default(0),
+  sgstRate: z.number().min(0).max(100).optional().default(0),
+  igstRate: z.number().min(0).max(100).optional().default(0),
+  // Multi-currency fields
+  originalAmount: z.number().min(0).optional().nullable(),
+  originalCurrency: z.string().length(3).optional().nullable(),
+  fxRate: z.number().min(0).optional().nullable(),
+})
+
+export const fxRateSchema = z.object({
+  from: z.string().length(3),
+  to: z.string().length(3),
+  rate: z.number().min(0),
+})

@@ -322,7 +322,7 @@ export async function seedDemoOrg() {
 
   // Mark Phase 2 modules as active in the demo org
   await db.orgModule.updateMany({
-    where: { orgId, moduleKey: { in: ['leave', 'resource', 'kra', 'budget', 'collab'] }, state: 'disabled' },
+    where: { orgId, moduleKey: { in: ['leave', 'resource', 'kra', 'budget', 'collab', 'risk', 'governance'] }, state: 'disabled' },
     data: { state: 'active', enabledAt: new Date() },
   })
 
@@ -362,6 +362,51 @@ export async function seedDemoOrg() {
         },
       })
     }
+  }
+
+  // ----- MODULE 6: Risk & Issue Management — sample data -----
+  const riskCount = await db.risk.count({ where: { orgId } })
+  if (riskCount === 0) {
+    await db.risk.createMany({
+      data: [
+        { orgId, projectId: nexusApp.id, title: 'App Store rejection risk', description: 'Apple may reject the mobile app for not meeting guideline 4.0 (design).', category: 'external', likelihood: 3, impact: 4, severity: 12, status: 'mitigating', ownerId: vikram.id, mitigation: 'Pre-review with App Store Connect TestFlight beta reviewers before submission.', dueDate: day(7) },
+        { orgId, projectId: nexusApp.id, title: 'Auth API single point of failure', description: 'Auth API runs on single instance — no failover.', category: 'technical', likelihood: 2, impact: 5, severity: 10, status: 'open', ownerId: rahul.id, mitigation: 'Add load balancer + second instance before launch.', dueDate: day(14) },
+        { orgId, projectId: brandRefresh.id, title: 'Brand refresh delays Q3 launch', description: 'Logo concepts not finalized; client review pending.', category: 'operational', likelihood: 4, impact: 3, severity: 12, status: 'monitoring', ownerId: sana.id, dueDate: day(5) },
+        { orgId, projectId: clientPortal.id, title: 'Client data exposure if portal misconfigured', description: 'Guest role could leak other clients\' data if scope not enforced per-project.', category: 'compliance', likelihood: 2, impact: 5, severity: 10, status: 'mitigating', ownerId: priya.id, mitigation: 'Add integration test for cross-client data access.', dueDate: day(10) },
+        { orgId, title: 'GST compliance — vendor invoices missing GSTIN', description: 'Several vendors not providing GSTIN on invoices, blocking input tax credit claims.', category: 'financial', likelihood: 4, impact: 3, severity: 12, status: 'open', ownerId: priya.id, mitigation: 'Add GSTIN field to vendor onboarding flow.', dueDate: day(21) },
+        { orgId, title: 'Key person dependency on Vikram', description: 'Vikram is sole owner of mobile app codebase knowledge.', category: 'operational', likelihood: 3, impact: 4, severity: 12, status: 'accepted', ownerId: rahul.id, mitigation: 'Documenting key flows; pairing Anjali on mobile UI work.' },
+      ],
+    })
+
+    await db.issue.createMany({
+      data: [
+        { orgId, projectId: nexusApp.id, title: 'iPad landscape crash', description: 'App crashes immediately when rotated to landscape on iPad.', severity: 'critical', status: 'in_progress', assigneeId: vikram.id, reporterId: priya.id, escalationLevel: 1, dueDate: day(1) },
+        { orgId, projectId: nexusApp.id, title: 'Push notifications not delivered on Android 14', description: 'FCM tokens not registering for some Android 14 devices.', severity: 'high', status: 'open', assigneeId: vikram.id, reporterId: rahul.id, escalationLevel: 0, dueDate: day(5) },
+        { orgId, projectId: brandRefresh.id, title: 'Font licence expired', description: 'Söhne font licence expired; need renewal before site launch.', severity: 'high', status: 'open', assigneeId: sana.id, reporterId: sana.id, escalationLevel: 0, dueDate: day(3) },
+      ],
+    })
+
+    await db.changeRequest.createMany({
+      data: [
+        { orgId, projectId: nexusApp.id, title: 'Switch from REST to tRPC for mobile API', description: 'Reduce client bundle by ~30KB and get end-to-end type safety.', type: 'major', status: 'pending', requestedById: vikram.id, impactAssessment: 'Requires rewriting 12 endpoints. No client-side impact. ~3 dev-days.' },
+        { orgId, projectId: clientPortal.id, title: 'Add SSO for pilot client', description: 'Pilot client (Acme Corp) requires SAML SSO before signing.', type: 'emergency', status: 'approved', requestedById: priya.id, impactAssessment: 'Add SAML provider config; ~2 dev-days. Blocks $40k ARR deal.', decidedAt: day(-2) },
+        { orgId, title: 'Migrate DB to PostgreSQL', description: 'Move from SQLite to Postgres for production scaling.', type: 'major', status: 'implemented', requestedById: rahul.id, implementationNotes: 'Done via Prisma db push + data migration script. Verified on staging.', decidedAt: day(-5) },
+      ],
+    })
+  }
+
+  // ----- MODULE 10: Governance — seed default policies -----
+  const policyCount = await db.policy.count({ where: { orgId } })
+  if (policyCount === 0) {
+    await db.policy.createMany({
+      data: [
+        { orgId, type: 'retention', name: 'Data Retention', config: JSON.stringify({ auditLogDays: 365, notificationDays: 90, autoPurge: true }), active: true, updatedById: priya.id },
+        { orgId, type: 'ip_allowlist', name: 'IP Allowlisting', config: JSON.stringify({ allowlist: ['10.0.0.0/8', '192.168.0.0/16'], enforceForApi: false }), active: false, updatedById: priya.id },
+        { orgId, type: 'password', name: 'Password Policy', config: JSON.stringify({ minLength: 12, requireSpecial: true, requireNumbers: true, rotationDays: 90 }), active: true, updatedById: priya.id },
+        { orgId, type: 'sso_enforcement', name: 'SSO Enforcement', config: JSON.stringify({ provider: '', enforce: false, exemptAdmins: true }), active: false, updatedById: priya.id },
+        { orgId, type: 'data_residency', name: 'Data Residency', config: JSON.stringify({ region: 'in', backupRegion: 'in' }), active: true, updatedById: priya.id },
+      ],
+    })
   }
 
   return org

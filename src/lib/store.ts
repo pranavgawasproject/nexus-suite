@@ -14,6 +14,8 @@ export type ViewKey =
   | 'kra'
   | 'budget'
   | 'docs'
+  | 'risk'
+  | 'governance'
   | 'settings'
   | 'onboarding'
   | 'export'

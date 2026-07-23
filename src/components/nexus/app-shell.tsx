@@ -54,6 +54,14 @@ const ApiKeysView = dynamic(
   () => import('./apikeys-view').then((m) => m.ApiKeysView),
   { ssr: false, loading: () => <ViewLoading /> }
 )
+const RiskView = dynamic(
+  () => import('./risk-view').then((m) => m.RiskView),
+  { ssr: false, loading: () => <ViewLoading /> }
+)
+const GovernanceView = dynamic(
+  () => import('./governance-view').then((m) => m.GovernanceView),
+  { ssr: false, loading: () => <ViewLoading /> }
+)
 const SettingsView = dynamic(
   () => import('./settings-view').then((m) => m.SettingsView),
   { ssr: false, loading: () => <ViewLoading /> }
@@ -140,6 +148,8 @@ export function AppShell() {
             {activeView === 'budget' && <BudgetView />}
             {activeView === 'docs' && <DocsView />}
             {activeView === 'apikeys' && <ApiKeysView />}
+            {activeView === 'risk' && <RiskView />}
+            {activeView === 'governance' && <GovernanceView />}
             {activeView === 'settings' && <SettingsView />}
             {activeView === 'export' && <ExportView />}
             {activeView === 'audit' && <AuditView />}

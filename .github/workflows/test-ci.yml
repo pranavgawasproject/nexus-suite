@@ -1,7 +1,44 @@
-name: test
-on: push
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
 jobs:
-  test:
+  lint-and-test:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: "file:./ci.db"
+      NEXTAUTH_SECRET: "ci-dummy-secret-not-for-prod"
+      NEXTAUTH_URL: "http://localhost:3000"
     steps:
-      - run: echo hi
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Prisma generate
+        run: bun run db:generate
+
+      - name: Prisma db push (SQLite, ephemeral)
+        run: bun run db:push
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Tenant isolation tests
+        run: bun run test:tenant
+
+      - name: Build
+        run: bun run build

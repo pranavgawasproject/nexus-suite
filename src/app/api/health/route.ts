@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/db';
 import { getEnabledModules } from '@/lib/modules';
 
 export async function GET() {
   try {
     // Simple DB check
-    await prisma.$queryRaw`SELECT 1`;
-    const moduleCount = Object.keys(getEnabledModules()).length;
+    await db.$queryRaw`SELECT 1`;
+    const moduleCount = getEnabledModules().length;
 
     return NextResponse.json({
       status: 'ok',

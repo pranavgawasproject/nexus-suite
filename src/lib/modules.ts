@@ -52,7 +52,7 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     key: 'reporting',
     name: 'Reporting & Analytics',
     shortName: 'Reports',
-    description: 'Cross-module dashboards, role-based widgets, scheduled exports. The glue module — felt early.',
+    description: 'Cross-module dashboards, role-based widgets, scheduled exports. The glue module \u2014 felt early.',
     icon: 'BarChart3',
     phase: 1,
     tier: 'growth',
@@ -73,7 +73,7 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     key: 'budget',
     name: 'Budget & Financial Tracking',
     shortName: 'Budget',
-    description: 'Project budgets, expense logging, time→cost, multi-currency, GST handling, POs, invoicing.',
+    description: 'Project budgets, expense logging, time\u2192cost, multi-currency, GST handling, POs, invoicing.',
     icon: 'Wallet',
     phase: 2,
     tier: 'business',
@@ -83,7 +83,7 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     key: 'risk',
     name: 'Risk & Issue Management',
     shortName: 'Risk',
-    description: 'Risk register (likelihood × impact), issue log with escalation, change requests.',
+    description: 'Risk register (likelihood \u00d7 impact), issue log with escalation, change requests.',
     icon: 'ShieldAlert',
     phase: 3,
     tier: 'business',
@@ -135,7 +135,12 @@ export function getModuleDef(key: string): ModuleDef | undefined {
   return MODULE_REGISTRY.find((m) => m.key === key)
 }
 
-// Onboarding wizard — recommended module bundles based on "what are you replacing?"
+// Modules considered "enabled" (active by default) for this instance.
+export function getEnabledModules(): ModuleDef[] {
+  return MODULE_REGISTRY.filter((m) => m.defaultState === 'active')
+}
+
+// Onboarding wizard \u2014 recommended module bundles based on "what are you replacing?"
 export interface OnboardingBundle {
   id: string
   label: string
@@ -176,7 +181,7 @@ export const ONBOARDING_BUNDLES: OnboardingBundle[] = [
   },
   {
     id: 'all-in-one',
-    label: 'Multiple tools (3+) — full cleanup',
+    label: 'Multiple tools (3+) \u2014 full cleanup',
     replaces: 'Tool sprawl',
     modules: ['tasks', 'rooms', 'kra', 'leave', 'reporting'],
   },

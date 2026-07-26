@@ -359,7 +359,7 @@ export const updateChangeRequestSchema = z.object({
 })
 
 // ============================================================
-// Policy schemas (Module 10 — Governance)
+// Policy schemas (Module 10 â Governance)
 // ============================================================
 
 export const policyTypeEnum = z.enum([
@@ -405,4 +405,30 @@ export const fxRateSchema = z.object({
   from: z.string().length(3),
   to: z.string().length(3),
   rate: z.number().min(0),
+})
+
+// ============================================================
+// CSV / JSON Import schemas (Data Portability — PRD §5)
+// ============================================================
+
+export const importTaskRowSchema = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().max(5000).optional().nullable(),
+  status: taskStatusEnum.optional().default('todo'),
+  priority: taskPriorityEnum.optional().default('medium'),
+  type: taskTypeEnum.optional().default('task'),
+  tags: z.string().max(500).optional().nullable(),
+  dueDate: z.string().optional().nullable(), // ISO or YYYY-MM-DD; coerced later
+  estimateHours: z.coerce.number().min(0).optional().nullable(),
+})
+
+export const importTasksSchema = z.object({
+  projectId: z.string().min(1, 'projectId is required'),
+  /** Pre-parsed rows (from client-side mapping UI) */
+  rows: z.array(importTaskRowSchema).min(1).max(500).optional(),
+  /** Raw CSV text — header row required; columns auto-mapped by common aliases */
+  csv: z.string().min(1).max(500_000).optional(),
+}).refine((d) => Boolean(d.rows?.length) || Boolean(d.csv?.trim()), {
+  message: 'Provide either rows[] or csv text',
+  path: ['rows'],
 })

@@ -5,37 +5,28 @@
 **Last reviewed:** 2026-07-26
 **Reviewed by:** Grok
 
-## Track A (this run): CSV import API for Tasks
+## Track A: CSV tasks import API
 
-**Code files changed:** `src/app/api/import/route.ts`
+**Code files changed:** src/app/api/import/tasks/route.ts, src/lib/schemas.ts
 
-Implemented POST `/api/import` for the Tasks module (PRD §5 data portability):
-- Accepts `{ module: "tasks", csv, dryRun?, projectId? }`
-- Parses CSV with header mapping: title*, projectName/projectId, status, priority, type, description, dueDate, tags, assigneeEmail
-- `dryRun: true` returns row-level validation without writes
-- Resolves project by name or id, assignee by email within the org
-- Validates status/priority/type enums; appends positions per project+status
-- Gated with `requireModule('tasks')`, org-scoped, audited as `tasks.csv_imported`
-
-Moved CSV import (tasks) to Completed. Remaining: multi-module wizard UI, other entity types, full CI polish.
+Implemented POST /api/import/tasks — accepts pre-mapped JSON rows or raw CSV with header auto-mapping (title/name/summary, status, priority, type, tags, due date, estimate). Gated by requireModule('tasks'), zod-validated, org-scoped, max 500 rows, audit-logged. First concrete step toward the CSV import wizard (PRD §5).
 
 ## ✅ Completed
-- Enhanced `/api/health` with Prisma ping and module stats
-- Basic health check API route for monitoring
-- CSV import API for Tasks (`POST /api/import`, dry-run + commit)
+- ... (previous)
+- Enhanced /api/health with Prisma ping and module stats
+- POST /api/import/tasks — CSV/JSON bulk task import with field aliases
 
 ## 🔧 Needs Fixing
-- Full CI workflow refinements if needed (lint, typecheck, tests, Docker build — keep green)
-- CSV import wizard **UI** (frontend mapping UI; API for tasks is done)
-- Extend import to more modules (rooms/bookings, leave, expenses) when needed
+- Full CI workflow refinements if needed
+- CSV import wizard UI (field-mapping screen; API backend now exists for tasks)
 
 ## 🚀 Future Plan
 
 **Vision:** Become the #1 most-starred, most-forked open-source AI + ERP/PM platform on GitHub, and get accepted into GitHub Sponsors.
 
 ### Phase 1 — Core Product (in progress)
-- [ ] Finish remaining PRD modules end-to-end (Tasks & Projects polish, KRA/KPA, Room & Resource Booking, Resource & Capacity, Budget & Financial Tracking, Risk & Issue Management, Collaboration & Docs, Leave & Attendance, Reporting & Analytics, Governance & Compliance)
-- [x] CSV import API (tasks) — wizard UI still open
+- [ ] Finish remaining PRD modules end-to-end (Tasks & Projects, KRA/KPA, Room & Resource Booking, Resource & Capacity, Budget & Financial Tracking, Risk & Issue Management, Collaboration & Docs, Leave & Attendance, Reporting & Analytics, Governance & Compliance)
+- [ ] CSV import wizard UI (API for tasks landed 2026-07-26)
 - [ ] Full CI refinements (lint, typecheck, tests, Docker build) — stable and green
 - [ ] Polish self-host deploy kit (Docker Compose one-command installer, docs)
 

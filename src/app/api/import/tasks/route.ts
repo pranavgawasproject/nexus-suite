@@ -1,96 +1,172 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { requireModule, parseBody, audit, withErrors } from '@/lib/api-guard'
-import { z } from 'zod'
-import { taskStatusEnum, taskPriorityEnum, taskTypeEnum } from '@/lib/schemas'
+import { importTasksSchema, taskStatusEnum, taskPriorityEnum, taskTypeEnum } from '@/lib/schemas'
 
-/**
- * CSV import for Tasks (Module 1).
- * Body: { projectId: string, csv: string }
- * CSV headers (case-insensitive): title (required), description, status,
- * priority, type, dueDate (ISO), estimateHours, tags
- * Returns { created, skipped, errors[] }
- */
-const importTasksSchema = z.object({
-  projectId: z.string().min(1, 'projectId is required'),
-  csv: z.string().min(1, 'csv content is required').max(2_000_000),
-})
-
-const rowSchema = z.object({
-  title: z.string().min(1).max(200),
-  description: z.string().max(5000).optional().nullable(),
-  status: taskStatusEnum.optional().default('todo'),
-  priority: taskPriorityEnum.optional().default('medium'),
-  type: taskTypeEnum.optional().default('task'),
-  dueDate: z.string().datetime().optional().nullable(),
-  estimateHours: z.coerce.number().min(0).optional().nullable(),
-  tags: z.string().max(500).optional().nullable(),
-})
-
-function parseCsv(text: string): string[][] {
-  const rows: string[][] = []
-  let current: string[] = []
-  let field = ''
+/** Simple RFC4180-ish CSV line splitter (handles quoted fields with commas). */
+function splitCsvLine(line: string): string[] {
+  const out: string[] = []
+  let cur = ''
   let inQuotes = false
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i]
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i]
     if (inQuotes) {
-      if (c === '"') {
-        if (text[i + 1] === '"') {
-          field += '"'
+      if (ch === '"') {
+        if (line[i + 1] === '"') {
+          cur += '"'
           i++
         } else {
           inQuotes = false
         }
       } else {
-        field += c
+        cur += ch
       }
-    } else if (c === '"') {
+    } else if (ch === '"') {
       inQuotes = true
-    } else if (c === ',') {
-      current.push(field.trim())
-      field = ''
-    } else if (c === '\n' || c === '\r') {
-      if (c === '\r' && text[i + 1] === '\n') i++
-      current.push(field.trim())
-      field = ''
-      if (current.some((cell) => cell.length > 0)) rows.push(current)
-      current = []
+    } else if (ch === ',') {
+      out.push(cur.trim())
+      cur = ''
     } else {
-      field += c
+      cur += ch
     }
   }
-  current.push(field.trim())
-  if (current.some((cell) => cell.length > 0)) rows.push(current)
+  out.push(cur.trim())
+  return out
+}
+
+function parseCsv(csv: string): Record<string, string>[] {
+  const lines = csv
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0)
+  if (lines.length < 2) return []
+  const headers = splitCsvLine(lines[0]).map((h) => h.toLowerCase().replace(/\s+/g, '_'))
+  const rows: Record<string, string>[] = []
+  for (let i = 1; i < lines.length; i++) {
+    const cols = splitCsvLine(lines[i])
+    const row: Record<string, string> = {}
+    headers.forEach((h, idx) => {
+      row[h] = cols[idx] ?? ''
+    })
+    rows.push(row)
+  }
   return rows
 }
 
-function normalizeHeader(h: string): string {
-  return h.trim().toLowerCase().replace(/[\s_-]+/g, '')
-}
-
-const HEADER_MAP: Record<string, string> = {
+/** Map common CSV header aliases → task fields. */
+const ALIASES: Record<string, string> = {
   title: 'title',
   name: 'title',
+  summary: 'title',
   task: 'title',
-  tasktitle: 'title',
+  subject: 'title',
   description: 'description',
   desc: 'description',
+  body: 'description',
+  details: 'description',
   status: 'status',
   state: 'status',
   priority: 'priority',
   type: 'type',
-  duedate: 'dueDate',
-  due: 'dueDate',
-  deadline: 'dueDate',
-  estimatehours: 'estimateHours',
-  estimate: 'estimateHours',
-  hours: 'estimateHours',
+  kind: 'type',
   tags: 'tags',
-  label: 'tags',
   labels: 'tags',
+  label: 'tags',
+  due: 'dueDate',
+  due_date: 'dueDate',
+  duedate: 'dueDate',
+  deadline: 'dueDate',
+  estimate: 'estimateHours',
+  estimate_hours: 'estimateHours',
+  estimatehours: 'estimateHours',
+  hours: 'estimateHours',
+  story_points: 'estimateHours',
 }
 
+function mapRow(raw: Record<string, string>) {
+  const mapped: Record<string, unknown> = {}
+  for (const [key, val] of Object.entries(raw)) {
+    const field = ALIASES[key] || ALIASES[key.replace(/-/g, '_')]
+    if (!field || val === undefined || val === '') continue
+    mapped[field] = val
+  }
+  return mapped
+}
+
+function coerceStatus(v: unknown): string {
+  const s = String(v ?? 'todo').toLowerCase().replace(/\s+/g, '_')
+  const aliases: Record<string, string> = {
+    todo: 'todo',
+    'to_do': 'todo',
+    open: 'todo',
+    backlog: 'todo',
+    in_progress: 'in_progress',
+    'in-progress': 'in_progress',
+    doing: 'in_progress',
+    wip: 'in_progress',
+    in_review: 'in_review',
+    review: 'in_review',
+    done: 'done',
+    closed: 'done',
+    complete: 'done',
+    completed: 'done',
+    blocked: 'blocked',
+  }
+  return aliases[s] || (taskStatusEnum.safeParse(s).success ? s : 'todo')
+}
+
+function coercePriority(v: unknown): string {
+  const s = String(v ?? 'medium').toLowerCase()
+  const aliases: Record<string, string> = {
+    low: 'low',
+    medium: 'medium',
+    med: 'medium',
+    normal: 'medium',
+    high: 'high',
+    urgent: 'urgent',
+    critical: 'urgent',
+    p0: 'urgent',
+    p1: 'high',
+    p2: 'medium',
+    p3: 'low',
+  }
+  return aliases[s] || (taskPriorityEnum.safeParse(s).success ? s : 'medium')
+}
+
+function coerceType(v: unknown): string {
+  const s = String(v ?? 'task').toLowerCase()
+  const aliases: Record<string, string> = {
+    task: 'task',
+    feature: 'feature',
+    story: 'feature',
+    bug: 'bug',
+    defect: 'bug',
+    epic: 'epic',
+  }
+  return aliases[s] || (taskTypeEnum.safeParse(s).success ? s : 'task')
+}
+
+function parseDueDate(v: unknown): Date | null {
+  if (!v) return null
+  const s = String(v).trim()
+  if (!s) return null
+  // YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    const d = new Date(s + 'T00:00:00.000Z')
+    return isNaN(d.getTime()) ? null : d
+  }
+  const d = new Date(s)
+  return isNaN(d.getTime()) ? null : d
+}
+
+/**
+ * POST /api/import/tasks
+ * CSV / JSON bulk import for Tasks module (PRD §5 Data Portability).
+ * Accepts either pre-mapped `rows` or raw `csv` with header auto-mapping.
+ * Max 500 rows per request. Creates tasks under the given projectId.
+ */
 export async function POST(req: NextRequest) {
   return withErrors(async () => {
     const g = await requireModule('tasks')
@@ -99,129 +175,106 @@ export async function POST(req: NextRequest) {
     const { data, error } = await parseBody(req, importTasksSchema)
     if (error) return error
 
-    const orgId = g.ctx!.org.id
-    const userId = g.ctx!.user!.id
-
+    // Verify project belongs to this org
     const project = await db.project.findFirst({
-      where: { id: data.projectId, orgId },
+      where: { id: data.projectId, orgId: g.ctx!.org.id },
     })
     if (!project) {
       return NextResponse.json(
-        { error: 'project_not_found', message: 'Project does not exist or is not in this organization' },
+        { error: 'project_not_found', message: 'Project not found in this organization' },
         { status: 404 }
       )
     }
 
-    const rows = parseCsv(data.csv)
-    if (rows.length < 2) {
-      return NextResponse.json(
-        { error: 'invalid_csv', message: 'CSV must have a header row and at least one data row' },
-        { status: 400 }
-      )
+    let rawRows: Record<string, unknown>[] = []
+    if (data.rows && data.rows.length > 0) {
+      rawRows = data.rows as unknown as Record<string, unknown>[]
+    } else if (data.csv) {
+      const parsed = parseCsv(data.csv)
+      rawRows = parsed.map(mapRow)
     }
 
-    const headers = rows[0].map(normalizeHeader)
-    const mappedKeys = headers.map((h) => HEADER_MAP[h] || null)
-    if (!mappedKeys.includes('title')) {
+    if (rawRows.length === 0) {
+      return NextResponse.json({ error: 'no_rows', message: 'No importable rows found' }, { status: 400 })
+    }
+    if (rawRows.length > 500) {
       return NextResponse.json(
-        {
-          error: 'missing_title_column',
-          message: 'CSV must include a title (or name/task) column',
-          headers: rows[0],
-        },
+        { error: 'too_many_rows', message: 'Maximum 500 rows per import' },
         { status: 400 }
       )
     }
 
     const maxPos = await db.task.aggregate({
-      where: { projectId: data.projectId, status: 'todo' },
+      where: { projectId: data.projectId },
       _max: { position: true },
     })
     let nextPos = (maxPos._max.position ?? -1) + 1
 
-    let created = 0
-    let skipped = 0
-    const errors: Array<{ row: number; message: string }> = []
-    const createdIds: string[] = []
+    const created: { id: string; title: string }[] = []
+    const skipped: { row: number; reason: string }[] = []
 
-    for (let i = 1; i < rows.length; i++) {
-      const cells = rows[i]
-      const raw: Record<string, string> = {}
-      for (let j = 0; j < mappedKeys.length; j++) {
-        const key = mappedKeys[j]
-        if (key && cells[j] !== undefined && cells[j] !== '') {
-          raw[key] = cells[j]
-        }
-      }
-
-      if (!raw.title) {
-        skipped++
-        errors.push({ row: i + 1, message: 'missing title' })
+    for (let i = 0; i < rawRows.length; i++) {
+      const raw = rawRows[i]
+      const title = String(raw.title ?? '').trim()
+      if (!title) {
+        skipped.push({ row: i + 1, reason: 'missing title' })
         continue
       }
 
-      // Coerce empty optional fields
-      const parsed = rowSchema.safeParse({
-        title: raw.title,
-        description: raw.description || null,
-        status: raw.status || undefined,
-        priority: raw.priority || undefined,
-        type: raw.type || undefined,
-        dueDate: raw.dueDate || null,
-        estimateHours: raw.estimateHours !== undefined ? raw.estimateHours : null,
-        tags: raw.tags || null,
-      })
-
-      if (!parsed.success) {
-        skipped++
-        errors.push({
-          row: i + 1,
-          message: parsed.error.issues.map((iss) => `${iss.path.join('.')}: ${iss.message}`).join('; '),
-        })
-        continue
+      const status = coerceStatus(raw.status)
+      const priority = coercePriority(raw.priority)
+      const type = coerceType(raw.type)
+      const description =
+        raw.description !== undefined && raw.description !== null
+          ? String(raw.description).slice(0, 5000)
+          : null
+      const tags =
+        raw.tags !== undefined && raw.tags !== null ? String(raw.tags).slice(0, 500) : null
+      const dueDate = parseDueDate(raw.dueDate)
+      let estimateHours: number | null = null
+      if (raw.estimateHours !== undefined && raw.estimateHours !== null && raw.estimateHours !== '') {
+        const n = Number(raw.estimateHours)
+        if (!isNaN(n) && n >= 0) estimateHours = n
       }
 
-      const row = parsed.data
       try {
         const task = await db.task.create({
           data: {
-            orgId,
+            orgId: g.ctx!.org.id,
             projectId: data.projectId,
-            title: row.title,
-            description: row.description || null,
-            status: row.status,
-            priority: row.priority,
-            type: row.type,
-            reporterId: userId,
-            dueDate: row.dueDate ? new Date(row.dueDate) : null,
-            estimateHours: row.estimateHours ?? null,
-            tags: row.tags || null,
+            title: title.slice(0, 200),
+            description,
+            status,
+            priority,
+            type,
+            tags,
+            dueDate,
+            estimateHours,
+            reporterId: g.ctx!.user!.id,
             position: nextPos++,
           },
+          select: { id: true, title: true },
         })
-        createdIds.push(task.id)
-        created++
-      } catch (err) {
-        skipped++
-        errors.push({
+        created.push(task)
+      } catch (e) {
+        skipped.push({
           row: i + 1,
-          message: err instanceof Error ? err.message : 'create failed',
+          reason: e instanceof Error ? e.message : 'create_failed',
         })
       }
     }
 
-    await audit(orgId, userId, 'tasks.csv_imported', 'Task', null, {
-      projectId: data.projectId,
-      created,
-      skipped,
-      errorCount: errors.length,
+    await audit(g.ctx!.org.id, g.ctx!.user?.id, 'tasks.imported', 'Project', data.projectId, {
+      created: created.length,
+      skipped: skipped.length,
     })
 
     return NextResponse.json({
-      created,
-      skipped,
-      errors: errors.slice(0, 50),
-      createdIds: createdIds.slice(0, 100),
+      ok: true,
+      created: created.length,
+      skipped: skipped.length,
+      tasks: created,
+      errors: skipped,
     })
   })
 }

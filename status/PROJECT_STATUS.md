@@ -5,20 +5,20 @@
 **Last reviewed:** 2026-07-26
 **Reviewed by:** Grok
 
-## Track A (this run): Shared CSV parser + unit tests
+## Track A (this run): CSV import wizard UI for Tasks
 
-**Code files changed:** `src/lib/csv.ts` (new), `tests/csv-import.test.ts` (new), `src/app/api/import/tasks/route.ts` (refactor)
+**Code files changed:** `src/components/nexus/tasks-view.tsx`
 
-Extracted pure CSV parse/header-mapping helpers from the tasks import API so they are reusable and unit-testable without a running server. Added pure tests covering quoted fields, CRLF, aliases, and blank lines. Refactored `/api/import/tasks` to use the shared module.
+Added `ImportCsvDialog` in the Tasks toolbar: choose project, upload `.csv` or paste, POST to `/api/import/tasks`, show created/skipped/row errors, refresh list on success. Completes the UI half of the CSV import foundation (API + shared parser already landed earlier today).
 
 ## ✅ Completed
 - Enhanced /api/health with Prisma ping and module stats
 - CSV import API for tasks (`POST /api/import/tasks`) with zod validation, multi-tenancy, audit log
 - Shared `src/lib/csv.ts` helpers + pure unit tests (`tests/csv-import.test.ts`)
+- **CSV import wizard UI** in Tasks view (`ImportCsvDialog` → `/api/import/tasks`)
 
 ## 🔧 Needs Fixing
 - Full CI workflow refinements if needed
-- CSV import **wizard UI** (dialog in Tasks view that posts to `/api/import/tasks`)
 - Wire `test:csv` script into `package.json` / CI when convenient
 
 ## 🚀 Future Plan
@@ -27,7 +27,7 @@ Extracted pure CSV parse/header-mapping helpers from the tasks import API so the
 
 ### Phase 1 — Core Product (in progress)
 - [ ] Finish remaining PRD modules end-to-end (Tasks & Projects, KRA/KPA, Room & Resource Booking, Resource & Capacity, Budget & Financial Tracking, Risk & Issue Management, Collaboration & Docs, Leave & Attendance, Reporting & Analytics, Governance & Compliance)
-- [ ] CSV import wizard UI
+- [x] CSV import wizard UI
 - [ ] Full CI refinements (lint, typecheck, tests, Docker build) — stable and green
 - [ ] Polish self-host deploy kit (Docker Compose one-command installer, docs)
 

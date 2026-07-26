@@ -5,30 +5,37 @@
 **Last reviewed:** 2026-07-26
 **Reviewed by:** Grok
 
-## Track A: Tasks CSV import API
+## Track A (this run): CSV import API for Tasks
 
-**Code files changed:** src/app/api/import/tasks/route.ts
+**Code files changed:** `src/app/api/import/route.ts`
 
-Implemented bulk CSV import endpoint for the Tasks module (`POST /api/import/tasks`). Accepts `projectId` + raw CSV text, maps flexible column headers (title/name, status, priority, type, dueDate, estimateHours, tags), validates each row with zod, creates tasks scoped to orgId with requireModule('tasks') gate and audit log. Returns created/skipped counts and per-row errors.
+Implemented POST `/api/import` for the Tasks module (PRD §5 data portability):
+- Accepts `{ module: "tasks", csv, dryRun?, projectId? }`
+- Parses CSV with header mapping: title*, projectName/projectId, status, priority, type, description, dueDate, tags, assigneeEmail
+- `dryRun: true` returns row-level validation without writes
+- Resolves project by name or id, assignee by email within the org
+- Validates status/priority/type enums; appends positions per project+status
+- Gated with `requireModule('tasks')`, org-scoped, audited as `tasks.csv_imported`
 
-Moved partial CSV import progress into Completed (API layer). UI wizard still pending.
+Moved CSV import (tasks) to Completed. Remaining: multi-module wizard UI, other entity types, full CI polish.
 
 ## ✅ Completed
-- ... (previous)
-- Enhanced /api/health with Prisma ping and module stats
-- Tasks CSV import API (`POST /api/import/tasks`) — bulk create with validation, multi-tenancy, module gate
+- Enhanced `/api/health` with Prisma ping and module stats
+- Basic health check API route for monitoring
+- CSV import API for Tasks (`POST /api/import`, dry-run + commit)
 
 ## 🔧 Needs Fixing
-- Full CI workflow refinements if needed
-- CSV import **UI wizard** (frontend for the new API — file picker, preview, column mapping)
+- Full CI workflow refinements if needed (lint, typecheck, tests, Docker build — keep green)
+- CSV import wizard **UI** (frontend mapping UI; API for tasks is done)
+- Extend import to more modules (rooms/bookings, leave, expenses) when needed
 
 ## 🚀 Future Plan
 
 **Vision:** Become the #1 most-starred, most-forked open-source AI + ERP/PM platform on GitHub, and get accepted into GitHub Sponsors.
 
 ### Phase 1 — Core Product (in progress)
-- [ ] Finish remaining PRD modules end-to-end (Tasks & Projects, KRA/KPA, Room & Resource Booking, Resource & Capacity, Budget & Financial Tracking, Risk & Issue Management, Collaboration & Docs, Leave & Attendance, Reporting & Analytics, Governance & Compliance)
-- [ ] CSV import wizard (UI) — API done for tasks; extend to other modules + frontend
+- [ ] Finish remaining PRD modules end-to-end (Tasks & Projects polish, KRA/KPA, Room & Resource Booking, Resource & Capacity, Budget & Financial Tracking, Risk & Issue Management, Collaboration & Docs, Leave & Attendance, Reporting & Analytics, Governance & Compliance)
+- [x] CSV import API (tasks) — wizard UI still open
 - [ ] Full CI refinements (lint, typecheck, tests, Docker build) — stable and green
 - [ ] Polish self-host deploy kit (Docker Compose one-command installer, docs)
 

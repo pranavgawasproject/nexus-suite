@@ -5,21 +5,23 @@
 **Last reviewed:** 2026-07-26
 **Reviewed by:** Grok
 
-## Track A (this run): CSV import wizard UI for Tasks
+## Track A (this run): Wire CSV unit tests into package.json + CI
 
-**Code files changed:** `src/components/nexus/tasks-view.tsx`
+**Code files changed:** `package.json`, `.github/workflows/test-ci.yml`
 
-Added `ImportCsvDialog` in the Tasks toolbar: choose project, upload `.csv` or paste, POST to `/api/import/tasks`, show created/skipped/row errors, refresh list on success. Completes the UI half of the CSV import foundation (API + shared parser already landed earlier today).
+- Added `test:csv` script (`bun run tests/csv-import.test.ts`)
+- Extended `test:all` / `test` to include CSV import helpers
+- CI now runs CSV import unit tests after tenant isolation tests
 
 ## ✅ Completed
 - Enhanced /api/health with Prisma ping and module stats
 - CSV import API for tasks (`POST /api/import/tasks`) with zod validation, multi-tenancy, audit log
 - Shared `src/lib/csv.ts` helpers + pure unit tests (`tests/csv-import.test.ts`)
 - **CSV import wizard UI** in Tasks view (`ImportCsvDialog` → `/api/import/tasks`)
+- **Wire `test:csv` into package.json and CI** (test:all + workflow step)
 
 ## 🔧 Needs Fixing
-- Full CI workflow refinements if needed
-- Wire `test:csv` script into `package.json` / CI when convenient
+- Full CI workflow refinements if needed (e.g. module-gate tests still not in CI matrix; optional)
 
 ## 🚀 Future Plan
 
@@ -28,6 +30,7 @@ Added `ImportCsvDialog` in the Tasks toolbar: choose project, upload `.csv` or p
 ### Phase 1 — Core Product (in progress)
 - [ ] Finish remaining PRD modules end-to-end (Tasks & Projects, KRA/KPA, Room & Resource Booking, Resource & Capacity, Budget & Financial Tracking, Risk & Issue Management, Collaboration & Docs, Leave & Attendance, Reporting & Analytics, Governance & Compliance)
 - [x] CSV import wizard UI
+- [x] Wire test:csv into package.json / CI
 - [ ] Full CI refinements (lint, typecheck, tests, Docker build) — stable and green
 - [ ] Polish self-host deploy kit (Docker Compose one-command installer, docs)
 

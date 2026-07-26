@@ -40,6 +40,9 @@ jobs:
       - name: Tenant isolation tests
         run: bun run test:tenant
 
+      - name: CSV import unit tests
+        run: bun run test:csv
+
       - name: Build
         run: bun run build
 

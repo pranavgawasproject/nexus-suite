@@ -5,20 +5,21 @@
 **Last reviewed:** 2026-07-26
 **Reviewed by:** Grok
 
-## Track A: CSV tasks import API
+## Track A (this run): Shared CSV parser + unit tests
 
-**Code files changed:** src/app/api/import/tasks/route.ts, src/lib/schemas.ts
+**Code files changed:** `src/lib/csv.ts` (new), `tests/csv-import.test.ts` (new), `src/app/api/import/tasks/route.ts` (refactor)
 
-Implemented POST /api/import/tasks — accepts pre-mapped JSON rows or raw CSV with header auto-mapping (title/name/summary, status, priority, type, tags, due date, estimate). Gated by requireModule('tasks'), zod-validated, org-scoped, max 500 rows, audit-logged. First concrete step toward the CSV import wizard (PRD §5).
+Extracted pure CSV parse/header-mapping helpers from the tasks import API so they are reusable and unit-testable without a running server. Added pure tests covering quoted fields, CRLF, aliases, and blank lines. Refactored `/api/import/tasks` to use the shared module.
 
 ## ✅ Completed
-- ... (previous)
 - Enhanced /api/health with Prisma ping and module stats
-- POST /api/import/tasks — CSV/JSON bulk task import with field aliases
+- CSV import API for tasks (`POST /api/import/tasks`) with zod validation, multi-tenancy, audit log
+- Shared `src/lib/csv.ts` helpers + pure unit tests (`tests/csv-import.test.ts`)
 
 ## 🔧 Needs Fixing
 - Full CI workflow refinements if needed
-- CSV import wizard UI (field-mapping screen; API backend now exists for tasks)
+- CSV import **wizard UI** (dialog in Tasks view that posts to `/api/import/tasks`)
+- Wire `test:csv` script into `package.json` / CI when convenient
 
 ## 🚀 Future Plan
 
@@ -26,7 +27,7 @@ Implemented POST /api/import/tasks — accepts pre-mapped JSON rows or raw CSV w
 
 ### Phase 1 — Core Product (in progress)
 - [ ] Finish remaining PRD modules end-to-end (Tasks & Projects, KRA/KPA, Room & Resource Booking, Resource & Capacity, Budget & Financial Tracking, Risk & Issue Management, Collaboration & Docs, Leave & Attendance, Reporting & Analytics, Governance & Compliance)
-- [ ] CSV import wizard UI (API for tasks landed 2026-07-26)
+- [ ] CSV import wizard UI
 - [ ] Full CI refinements (lint, typecheck, tests, Docker build) — stable and green
 - [ ] Polish self-host deploy kit (Docker Compose one-command installer, docs)
 

@@ -49,3 +49,16 @@ Last reviewed updated.
 - [ ] Managed hosting offering
 - [ ] Support SLAs
 - [ ] Compliance add-ons
+
+## 🏆 Competitor-Inspired Features (Future)
+
+> Researched from top open-source PM/ERP repos (Plane ⭐ 55k, Huly ⭐ 24.5k, ERPNext ⭐ 37.2k, OpenProject, Leantime, Focalboard) — features worth adding to Nexus Suite to compete at their level.
+
+- [ ] **Sprints / Cycles view** (inspired by Plane) — iteration/sprint management on top of Tasks & Projects, with burndown-style tracking. New `cycles-view.tsx` + `/api/cycles` route.
+- [ ] **Two-way GitHub sync** (inspired by Huly & Plane) — sync Tasks/Issues module with GitHub Issues (bi-directional create/update/comment sync). High priority — fits dev-tool-savvy audience.
+- [ ] **Real-time collaborative Wiki/Docs** (inspired by Plane & Huly) — upgrade `docs-view.tsx` from static docs to real-time collaborative editing (e.g. Yjs/CRDT-based).
+- [ ] **Custom fields / metadata-driven forms per module** (inspired by ERPNext DocTypes) — let self-hosters extend Tasks, KRAs, Risks, etc. with custom fields without forking code. Strong fit for open-core/toggleable-module pitch.
+- [ ] **Gantt / timeline view with dependencies** (inspired by OpenProject) — visual project timeline layered on Budget & Resource views. Strong enterprise-buyer signal.
+- [ ] **Sprint retrospectives** (inspired by Leantime) — lightweight post-sprint/project review tool, pairs naturally with KRA/KPA module.
+
+**Suggested build priority:** Sprints/Cycles + GitHub sync first (most "starrable", aligns with existing dev audience) → then Wiki upgrade → Custom fields → Gantt → Retrospectives.

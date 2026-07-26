@@ -2,26 +2,25 @@
 
 > **This file is the single source of truth for "where things actually stand."**
 
-**Last reviewed:** 2026-07-25
+**Last reviewed:** 2026-07-26
 **Reviewed by:** Grok
 
-## Track A: Enhanced health check route
+## Track A: Tasks CSV import API
 
-**Code files changed:** src/app/api/health/route.ts
+**Code files changed:** src/app/api/import/tasks/route.ts
 
-Updated health endpoint with DB status and enabled modules count for better monitoring.
+Implemented bulk CSV import endpoint for the Tasks module (`POST /api/import/tasks`). Accepts `projectId` + raw CSV text, maps flexible column headers (title/name, status, priority, type, dueDate, estimateHours, tags), validates each row with zod, creates tasks scoped to orgId with requireModule('tasks') gate and audit log. Returns created/skipped counts and per-row errors.
 
-Moved health route to Completed. Full CI is progressing.
+Moved partial CSV import progress into Completed (API layer). UI wizard still pending.
 
 ## ✅ Completed
 - ... (previous)
 - Enhanced /api/health with Prisma ping and module stats
+- Tasks CSV import API (`POST /api/import/tasks`) — bulk create with validation, multi-tenancy, module gate
 
 ## 🔧 Needs Fixing
 - Full CI workflow refinements if needed
-- CSV import wizard
-
-Last reviewed updated.
+- CSV import **UI wizard** (frontend for the new API — file picker, preview, column mapping)
 
 ## 🚀 Future Plan
 
@@ -29,7 +28,7 @@ Last reviewed updated.
 
 ### Phase 1 — Core Product (in progress)
 - [ ] Finish remaining PRD modules end-to-end (Tasks & Projects, KRA/KPA, Room & Resource Booking, Resource & Capacity, Budget & Financial Tracking, Risk & Issue Management, Collaboration & Docs, Leave & Attendance, Reporting & Analytics, Governance & Compliance)
-- [ ] CSV import wizard
+- [ ] CSV import wizard (UI) — API done for tasks; extend to other modules + frontend
 - [ ] Full CI refinements (lint, typecheck, tests, Docker build) — stable and green
 - [ ] Polish self-host deploy kit (Docker Compose one-command installer, docs)
 

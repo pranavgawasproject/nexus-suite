@@ -5,14 +5,14 @@
 **Last reviewed:** 2026-07-27
 **Reviewed by:** Grok
 
-## Track A (this run): Sprint Retrospective schema + API
+## Track A (this run): Sprint Retrospectives UI in Cycles view
 
-**Code files changed:** `prisma/schema.prisma`, `src/lib/schemas.ts`, `src/app/api/retrospectives/route.ts`, `tests/retrospectives.test.ts`, `package.json`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/components/nexus/cycles-view.tsx`, `status/PROJECT_STATUS.md`
 
-- Prisma `Retrospective` model (cycle-linked: wentWell, toImprove, actionItems, status)
-- Zod create/update/query schemas
-- CRUD `/api/retrospectives` with `requireModule('tasks')`, row-level multi-tenancy, audit log
-- Unit tests + `test:retros` wired into `test:all`
+- CyclesView loads `/api/retrospectives` alongside cycles
+- Per-cycle **Retros** button opens list dialog (went well / to improve / action items)
+- Create/edit retrospective form dialog (title, three text areas, draft/published/archived)
+- Retro count badge on cycle cards; delete retrospective with confirm
 
 ## ✅ Completed
 - Enhanced /api/health with Prisma ping and module stats
@@ -26,6 +26,7 @@
 - **Cycles / Sprints UI** (`CyclesView` + nav wiring)
 - **Kanban / Tasks cycle filter + assign cycle on create/edit** (TasksView)
 - **Sprint Retrospective schema + API** (`Retrospective` model, `/api/retrospectives` CRUD, unit tests)
+- **Sprint retrospectives UI** (list/create/edit from Cycles view)
 
 ## 🔧 Needs Fixing
 - (none critical — CI matrix covers tenant, gate, csv, cycles, retros tests)
@@ -46,7 +47,7 @@
 - [x] Cycles / Sprints UI view
 - [x] Kanban cycle filter in Tasks board
 - [x] Sprint retrospectives API (schema + CRUD)
-- [ ] Sprint retrospectives UI (list/create from Cycles view)
+- [x] Sprint retrospectives UI (list/create from Cycles view)
 
 ### Phase 2 — AI Integration
 - [ ] AI-assisted task/project creation and summarization
@@ -70,11 +71,11 @@
 > Researched from top open-source PM/ERP repos (Plane ⭐ 55k, Huly ⭐ 24.5k, ERPNext ⭐ 37.2k, OpenProject, Leantime, Focalboard) — features worth adding to Nexus Suite to compete at their level.
 
 - [x] **Sprints / Cycles API + UI** (inspired by Plane) — schema, `/api/cycles`, CyclesView, and Tasks kanban cycle filter/assign done.
-- [x] **Sprint retrospectives API** (inspired by Leantime) — schema + `/api/retrospectives` CRUD; UI still pending.
+- [x] **Sprint retrospectives API + UI** (inspired by Leantime) — schema + `/api/retrospectives` CRUD + CyclesView list/create/edit.
 - [ ] **Two-way GitHub sync** (inspired by Huly & Plane) — sync Tasks/Issues module with GitHub Issues (bi-directional create/update/comment sync). High priority — fits dev-tool-savvy audience.
 - [ ] **Real-time collaborative Wiki/Docs** (inspired by Plane & Huly) — upgrade `docs-view.tsx` from static docs to real-time collaborative editing (e.g. Yjs/CRDT-based).
 - [ ] **Custom fields / metadata-driven forms per module** (inspired by ERPNext DocTypes) — let self-hosters extend Tasks, KRAs, Risks, etc. with custom fields without forking code. Strong fit for open-core/toggleable-module pitch.
 - [ ] **Gantt / timeline view with dependencies** (inspired by OpenProject) — visual project timeline layered on Budget & Resource views. Strong enterprise-buyer signal.
-- [ ] **Sprint retrospectives UI** — wire CyclesView to create/list retros.
 
-**Suggested build priority:** Retrospectives UI → GitHub sync → Wiki upgrade → Custom fields → Gantt.
+**Suggested build priority:** GitHub sync → Wiki upgrade → Custom fields → Gantt.
+

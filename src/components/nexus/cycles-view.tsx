@@ -47,6 +47,19 @@ interface Cycle {
   _count?: { tasks: number }
 }
 
+interface Retrospective {
+  id: string
+  title: string
+  wentWell?: string | null
+  toImprove?: string | null
+  actionItems?: string | null
+  status: 'draft' | 'published' | 'archived'
+  cycleId: string
+  createdAt?: string
+  cycle?: { id: string; name: string; status: string; projectId?: string | null }
+  author?: { id: string; name: string; email: string } | null
+}
+
 const STATUS_META: Record<
   Cycle['status'],
   { label: string; className: string }
@@ -62,6 +75,24 @@ const STATUS_META: Record<
   completed: {
     label: 'Completed',
     className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200',
+  },
+}
+
+const RETRO_STATUS_META: Record<
+  Retrospective['status'],
+  { label: string; className: string }
+> = {
+  draft: {
+    label: 'Draft',
+    className: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200',
+  },
+  published: {
+    label: 'Published',
+    className: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200',
+  },
+  archived: {
+    label: 'Archived',
+    className: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200',
   },
 }
 
@@ -100,6 +131,20 @@ export function CyclesView() {
     endDate: '',
   })
 
+  const [retros, setRetros] = React.useState<Retrospective[]>([])
+  const [retroListOpen, setRetroListOpen] = React.useState(false)
+  const [retroFormOpen, setRetroFormOpen] = React.useState(false)
+  const [retroCycle, setRetroCycle] = React.useState<Cycle | null>(null)
+  const [editingRetro, setEditingRetro] = React.useState<Retrospective | null>(null)
+  const [retroSaving, setRetroSaving] = React.useState(false)
+  const [retroForm, setRetroForm] = React.useState({
+    title: '',
+    wentWell: '',
+    toImprove: '',
+    actionItems: '',
+    status: 'draft' as Retrospective['status'],
+  })
+
   const load = React.useCallback(async () => {
     setLoading(true)
     try {
@@ -107,12 +152,14 @@ export function CyclesView() {
       if (statusFilter !== 'all') qs.set('status', statusFilter)
       if (projectFilter !== 'all') qs.set('projectId', projectFilter)
       const q = qs.toString() ? `?${qs.toString()}` : ''
-      const [c, p] = await Promise.all([
+      const [c, p, r] = await Promise.all([
         api<{ cycles: Cycle[] }>(`/api/cycles${q}`),
         api<{ projects: Project[] }>('/api/projects'),
+        api<{ retrospectives: Retrospective[] }>('/api/retrospectives'),
       ])
       setCycles(c.cycles)
       setProjects(p.projects ?? [])
+      setRetros(r.retrospectives ?? [])
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Failed to load cycles')
     } finally {
@@ -201,6 +248,94 @@ export function CyclesView() {
     }
   }
 
+  const retrosForCycle = (cycleId: string) =>
+    retros.filter((r) => r.cycleId === cycleId)
+
+  const openRetroList = (cycle: Cycle) => {
+    setRetroCycle(cycle)
+    setRetroListOpen(true)
+  }
+
+  const openRetroCreate = (cycle: Cycle) => {
+    setRetroCycle(cycle)
+    setEditingRetro(null)
+    setRetroForm({
+      title: `${cycle.name} retrospective`,
+      wentWell: '',
+      toImprove: '',
+      actionItems: '',
+      status: 'draft',
+    })
+    setRetroFormOpen(true)
+  }
+
+  const openRetroEdit = (retro: Retrospective) => {
+    const cycle = cycles.find((c) => c.id === retro.cycleId) ?? null
+    setRetroCycle(cycle)
+    setEditingRetro(retro)
+    setRetroForm({
+      title: retro.title,
+      wentWell: retro.wentWell ?? '',
+      toImprove: retro.toImprove ?? '',
+      actionItems: retro.actionItems ?? '',
+      status: retro.status,
+    })
+    setRetroFormOpen(true)
+  }
+
+  const saveRetro = async () => {
+    if (!retroForm.title.trim()) {
+      toast.error('Title is required')
+      return
+    }
+    if (!editingRetro && !retroCycle) {
+      toast.error('Cycle is required')
+      return
+    }
+    setRetroSaving(true)
+    try {
+      const payload = {
+        title: retroForm.title.trim(),
+        wentWell: retroForm.wentWell.trim() || null,
+        toImprove: retroForm.toImprove.trim() || null,
+        actionItems: retroForm.actionItems.trim() || null,
+        status: retroForm.status,
+      }
+      if (editingRetro) {
+        await api('/api/retrospectives', {
+          method: 'PATCH',
+          body: JSON.stringify({ id: editingRetro.id, ...payload }),
+        })
+        toast.success('Retrospective updated')
+      } else {
+        await api('/api/retrospectives', {
+          method: 'POST',
+          body: JSON.stringify({ cycleId: retroCycle!.id, ...payload }),
+        })
+        toast.success('Retrospective created')
+      }
+      setRetroFormOpen(false)
+      load()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Save failed')
+    } finally {
+      setRetroSaving(false)
+    }
+  }
+
+  const removeRetro = async (retro: Retrospective) => {
+    if (!confirm(`Delete retrospective "${retro.title}"?`)) return
+    try {
+      await api(`/api/retrospectives?id=${encodeURIComponent(retro.id)}`, {
+        method: 'DELETE',
+      })
+      toast.success('Retrospective deleted')
+      load()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Delete failed')
+    }
+  }
+
   if (!isModuleOn('tasks')) {
     return (
       <Card>
@@ -224,13 +359,16 @@ export function CyclesView() {
     completed: cycles.filter((c) => c.status === 'completed').length,
   }
 
+  const cycleRetros = retroCycle ? retrosForCycle(retroCycle.id) : []
+
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Cycles / Sprints</h1>
           <p className="text-sm text-muted-foreground">
-            {cycles.length} cycle{cycles.length === 1 ? '' : 's'} · {counts.active} active
+            {cycles.length} cycle{cycles.length === 1 ? '' : 's'} · {counts.active} active ·{' '}
+            {retros.length} retro{retros.length === 1 ? '' : 's'}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -303,6 +441,7 @@ export function CyclesView() {
           {cycles.map((cycle) => {
             const meta = STATUS_META[cycle.status]
             const taskCount = cycle._count?.tasks ?? 0
+            const retroCount = retrosForCycle(cycle.id).length
             return (
               <Card key={cycle.id} className="overflow-hidden">
                 <CardHeader className="pb-2">
@@ -331,6 +470,10 @@ export function CyclesView() {
                       <Icons.ListTodo className="h-3.5 w-3.5" />
                       {taskCount} task{taskCount === 1 ? '' : 's'}
                     </span>
+                    <span className="inline-flex items-center gap-1">
+                      <Icons.MessageSquare className="h-3.5 w-3.5" />
+                      {retroCount} retro{retroCount === 1 ? '' : 's'}
+                    </span>
                     {(cycle.startDate || cycle.endDate) && (
                       <span className="inline-flex items-center gap-1">
                         <Icons.Calendar className="h-3.5 w-3.5" />
@@ -338,9 +481,12 @@ export function CyclesView() {
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 pt-1">
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
                     <Button variant="outline" size="sm" onClick={() => openEdit(cycle)}>
                       <Icons.Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => openRetroList(cycle)}>
+                      <Icons.MessageSquare className="h-3.5 w-3.5 mr-1" /> Retros
                     </Button>
                     <Button
                       variant="ghost"
@@ -472,6 +618,200 @@ export function CyclesView() {
             </Button>
             <Button onClick={save} disabled={saving}>
               {saving ? 'Saving…' : editing ? 'Save changes' : 'Create cycle'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Retrospective list for a cycle */}
+      <Dialog open={retroListOpen} onOpenChange={setRetroListOpen}>
+        <DialogContent className="sm:max-w-xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Retrospectives{retroCycle ? ` · ${retroCycle.name}` : ''}
+            </DialogTitle>
+            <DialogDescription>
+              Capture what went well, what to improve, and action items for this cycle.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            {cycleRetros.length === 0 ? (
+              <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+                No retrospectives yet for this cycle.
+              </div>
+            ) : (
+              cycleRetros.map((retro) => {
+                const rmeta = RETRO_STATUS_META[retro.status]
+                return (
+                  <Card key={retro.id}>
+                    <CardHeader className="pb-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <CardTitle className="text-sm truncate">{retro.title}</CardTitle>
+                          <CardDescription className="text-xs">
+                            {retro.author?.name || 'Unknown'}
+                            {retro.createdAt ? ` · ${formatDate(retro.createdAt)}` : ''}
+                          </CardDescription>
+                        </div>
+                        <Badge className={cn('shrink-0 border-0', rmeta.className)}>
+                          {rmeta.label}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-2 text-sm">
+                      {retro.wentWell && (
+                        <div>
+                          <div className="text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                            Went well
+                          </div>
+                          <p className="text-muted-foreground whitespace-pre-wrap line-clamp-3">
+                            {retro.wentWell}
+                          </p>
+                        </div>
+                      )}
+                      {retro.toImprove && (
+                        <div>
+                          <div className="text-xs font-medium text-amber-700 dark:text-amber-300">
+                            To improve
+                          </div>
+                          <p className="text-muted-foreground whitespace-pre-wrap line-clamp-3">
+                            {retro.toImprove}
+                          </p>
+                        </div>
+                      )}
+                      {retro.actionItems && (
+                        <div>
+                          <div className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                            Action items
+                          </div>
+                          <p className="text-muted-foreground whitespace-pre-wrap line-clamp-3">
+                            {retro.actionItems}
+                          </p>
+                        </div>
+                      )}
+                      <div className="flex gap-2 pt-1">
+                        <Button variant="outline" size="sm" onClick={() => openRetroEdit(retro)}>
+                          <Icons.Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => removeRetro(retro)}
+                        >
+                          <Icons.Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })
+            )}
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setRetroListOpen(false)}>
+              Close
+            </Button>
+            {retroCycle && (
+              <Button
+                onClick={() => {
+                  setRetroListOpen(false)
+                  openRetroCreate(retroCycle)
+                }}
+              >
+                <Icons.Plus className="h-4 w-4 mr-1" /> New retrospective
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Retrospective create/edit form */}
+      <Dialog open={retroFormOpen} onOpenChange={setRetroFormOpen}>
+        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingRetro ? 'Edit retrospective' : 'New retrospective'}
+            </DialogTitle>
+            <DialogDescription>
+              {retroCycle
+                ? `For cycle: ${retroCycle.name}`
+                : "Document the team's sprint retrospective."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-3 py-2">
+            <div className="grid gap-1.5">
+              <Label htmlFor="retro-title">Title</Label>
+              <Input
+                id="retro-title"
+                value={retroForm.title}
+                onChange={(e) => setRetroForm((f) => ({ ...f, title: e.target.value }))}
+                placeholder="Sprint 12 retro"
+              />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="retro-went">Went well</Label>
+              <Textarea
+                id="retro-went"
+                value={retroForm.wentWell}
+                onChange={(e) => setRetroForm((f) => ({ ...f, wentWell: e.target.value }))}
+                rows={3}
+                placeholder="What worked? Celebrate wins…"
+              />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="retro-improve">To improve</Label>
+              <Textarea
+                id="retro-improve"
+                value={retroForm.toImprove}
+                onChange={(e) => setRetroForm((f) => ({ ...f, toImprove: e.target.value }))}
+                rows={3}
+                placeholder="Friction, blockers, process gaps…"
+              />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="retro-actions">Action items</Label>
+              <Textarea
+                id="retro-actions"
+                value={retroForm.actionItems}
+                onChange={(e) => setRetroForm((f) => ({ ...f, actionItems: e.target.value }))}
+                rows={3}
+                placeholder="Concrete next steps with owners…"
+              />
+            </div>
+            <div className="grid gap-1.5">
+              <Label>Status</Label>
+              <Select
+                value={retroForm.status}
+                onValueChange={(v) =>
+                  setRetroForm((f) => ({ ...f, status: v as Retrospective['status'] }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="published">Published</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setRetroFormOpen(false)}
+              disabled={retroSaving}
+            >
+              Cancel
+            </Button>
+            <Button onClick={saveRetro} disabled={retroSaving}>
+              {retroSaving
+                ? 'Saving…'
+                : editingRetro
+                  ? 'Save changes'
+                  : 'Create retrospective'}
             </Button>
           </DialogFooter>
         </DialogContent>

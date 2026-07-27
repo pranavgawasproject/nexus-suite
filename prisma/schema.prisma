@@ -50,6 +50,7 @@ model Organization {
   changeRequests ChangeRequest[]
   policies      Policy[]
   signatures    Signature[]
+  cycles        Cycle[]
 }
 
 model User {
@@ -166,6 +167,7 @@ model Project {
   risks       Risk[]
   issues      Issue[]
   changeRequests ChangeRequest[]
+  cycles      Cycle[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -193,6 +195,29 @@ model Task {
   position    Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+
+// ============================================================
+// MODULE 1 extension: Cycles / Sprints
+// ============================================================
+
+model Cycle {
+  id          String   @id @default(cuid())
+  orgId       String
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  name        String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  status      String   @default("planned") // planned | active | completed
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([orgId])
+  @@index([projectId])
 }
 
 // ============================================================

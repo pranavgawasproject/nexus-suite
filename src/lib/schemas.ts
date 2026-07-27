@@ -54,6 +54,40 @@ export const updateProjectSchema = z.object({
   status: z.enum(['active', 'on_hold', 'completed', 'archived']).optional(),
 })
 
+
+// ============================================================
+// Cycle / Sprint schemas (Module 1 extension)
+// ============================================================
+
+export const cycleStatusEnum = z.enum(['planned', 'active', 'completed'])
+
+export const createCycleSchema = z.object({
+  name: z.string().min(1, 'name is required').max(120),
+  description: z.string().max(2000).optional().nullable(),
+  projectId: z.string().optional().nullable(),
+  startDate: z.string().datetime({ message: 'startDate must be ISO 8601' }),
+  endDate: z.string().datetime({ message: 'endDate must be ISO 8601' }),
+  status: cycleStatusEnum.optional().default('planned'),
+}).refine((d) => new Date(d.endDate) >= new Date(d.startDate), {
+  message: 'endDate must be on or after startDate',
+  path: ['endDate'],
+})
+
+export const updateCycleSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1).max(120).optional(),
+  description: z.string().max(2000).optional().nullable(),
+  projectId: z.string().optional().nullable(),
+  startDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().optional(),
+  status: cycleStatusEnum.optional(),
+})
+
+export const cycleQuerySchema = z.object({
+  projectId: z.string().optional(),
+  status: z.union([cycleStatusEnum, z.literal('all')]).optional().default('all'),
+})
+
 // ============================================================
 // Room / Booking schemas (Module 3)
 // ============================================================

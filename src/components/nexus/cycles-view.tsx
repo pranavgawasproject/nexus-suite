@@ -66,9 +66,9 @@ const STATUS_META: Record<
 }
 
 function toDateInputValue(iso?: string | null) {
-  if (!iso) return ''\
+  if (!iso) return ''
   const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return ''\
+  if (Number.isNaN(d.getTime())) return ''
   return d.toISOString().slice(0, 10)
 }
 
@@ -106,7 +106,7 @@ export function CyclesView() {
       const qs = new URLSearchParams()
       if (statusFilter !== 'all') qs.set('status', statusFilter)
       if (projectFilter !== 'all') qs.set('projectId', projectFilter)
-      const q = qs.toString() ? `?${qs.toString()}` : ''\
+      const q = qs.toString() ? `?${qs.toString()}` : ''
       const [c, p] = await Promise.all([
         api<{ cycles: Cycle[] }>(`/api/cycles${q}`),
         api<{ projects: Project[] }>('/api/projects'),
@@ -355,7 +355,7 @@ export function CyclesView() {
                       size="sm"
                       className="ml-auto"
                       onClick={() => setActiveView('tasks')}
-                      title="Open tasks (filter by cycle via API)"
+                      title="Open tasks"
                     >
                       <Icons.ArrowRight className="h-3.5 w-3.5 mr-1" /> Tasks
                     </Button>

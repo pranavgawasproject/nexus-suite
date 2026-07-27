@@ -5,15 +5,15 @@
 **Last reviewed:** 2026-07-27
 **Reviewed by:** Grok
 
-## Track A (this run): Kanban cycle filter on Tasks board
+## Track A (this run): Kanban cycle filter in Tasks UI
 
 **Code files changed:** `src/components/nexus/tasks-view.tsx`, `status/PROJECT_STATUS.md`
 
-- Added `filterCycle` + cycles list load from `/api/cycles`
-- Cycle select in Tasks header (scoped by project when project filter is set)
-- Passes `cycleId` to `GET /api/tasks` (backend already supported it)
-- Cycle name shown on kanban cards when present
-- Fixed priority filter so it no longer incorrectly sent priority values as `status` query param
+- TasksView loads cycles from `/api/cycles` and filters tasks via `cycleId` query param (API already supported it)
+- Filter bar: Cycle / Sprint select (alongside project, assignee, priority)
+- Create task dialog: optional Cycle / Sprint (project-scoped when applicable)
+- Task detail dialog: assign/clear cycle
+- Kanban cards + list rows show cycle badge when set
 
 ## ✅ Completed
 - Enhanced /api/health with Prisma ping and module stats
@@ -25,7 +25,7 @@
 - **Cycles / Sprints schema + API** (`Cycle` model, `/api/cycles` CRUD under tasks module)
 - **Wire `test:cycles` into CI** + `cycleId` filter on `GET /api/tasks`
 - **Cycles / Sprints UI** (`CyclesView` + nav wiring)
-- **Kanban / list cycle filter** on Tasks board + cycle badge on cards
+- **Kanban / Tasks cycle filter + assign cycle on create/edit** (TasksView)
 
 ## 🔧 Needs Fixing
 - (none critical — CI matrix now covers tenant, gate, csv, and cycles tests)
@@ -44,7 +44,7 @@
 - [x] Cycles / Sprints backend (schema + API)
 - [x] Wire test:cycles into CI + task list filter by cycleId
 - [x] Cycles / Sprints UI view
-- [x] Richer kanban filters by cycle in Tasks board
+- [x] Kanban cycle filter in Tasks board
 
 ### Phase 2 — AI Integration
 - [ ] AI-assisted task/project creation and summarization
@@ -67,7 +67,7 @@
 
 > Researched from top open-source PM/ERP repos (Plane ⭐ 55k, Huly ⭐ 24.5k, ERPNext ⭐ 37.2k, OpenProject, Leantime, Focalboard) — features worth adding to Nexus Suite to compete at their level.
 
-- [x] **Sprints / Cycles API + UI** (inspired by Plane) — schema, `/api/cycles`, CyclesView, and kanban cycle filter done.
+- [x] **Sprints / Cycles API + UI** (inspired by Plane) — schema, `/api/cycles`, CyclesView, and Tasks kanban cycle filter/assign done.
 - [ ] **Two-way GitHub sync** (inspired by Huly & Plane) — sync Tasks/Issues module with GitHub Issues (bi-directional create/update/comment sync). High priority — fits dev-tool-savvy audience.
 - [ ] **Real-time collaborative Wiki/Docs** (inspired by Plane & Huly) — upgrade `docs-view.tsx` from static docs to real-time collaborative editing (e.g. Yjs/CRDT-based).
 - [ ] **Custom fields / metadata-driven forms per module** (inspired by ERPNext DocTypes) — let self-hosters extend Tasks, KRAs, Risks, etc. with custom fields without forking code. Strong fit for open-core/toggleable-module pitch.

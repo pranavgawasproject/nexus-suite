@@ -69,9 +69,8 @@ interface Cycle {
   name: string
   status: string
   projectId?: string | null
-  project?: { id: string; name: string; color: string } | null
-  _count?: { tasks: number }
 }
+
 interface Task {
   id: string
   title: string
@@ -90,7 +89,7 @@ interface Task {
   project?: Project | null
   projectId: string
   cycleId?: string | null
-  cycle?: { id: string; name: string; status: string } | null
+  cycle?: Cycle | null
 }
 
 const COLUMNS = [
@@ -143,7 +142,7 @@ export function TasksView() {
       if (filterCycle !== 'all') params.set('cycleId', filterCycle)
       const cycleParams = new URLSearchParams()
       if (filterProject !== 'all') cycleParams.set('projectId', filterProject)
-      const [t, p, teamRes, cyc] = await Promise.all([
+      const [t, p, teamRes, c] = await Promise.all([
         api<{ tasks: Task[] }>(`/api/tasks?${params.toString()}`),
         api<{ projects: Project[] }>('/api/projects'),
         api<{ team: User[] }>('/api/team'),
@@ -152,7 +151,7 @@ export function TasksView() {
       setTasks(t.tasks)
       setProjects(p.projects)
       setTeam(teamRes.team)
-      setCycles(cyc.cycles)
+      setCycles(c.cycles)
     } catch {
       // ignore
     } finally {
@@ -253,9 +252,10 @@ export function TasksView() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All cycles</SelectItem>
-              {cycles.map((cy) => (
-                <SelectItem key={cy.id} value={cy.id}>
-                  {cy.name}{cy.status === 'active' ? ' · active' : ''}
+              {cycles.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
+                  {c.status === 'active' ? ' · active' : c.status === 'completed' ? ' · done' : ''}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -270,7 +270,9 @@ export function TasksView() {
             onOpenChange={setCreateOpen}
             projects={projects}
             team={team}
+            cycles={cycles}
             defaultProject={filterProject !== 'all' ? filterProject : projects[0]?.id}
+            defaultCycle={filterCycle !== 'all' ? filterCycle : undefined}
             onCreated={() => load()}
           />
         </div>
@@ -324,6 +326,12 @@ export function TasksView() {
                           <Icons.Circle className="h-2 w-2" />
                           {t.project?.name}
                         </span>
+                        {t.cycle && (
+                          <span className="inline-flex items-center gap-1">
+                            <Icons.RefreshCw className="h-3 w-3" />
+                            {t.cycle.name}
+                          </span>
+                        )}
                         {t.dueDate && (
                           <span className={cn(daysUntil(t.dueDate) !== null && daysUntil(t.dueDate)! < 0 && t.status !== 'done' && 'text-rose-600')}>
                             <Icons.Calendar className="mr-0.5 inline h-3 w-3" />
@@ -354,6 +362,7 @@ export function TasksView() {
         onClose={() => setSelectedTask(null)}
         projects={projects}
         team={team}
+        cycles={cycles}
         onUpdated={() => load()}
       />
     </div>
@@ -422,7 +431,7 @@ function DraggableTask({ task, onClick }: { task: Task; onClick: () => void }) {
         onClick()
       }}
     >
-      <div className="flex items-start gap-2">
+      <div className="flex items-start gap-2 flex-wrap">
         <Badge className={cn('text-[9px] capitalize', PRIORITY_BADGE[task.priority])}>
           {task.priority}
         </Badge>
@@ -431,18 +440,18 @@ function DraggableTask({ task, onClick }: { task: Task; onClick: () => void }) {
             {task.type}
           </Badge>
         )}
+        {task.cycle && (
+          <Badge variant="secondary" className="text-[9px]">
+            <Icons.RefreshCw className="mr-0.5 inline h-2.5 w-2.5" />
+            {task.cycle.name}
+          </Badge>
+        )}
       </div>
       <div className="mt-1.5 text-sm font-medium leading-snug">{task.title}</div>
       {task.project && (
         <div className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
           <Icons.Circle className="h-2 w-2" style={{ color: task.project.color }} />
           <span className="truncate">{task.project.name}</span>
-        </div>
-      )}
-      {task.cycle && (
-        <div className="mt-0.5 flex items-center gap-1 text-[10px] text-muted-foreground">
-          <Icons.RefreshCw className="h-2.5 w-2.5" />
-          <span className="truncate">{task.cycle.name}</span>
         </div>
       )}
       <div className="mt-2 flex items-center justify-between">
@@ -469,14 +478,18 @@ function CreateTaskDialog({
   onOpenChange,
   projects,
   team,
+  cycles,
   defaultProject,
+  defaultCycle,
   onCreated,
 }: {
   open: boolean
   onOpenChange: (o: boolean) => void
   projects: Project[]
   team: User[]
+  cycles: Cycle[]
   defaultProject?: string
+  defaultCycle?: string
   onCreated: () => void
 }) {
   const [title, setTitle] = React.useState('')
@@ -485,13 +498,15 @@ function CreateTaskDialog({
   const [assigneeId, setAssigneeId] = React.useState('')
   const [priority, setPriority] = React.useState('medium')
   const [type, setType] = React.useState('task')
+  const [cycleId, setCycleId] = React.useState(defaultCycle || '')
   const [dueDate, setDueDate] = React.useState<Date | undefined>(undefined)
   const [estimateHours, setEstimateHours] = React.useState('')
   const [submitting, setSubmitting] = React.useState(false)
 
   React.useEffect(() => {
     if (open && defaultProject) setProjectId(defaultProject)
-  }, [open, defaultProject])
+    if (open && defaultCycle) setCycleId(defaultCycle)
+  }, [open, defaultProject, defaultCycle])
 
   const submit = async () => {
     if (!title.trim() || !projectId) {
@@ -509,6 +524,7 @@ function CreateTaskDialog({
           assigneeId: assigneeId || null,
           priority,
           type,
+          cycleId: cycleId || null,
           dueDate: dueDate ? dueDate.toISOString() : null,
           estimateHours: estimateHours ? Number(estimateHours) : null,
         }),
@@ -519,6 +535,7 @@ function CreateTaskDialog({
       setAssigneeId('')
       setPriority('medium')
       setType('task')
+      setCycleId('')
       setDueDate(undefined)
       setEstimateHours('')
       onOpenChange(false)
@@ -620,6 +637,23 @@ function CreateTaskDialog({
               </Select>
             </div>
           </div>
+          <div>
+            <Label>Cycle / Sprint</Label>
+            <Select value={cycleId || '__none__'} onValueChange={(v) => setCycleId(v === '__none__' ? '' : v)}>
+              <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">None</SelectItem>
+                {cycles
+                  .filter((c) => !c.projectId || c.projectId === projectId || !projectId)
+                  .map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                      {c.status === 'active' ? ' · active' : ''}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Due date</Label>
@@ -671,12 +705,14 @@ function TaskDetailDialog({
   onClose,
   projects,
   team,
+  cycles,
   onUpdated,
 }: {
   task: Task | null
   onClose: () => void
   projects: Project[]
   team: User[]
+  cycles: Cycle[]
   onUpdated: () => void
 }) {
   const [edit, setEdit] = React.useState<Task | null>(task)
@@ -719,6 +755,12 @@ function TaskDetailDialog({
             <Badge className={cn('text-[10px] capitalize', PRIORITY_BADGE[edit.priority])}>
               {edit.priority}
             </Badge>
+            {edit.cycle && (
+              <Badge variant="secondary" className="text-[10px]">
+                <Icons.RefreshCw className="mr-0.5 inline h-2.5 w-2.5" />
+                {edit.cycle.name}
+              </Badge>
+            )}
             {edit.project && (
               <span className="text-xs text-muted-foreground flex items-center gap-1">
                 <Icons.Circle className="h-2 w-2" style={{ color: edit.project.color }} />
@@ -803,6 +845,21 @@ function TaskDetailDialog({
           </div>
 
           <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs uppercase text-muted-foreground">Cycle / Sprint</Label>
+              <Select
+                value={edit.cycleId || edit.cycle?.id || '__none__'}
+                onValueChange={(v) => save({ cycleId: v === '__none__' ? null : v } as Partial<Task>)}
+              >
+                <SelectTrigger className="mt-1"><SelectValue placeholder="None" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">None</SelectItem>
+                  {cycles.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div>
               <Label className="text-xs uppercase text-muted-foreground">Estimate (hrs)</Label>
               <Input

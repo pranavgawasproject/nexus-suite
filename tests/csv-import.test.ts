@@ -1,5 +1,5 @@
 /**
- * Pure unit tests for CSV import helpers (src/lib/csv.ts).
+ * Pure unit tests for CSV import/export helpers (src/lib/csv.ts).
  * No server or DB required — run with: bun run tests/csv-import.test.ts
  */
 
@@ -8,10 +8,13 @@ import {
   normalizeHeader,
   mapCsvHeaders,
   TASK_CSV_HEADER_MAP,
+  escapeCsvCell,
+  rowsToCsv,
+  TASK_CSV_EXPORT_COLUMNS,
 } from '../src/lib/csv'
 
-const PASS = '\x1b[32m✓ PASS\x1b[0m'
-const FAIL = '\x1b[31m✗ FAIL\x1b[0m'
+const PASS = '\x1b[32m\u2713 PASS\x1b[0m'
+const FAIL = '\x1b[31m\u2717 FAIL\x1b[0m'
 let failures = 0
 let passes = 0
 
@@ -20,7 +23,7 @@ function assert(name: string, condition: boolean, detail?: string) {
     console.log(`${PASS}: ${name}`)
     passes++
   } else {
-    console.log(`${FAIL}: ${name}${detail ? ` — ${detail}` : ''}`)
+    console.log(`${FAIL}: ${name}${detail ? ` \u2014 ${detail}` : ''}`)
     failures++
   }
 }
@@ -29,7 +32,7 @@ function deepEqual(a: unknown, b: unknown): boolean {
   return JSON.stringify(a) === JSON.stringify(b)
 }
 
-console.log('\n=== Nexus Suite — CSV Import Helpers ===\n')
+console.log('\n=== Nexus Suite \u2014 CSV Import/Export Helpers ===\n')
 
 // --- parseCsv ---
 {
@@ -92,8 +95,43 @@ assert('normalizeHeader strips hyphens', normalizeHeader('task-title') === 'task
 
 {
   const mapped = mapCsvHeaders(['foo', 'bar'])
-  assert('no title column → no title in map', !mapped.includes('title'))
+  assert('no title column \u2192 no title in map', !mapped.includes('title'))
 }
+
+// --- escapeCsvCell / rowsToCsv ---
+assert('escapeCsvCell plain', escapeCsvCell('hello') === 'hello')
+assert('escapeCsvCell null', escapeCsvCell(null) === '')
+assert('escapeCsvCell undefined', escapeCsvCell(undefined) === '')
+assert('escapeCsvCell with comma', escapeCsvCell('a,b') === '"a,b"')
+assert('escapeCsvCell with quote', escapeCsvCell('say "hi"') === '"say ""hi"""')
+assert('escapeCsvCell with newline', escapeCsvCell('line1\nline2') === '"line1\nline2"')
+
+{
+  const csv = rowsToCsv([
+    ['title', 'description'],
+    ['Hello', 'world'],
+    ['a,b', 'say "hi"'],
+  ])
+  assert(
+    'rowsToCsv round-trip parseable',
+    deepEqual(parseCsv(csv), [
+      ['title', 'description'],
+      ['Hello', 'world'],
+      ['a,b', 'say "hi"'],
+    ]),
+    csv
+  )
+}
+
+{
+  const empty = rowsToCsv([])
+  assert('rowsToCsv empty', empty === '')
+}
+
+assert(
+  'TASK_CSV_EXPORT_COLUMNS includes title first',
+  TASK_CSV_EXPORT_COLUMNS[0] === 'title' && TASK_CSV_EXPORT_COLUMNS.includes('status')
+)
 
 console.log(`\n=== Summary: ${passes} passed, ${failures} failed ===\n`)
 if (failures > 0) process.exit(1)

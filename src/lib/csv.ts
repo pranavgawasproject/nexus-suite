@@ -1,5 +1,5 @@
 /**
- * Shared CSV helpers for data import (PRD §5 Data Portability).
+ * Shared CSV helpers for data import/export (PRD §5 Data Portability).
  * Pure functions — safe to unit-test without a server or DB.
  */
 
@@ -42,6 +42,25 @@ export function parseCsv(text: string): string[][] {
   return rows
 }
 
+/** Escape a single CSV cell (quotes fields that contain comma, quote, or newline). */
+export function escapeCsvCell(value: unknown): string {
+  if (value === null || value === undefined) return ''
+  const s = String(value)
+  if (/[",\r\n]/.test(s)) {
+    return `"${s.replace(/"/g, '""')}"`
+  }
+  return s
+}
+
+/**
+ * Serialize rows (including header) to a CSV string.
+ * Uses RFC 4180-style quoting via escapeCsvCell.
+ */
+export function rowsToCsv(rows: Array<Array<unknown>>): string {
+  if (!rows.length) return ''
+  return rows.map((row) => row.map(escapeCsvCell).join(',')).join('\n')
+}
+
 /** Normalize a header cell for lookup (lowercase, strip spaces/underscores/hyphens). */
 export function normalizeHeader(h: string): string {
   return h.trim().toLowerCase().replace(/[\s_-]+/g, '')
@@ -69,6 +88,18 @@ export const TASK_CSV_HEADER_MAP: Record<string, string> = {
   label: 'tags',
   labels: 'tags',
 }
+
+/** Canonical export column order for Tasks CSV (matches import-friendly headers). */
+export const TASK_CSV_EXPORT_COLUMNS = [
+  'title',
+  'description',
+  'status',
+  'priority',
+  'type',
+  'dueDate',
+  'estimateHours',
+  'tags',
+] as const
 
 /**
  * Map a header row to canonical field keys using an alias map.

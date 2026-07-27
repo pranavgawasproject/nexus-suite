@@ -20,6 +20,7 @@ export const createTaskSchema = z.object({
   dueDate: z.string().datetime().optional().nullable(),
   estimateHours: z.number().min(0).optional().nullable(),
   tags: z.string().max(500).optional().nullable(),
+  cycleId: z.string().optional().nullable(),
 })
 
 export const updateTaskSchema = z.object({
@@ -35,6 +36,7 @@ export const updateTaskSchema = z.object({
   spentHours: z.number().min(0).optional(),
   tags: z.string().max(500).optional().nullable(),
   position: z.number().int().min(0).optional(),
+  cycleId: z.string().optional().nullable(),
 })
 
 export const createProjectSchema = z.object({
@@ -52,40 +54,6 @@ export const updateProjectSchema = z.object({
   description: z.string().max(2000).optional().nullable(),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
   status: z.enum(['active', 'on_hold', 'completed', 'archived']).optional(),
-})
-
-
-// ============================================================
-// Cycle / Sprint schemas (Module 1 extension)
-// ============================================================
-
-export const cycleStatusEnum = z.enum(['planned', 'active', 'completed'])
-
-export const createCycleSchema = z.object({
-  name: z.string().min(1, 'name is required').max(120),
-  description: z.string().max(2000).optional().nullable(),
-  projectId: z.string().optional().nullable(),
-  startDate: z.string().datetime({ message: 'startDate must be ISO 8601' }),
-  endDate: z.string().datetime({ message: 'endDate must be ISO 8601' }),
-  status: cycleStatusEnum.optional().default('planned'),
-}).refine((d) => new Date(d.endDate) >= new Date(d.startDate), {
-  message: 'endDate must be on or after startDate',
-  path: ['endDate'],
-})
-
-export const updateCycleSchema = z.object({
-  id: z.string().min(1),
-  name: z.string().min(1).max(120).optional(),
-  description: z.string().max(2000).optional().nullable(),
-  projectId: z.string().optional().nullable(),
-  startDate: z.string().datetime().optional(),
-  endDate: z.string().datetime().optional(),
-  status: cycleStatusEnum.optional(),
-})
-
-export const cycleQuerySchema = z.object({
-  projectId: z.string().optional(),
-  status: z.union([cycleStatusEnum, z.literal('all')]).optional().default('all'),
 })
 
 // ============================================================
@@ -465,4 +433,37 @@ export const importTasksSchema = z.object({
 }).refine((d) => Boolean(d.rows?.length) || Boolean(d.csv?.trim()), {
   message: 'Provide either rows[] or csv text',
   path: ['rows'],
+})
+
+
+// ============================================================
+// Cycles / Sprints (Tasks module)
+// ============================================================
+
+export const cycleStatusEnum = z.enum(['planned', 'active', 'completed'])
+
+export const createCycleSchema = z.object({
+  name: z.string().min(1, 'name is required').max(120),
+  description: z.string().max(2000).optional().nullable(),
+  projectId: z.string().optional().nullable(),
+  status: cycleStatusEnum.optional().default('planned'),
+  startDate: z.string().datetime().optional().nullable(),
+  endDate: z.string().datetime().optional().nullable(),
+  goal: z.string().max(500).optional().nullable(),
+})
+
+export const updateCycleSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1).max(120).optional(),
+  description: z.string().max(2000).optional().nullable(),
+  projectId: z.string().optional().nullable(),
+  status: cycleStatusEnum.optional(),
+  startDate: z.string().datetime().optional().nullable(),
+  endDate: z.string().datetime().optional().nullable(),
+  goal: z.string().max(500).optional().nullable(),
+})
+
+export const cycleQuerySchema = z.object({
+  projectId: z.string().optional(),
+  status: z.string().optional(),
 })

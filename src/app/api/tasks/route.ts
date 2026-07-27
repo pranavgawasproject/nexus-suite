@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
         assignee: { select: { id: true, name: true, email: true, avatarUrl: true } },
         reporter: { select: { id: true, name: true, email: true } },
         project: { select: { id: true, name: true, color: true } },
+        cycle: { select: { id: true, name: true, status: true } },
       },
       orderBy: { position: 'asc' },
     })
@@ -56,6 +57,7 @@ export async function POST(req: NextRequest) {
         dueDate: data.dueDate ? new Date(data.dueDate) : null,
         estimateHours: data.estimateHours ?? null,
         tags: data.tags || null,
+        cycleId: data.cycleId || null,
         position: (maxPos._max.position ?? -1) + 1,
       },
       include: {
@@ -102,6 +104,7 @@ export async function PATCH(req: NextRequest) {
         ...(data.spentHours !== undefined && { spentHours: data.spentHours }),
         ...(data.tags !== undefined && { tags: data.tags }),
         ...(data.position !== undefined && { position: data.position }),
+        ...(data.cycleId !== undefined && { cycleId: data.cycleId || null }),
       },
       include: {
         assignee: { select: { id: true, name: true, email: true, avatarUrl: true } },

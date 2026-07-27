@@ -5,14 +5,13 @@
 **Last reviewed:** 2026-07-27
 **Reviewed by:** Grok
 
-## Track A (this run): Cycles / Sprints API + schema
+## Track A (this run): Wire cycle tests into CI + task↔cycle list filter
 
-**Code files changed:** `prisma/schema.prisma`, `src/lib/schemas.ts`, `src/app/api/cycles/route.ts`, `status/PROJECT_STATUS.md`
+**Code files changed:** `.github/workflows/test-ci.yml`, `src/lib/schemas.ts`, `src/app/api/tasks/route.ts`, `status/PROJECT_STATUS.md`
 
-- Added `Cycle` model (org-scoped, optional project link, status planned|active|completed, goal, date range)
-- Optional `cycleId` on `Task` (SetNull on cycle delete)
-- Full CRUD at `GET/POST/PATCH/DELETE /api/cycles` gated by `requireModule('tasks')`, zod validation, audit log, multi-tenancy
-- Zod schemas: `createCycleSchema`, `updateCycleSchema`, `cycleQuerySchema`
+- Added `Cycle schema unit tests` step (`bun run test:cycles`) to CI after CSV tests
+- Extended `taskQuerySchema` with optional `cycleId` and applied filter in `GET /api/tasks`
+- Completes the backend slice for "assign/list tasks by cycle" (assignment already on PATCH/POST)
 
 ## ✅ Completed
 - Enhanced /api/health with Prisma ping and module stats
@@ -22,9 +21,10 @@
 - **Wire `test:csv` into package.json and CI** (test:all + workflow step)
 - **Wire module-gate tests into CI workflow** (test:gate step)
 - **Cycles / Sprints schema + API** (`Cycle` model, `/api/cycles` CRUD under tasks module)
+- **Wire `test:cycles` into CI** + `cycleId` filter on `GET /api/tasks`
 
 ## 🔧 Needs Fixing
-- (none critical — CI matrix now covers tenant, gate, and csv tests)
+- (none critical — CI matrix now covers tenant, gate, csv, and cycles tests)
 - After schema change: run `bun run db:push` (or migrate) locally / in deploy so SQLite picks up Cycle + Task.cycleId
 
 ## 🚀 Future Plan
@@ -38,6 +38,7 @@
 - [x] Full CI refinements (lint, typecheck, tests including module-gate, Docker build) — stable and green
 - [ ] Polish self-host deploy kit (Docker Compose one-command installer, docs)
 - [x] Cycles / Sprints backend (schema + API) — UI view still pending
+- [x] Wire test:cycles into CI + task list filter by cycleId
 
 ### Phase 2 — AI Integration
 - [ ] AI-assisted task/project creation and summarization
@@ -60,11 +61,11 @@
 
 > Researched from top open-source PM/ERP repos (Plane ⭐ 55k, Huly ⭐ 24.5k, ERPNext ⭐ 37.2k, OpenProject, Leantime, Focalboard) — features worth adding to Nexus Suite to compete at their level.
 
-- [x] **Sprints / Cycles API** (inspired by Plane) — schema + `/api/cycles` done; remaining: cycles UI view + assign tasks to cycle in task form/kanban.
+- [x] **Sprints / Cycles API** (inspired by Plane) — schema + `/api/cycles` done; remaining: cycles UI view + richer kanban filters by cycle.
 - [ ] **Two-way GitHub sync** (inspired by Huly & Plane) — sync Tasks/Issues module with GitHub Issues (bi-directional create/update/comment sync). High priority — fits dev-tool-savvy audience.
 - [ ] **Real-time collaborative Wiki/Docs** (inspired by Plane & Huly) — upgrade `docs-view.tsx` from static docs to real-time collaborative editing (e.g. Yjs/CRDT-based).
 - [ ] **Custom fields / metadata-driven forms per module** (inspired by ERPNext DocTypes) — let self-hosters extend Tasks, KRAs, Risks, etc. with custom fields without forking code. Strong fit for open-core/toggleable-module pitch.
 - [ ] **Gantt / timeline view with dependencies** (inspired by OpenProject) — visual project timeline layered on Budget & Resource views. Strong enterprise-buyer signal.
 - [ ] **Sprint retrospectives** (inspired by Leantime) — lightweight post-sprint/project review tool, pairs naturally with KRA/KPA module.
 
-**Suggested build priority:** Cycles UI + task↔cycle assignment → GitHub sync → Wiki upgrade → Custom fields → Gantt → Retrospectives.
+**Suggested build priority:** Cycles UI → GitHub sync → Wiki upgrade → Custom fields → Gantt → Retrospectives.

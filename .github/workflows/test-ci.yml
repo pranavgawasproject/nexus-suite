@@ -46,6 +46,9 @@ jobs:
       - name: CSV import unit tests
         run: bun run test:csv
 
+      - name: Cycle schema unit tests
+        run: bun run test:cycles
+
       - name: Build
         run: bun run build
 

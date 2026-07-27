@@ -272,6 +272,7 @@ export const taskQuerySchema = z.object({
   projectId: z.string().optional(),
   status: z.string().optional(),
   assigneeId: z.string().optional(),
+  cycleId: z.string().optional(), // filter tasks by cycle/sprint; omit or 'all' = no filter
 })
 
 export const bookingQuerySchema = z.object({

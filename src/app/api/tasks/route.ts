@@ -18,6 +18,7 @@ export async function GET(req: NextRequest) {
         ...(data.projectId && data.projectId !== 'all' ? { projectId: data.projectId } : {}),
         ...(data.status && data.status !== 'all' ? { status: data.status } : {}),
         ...(data.assigneeId && data.assigneeId !== 'all' ? { assigneeId: data.assigneeId } : {}),
+        ...(data.cycleId && data.cycleId !== 'all' ? { cycleId: data.cycleId } : {}),
       },
       include: {
         assignee: { select: { id: true, name: true, email: true, avatarUrl: true } },

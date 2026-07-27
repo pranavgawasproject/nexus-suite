@@ -64,6 +64,14 @@ interface Project {
   _count?: { tasks: number }
   createdBy?: { id: string; name: string }
 }
+interface Cycle {
+  id: string
+  name: string
+  status: string
+  projectId?: string | null
+  project?: { id: string; name: string; color: string } | null
+  _count?: { tasks: number }
+}
 interface Task {
   id: string
   title: string
@@ -81,6 +89,8 @@ interface Task {
   reporter?: User | null
   project?: Project | null
   projectId: string
+  cycleId?: string | null
+  cycle?: { id: string; name: string; status: string } | null
 }
 
 const COLUMNS = [
@@ -115,6 +125,8 @@ export function TasksView() {
   const [filterProject, setFilterProject] = React.useState<string>('all')
   const [filterAssignee, setFilterAssignee] = React.useState<string>('all')
   const [filterPriority, setFilterPriority] = React.useState<string>('all')
+  const [filterCycle, setFilterCycle] = React.useState<string>('all')
+  const [cycles, setCycles] = React.useState<Cycle[]>([])
   const [createOpen, setCreateOpen] = React.useState(false)
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null)
 
@@ -128,21 +140,25 @@ export function TasksView() {
       const params = new URLSearchParams()
       if (filterProject !== 'all') params.set('projectId', filterProject)
       if (filterAssignee !== 'all') params.set('assigneeId', filterAssignee)
-      if (filterPriority !== 'all') params.set('status', filterPriority)
-      const [t, p, team] = await Promise.all([
+      if (filterCycle !== 'all') params.set('cycleId', filterCycle)
+      const cycleParams = new URLSearchParams()
+      if (filterProject !== 'all') cycleParams.set('projectId', filterProject)
+      const [t, p, teamRes, cyc] = await Promise.all([
         api<{ tasks: Task[] }>(`/api/tasks?${params.toString()}`),
         api<{ projects: Project[] }>('/api/projects'),
         api<{ team: User[] }>('/api/team'),
+        api<{ cycles: Cycle[] }>(`/api/cycles?${cycleParams.toString()}`),
       ])
       setTasks(t.tasks)
       setProjects(p.projects)
-      setTeam(team.team)
+      setTeam(teamRes.team)
+      setCycles(cyc.cycles)
     } catch {
       // ignore
     } finally {
       setLoading(false)
     }
-  }, [filterProject, filterAssignee, filterPriority])
+  }, [filterProject, filterAssignee, filterCycle])
 
   React.useEffect(() => {
     if (isModuleOn('tasks')) load()
@@ -229,6 +245,19 @@ export function TasksView() {
               <SelectItem value="high">High</SelectItem>
               <SelectItem value="medium">Medium</SelectItem>
               <SelectItem value="low">Low</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={filterCycle} onValueChange={setFilterCycle}>
+            <SelectTrigger className="w-[160px] h-9">
+              <SelectValue placeholder="Cycle" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All cycles</SelectItem>
+              {cycles.map((cy) => (
+                <SelectItem key={cy.id} value={cy.id}>
+                  {cy.name}{cy.status === 'active' ? ' · active' : ''}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Button variant="outline" size="sm" onClick={() => setView(view === 'kanban' ? 'list' : 'kanban')}>
@@ -408,6 +437,12 @@ function DraggableTask({ task, onClick }: { task: Task; onClick: () => void }) {
         <div className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
           <Icons.Circle className="h-2 w-2" style={{ color: task.project.color }} />
           <span className="truncate">{task.project.name}</span>
+        </div>
+      )}
+      {task.cycle && (
+        <div className="mt-0.5 flex items-center gap-1 text-[10px] text-muted-foreground">
+          <Icons.RefreshCw className="h-2.5 w-2.5" />
+          <span className="truncate">{task.cycle.name}</span>
         </div>
       )}
       <div className="mt-2 flex items-center justify-between">

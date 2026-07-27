@@ -51,7 +51,7 @@ model Organization {
   policies      Policy[]
   signatures    Signature[]
   cycles        Cycle[]
-  taskComments  TaskComment[]
+  retrospectives Retrospective[]
 }
 
 model User {
@@ -88,7 +88,7 @@ model User {
   assignedIssues     Issue[]      @relation("IssueAssignee")
   requestedChangeRequests ChangeRequest[] @relation("ChangeRequestRequester")
   updatedPolicies    Policy[]     @relation("PolicyUpdatedBy")
-  taskComments       TaskComment[]
+  authoredRetros     Retrospective[] @relation("RetroAuthor")
 }
 
 model Department {
@@ -197,7 +197,6 @@ model Task {
   position    Int      @default(0)
   cycleId     String?
   cycle       Cycle?   @relation(fields: [cycleId], references: [id], onDelete: SetNull)
-  comments    TaskComment[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -220,28 +219,29 @@ model Cycle {
   endDate     DateTime?
   goal        String?
   tasks       Task[]
+  retrospectives Retrospective[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
-// ============================================================
-// Task Comments (part of Tasks module)
-// ============================================================
+// Sprint retrospectives (lightweight post-cycle review — inspired by Leantime)
+model Retrospective {
+  id           String   @id @default(cuid())
+  orgId        String
+  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  cycleId      String
+  cycle        Cycle    @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  title        String
+  wentWell     String?  // what went well (markdown/plain)
+  toImprove    String?  // what to improve
+  actionItems  String?  // action items (markdown list or plain)
+  status       String   @default("draft") // draft | published | archived
+  authorId     String?
+  author       User?    @relation("RetroAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-model TaskComment {
-  id        String   @id @default(cuid())
-  orgId     String
-  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  taskId    String
-  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  body      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([taskId])
-  @@index([orgId, taskId])
+  @@index([orgId, cycleId])
 }
 
 // ============================================================

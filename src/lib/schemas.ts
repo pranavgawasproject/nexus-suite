@@ -469,15 +469,32 @@ export const cycleQuerySchema = z.object({
   status: z.string().optional(),
 })
 
-// Task Comments (Tasks module)
-export const createTaskCommentSchema = z.object({
-  taskId: z.string().min(1, 'taskId is required'),
-  body: z.string().min(1, 'body is required').max(5000, 'body too long'),
+// ============================================================
+// Retrospectives (Sprint review — tasks module)
+// ============================================================
+
+export const retroStatusEnum = z.enum(['draft', 'published', 'archived'])
+
+export const createRetrospectiveSchema = z.object({
+  cycleId: z.string().min(1, 'cycleId is required'),
+  title: z.string().min(1, 'title is required').max(200),
+  wentWell: z.string().max(10000).optional().nullable(),
+  toImprove: z.string().max(10000).optional().nullable(),
+  actionItems: z.string().max(10000).optional().nullable(),
+  status: retroStatusEnum.optional().default('draft'),
 })
-export const updateTaskCommentSchema = z.object({
+
+export const updateRetrospectiveSchema = z.object({
   id: z.string().min(1),
-  body: z.string().min(1).max(5000),
+  cycleId: z.string().min(1).optional(),
+  title: z.string().min(1).max(200).optional(),
+  wentWell: z.string().max(10000).optional().nullable(),
+  toImprove: z.string().max(10000).optional().nullable(),
+  actionItems: z.string().max(10000).optional().nullable(),
+  status: retroStatusEnum.optional(),
 })
-export const taskCommentQuerySchema = z.object({
-  taskId: z.string().min(1, 'taskId is required'),
+
+export const retrospectiveQuerySchema = z.object({
+  cycleId: z.string().optional(),
+  status: z.string().optional(),
 })

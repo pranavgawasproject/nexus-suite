@@ -5,15 +5,14 @@
 **Last reviewed:** 2026-07-27
 **Reviewed by:** Grok
 
-## Track A (this run): Task comments API + schema
+## Track A (this run): Sprint Retrospective schema + API
 
-**Code files changed:** `prisma/schema.prisma`, `src/lib/schemas.ts`, `src/app/api/comments/route.ts`, `tests/task-comments.test.ts`, `package.json`, `status/PROJECT_STATUS.md`
+**Code files changed:** `prisma/schema.prisma`, `src/lib/schemas.ts`, `src/app/api/retrospectives/route.ts`, `tests/retrospectives.test.ts`, `package.json`, `status/PROJECT_STATUS.md`
 
-- Added `TaskComment` model (org-scoped, task-linked, author, body) with indexes
-- Zod schemas: `createTaskCommentSchema`, `updateTaskCommentSchema`, `taskCommentQuerySchema`
-- Full CRUD API at `/api/comments` gated by `requireModule('tasks')` — list by taskId, create, update (author/admin), delete (author/admin)
-- Audit log + notification to assignee/reporter on new comment
-- Pure unit tests for comment schemas; wired into `test:all` / `test:comments`
+- Prisma `Retrospective` model (cycle-linked: wentWell, toImprove, actionItems, status)
+- Zod create/update/query schemas
+- CRUD `/api/retrospectives` with `requireModule('tasks')`, row-level multi-tenancy, audit log
+- Unit tests + `test:retros` wired into `test:all`
 
 ## ✅ Completed
 - Enhanced /api/health with Prisma ping and module stats
@@ -25,12 +24,12 @@
 - **Cycles / Sprints schema + API** (`Cycle` model, `/api/cycles` CRUD under tasks module)
 - **Wire `test:cycles` into CI** + `cycleId` filter on `GET /api/tasks`
 - **Cycles / Sprints UI** (`CyclesView` + nav wiring)
-- **Kanban / list cycle filter** on Tasks board + cycle badge on cards
-- **Task comments** schema + `/api/comments` CRUD + unit tests
+- **Kanban / Tasks cycle filter + assign cycle on create/edit** (TasksView)
+- **Sprint Retrospective schema + API** (`Retrospective` model, `/api/retrospectives` CRUD, unit tests)
 
 ## 🔧 Needs Fixing
-- (none critical — CI matrix now covers tenant, gate, csv, cycles, and comment schema tests)
-- After schema change: run `bun run db:push` (or migrate) locally / in deploy so SQLite picks up Cycle, Task.cycleId, and TaskComment
+- (none critical — CI matrix covers tenant, gate, csv, cycles, retros tests)
+- After schema change: run `bun run db:push` (or migrate) locally / in deploy so SQLite picks up Cycle, Task.cycleId, and Retrospective
 
 ## 🚀 Future Plan
 
@@ -45,9 +44,9 @@
 - [x] Cycles / Sprints backend (schema + API)
 - [x] Wire test:cycles into CI + task list filter by cycleId
 - [x] Cycles / Sprints UI view
-- [x] Richer kanban filters by cycle in Tasks board
-- [x] Task comments API (schema + CRUD)
-- [ ] Task comments UI in Tasks board / detail panel
+- [x] Kanban cycle filter in Tasks board
+- [x] Sprint retrospectives API (schema + CRUD)
+- [ ] Sprint retrospectives UI (list/create from Cycles view)
 
 ### Phase 2 — AI Integration
 - [ ] AI-assisted task/project creation and summarization
@@ -70,11 +69,12 @@
 
 > Researched from top open-source PM/ERP repos (Plane ⭐ 55k, Huly ⭐ 24.5k, ERPNext ⭐ 37.2k, OpenProject, Leantime, Focalboard) — features worth adding to Nexus Suite to compete at their level.
 
-- [x] **Sprints / Cycles API + UI** (inspired by Plane) — schema, `/api/cycles`, CyclesView, and kanban cycle filter done.
+- [x] **Sprints / Cycles API + UI** (inspired by Plane) — schema, `/api/cycles`, CyclesView, and Tasks kanban cycle filter/assign done.
+- [x] **Sprint retrospectives API** (inspired by Leantime) — schema + `/api/retrospectives` CRUD; UI still pending.
 - [ ] **Two-way GitHub sync** (inspired by Huly & Plane) — sync Tasks/Issues module with GitHub Issues (bi-directional create/update/comment sync). High priority — fits dev-tool-savvy audience.
 - [ ] **Real-time collaborative Wiki/Docs** (inspired by Plane & Huly) — upgrade `docs-view.tsx` from static docs to real-time collaborative editing (e.g. Yjs/CRDT-based).
 - [ ] **Custom fields / metadata-driven forms per module** (inspired by ERPNext DocTypes) — let self-hosters extend Tasks, KRAs, Risks, etc. with custom fields without forking code. Strong fit for open-core/toggleable-module pitch.
 - [ ] **Gantt / timeline view with dependencies** (inspired by OpenProject) — visual project timeline layered on Budget & Resource views. Strong enterprise-buyer signal.
-- [ ] **Sprint retrospectives** (inspired by Leantime) — lightweight post-sprint/project review tool, pairs naturally with KRA/KPA module.
+- [ ] **Sprint retrospectives UI** — wire CyclesView to create/list retros.
 
-**Suggested build priority:** GitHub sync → Wiki upgrade → Custom fields → Gantt → Retrospectives.
+**Suggested build priority:** Retrospectives UI → GitHub sync → Wiki upgrade → Custom fields → Gantt.

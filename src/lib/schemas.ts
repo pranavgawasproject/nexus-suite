@@ -498,3 +498,19 @@ export const retrospectiveQuerySchema = z.object({
   cycleId: z.string().optional(),
   status: z.string().optional(),
 })
+
+// ============================================================
+// Task Comments (Tasks module)
+// ============================================================
+
+export const createTaskCommentSchema = z.object({
+  taskId: z.string().min(1, 'taskId is required'),
+  body: z.string().min(1, 'body is required').max(5000, 'body too long'),
+})
+export const updateTaskCommentSchema = z.object({
+  id: z.string().min(1),
+  body: z.string().min(1).max(5000),
+})
+export const taskCommentQuerySchema = z.object({
+  taskId: z.string().min(1, 'taskId is required'),
+})

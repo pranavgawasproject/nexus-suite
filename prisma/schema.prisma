@@ -52,6 +52,7 @@ model Organization {
   signatures    Signature[]
   cycles        Cycle[]
   retrospectives Retrospective[]
+  taskComments  TaskComment[]
 }
 
 model User {
@@ -89,6 +90,7 @@ model User {
   requestedChangeRequests ChangeRequest[] @relation("ChangeRequestRequester")
   updatedPolicies    Policy[]     @relation("PolicyUpdatedBy")
   authoredRetros     Retrospective[] @relation("RetroAuthor")
+  authoredComments   TaskComment[]   @relation("CommentAuthor")
 }
 
 model Department {
@@ -197,6 +199,7 @@ model Task {
   position    Int      @default(0)
   cycleId     String?
   cycle       Cycle?   @relation(fields: [cycleId], references: [id], onDelete: SetNull)
+  comments    TaskComment[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -242,6 +245,22 @@ model Retrospective {
   updatedAt    DateTime @updatedAt
 
   @@index([orgId, cycleId])
+}
+
+// Task comments (discussion on tasks — tasks module)
+model TaskComment {
+  id        String   @id @default(cuid())
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation("CommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orgId, taskId])
 }
 
 // ============================================================

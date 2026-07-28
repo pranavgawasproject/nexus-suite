@@ -39,6 +39,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       icon: 'Repeat' as keyof typeof Icons,
       moduleKey: 'tasks' as ModuleKey,
     },
+    // Project Milestones UI lives under Tasks module
     {
       view: 'milestones' as ViewKey,
       label: 'Milestones',

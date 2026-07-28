@@ -186,7 +186,7 @@ export function MilestonesView() {
   }
 
   const remove = async (ms: Milestone) => {
-    if (!confirm(`Delete milestone "${ms.name}"? Tasks will be unlinked.`)) return
+    if (!confirm(`Delete milestone "${ms.name}"? Linked tasks will be unlinked.`)) return
     try {
       await api(`/api/milestones?id=${encodeURIComponent(ms.id)}`, { method: 'DELETE' })
       toast.success('Milestone deleted')
@@ -253,7 +253,7 @@ export function MilestonesView() {
               ))}
             </SelectContent>
           </Select>
-          <Button size="sm" onClick={openCreate}>
+          <Button size="sm" onClick={openCreate} disabled={projects.length === 0}>
             <Icons.Plus className="h-4 w-4" />
             <span className="ml-1.5">New milestone</span>
           </Button>
@@ -280,13 +280,26 @@ export function MilestonesView() {
         <div className="py-16 text-center text-sm text-muted-foreground animate-pulse">
           Loading milestones…
         </div>
+      ) : projects.length === 0 ? (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <Icons.FolderOpen className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
+            <h3 className="text-lg font-semibold">No projects yet</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Create a project first, then add milestones to track delivery targets.
+            </p>
+            <Button className="mt-4" onClick={() => setActiveView('tasks')}>
+              <Icons.ArrowRight className="mr-2 h-4 w-4" /> Open Tasks
+            </Button>
+          </CardContent>
+        </Card>
       ) : milestones.length === 0 ? (
         <Card>
           <CardContent className="p-12 text-center">
             <Icons.Flag className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
             <h3 className="text-lg font-semibold">No milestones yet</h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              Create milestones to mark key deliverables on a project timeline.
+              Define project milestones to mark key delivery dates and group related tasks.
             </p>
             <Button className="mt-4" onClick={openCreate}>
               <Icons.Plus className="mr-2 h-4 w-4" /> Create first milestone
@@ -298,10 +311,6 @@ export function MilestonesView() {
           {milestones.map((ms) => {
             const meta = STATUS_META[ms.status]
             const taskCount = ms._count?.tasks ?? 0
-            const overdue =
-              ms.dueDate &&
-              ms.status !== 'completed' &&
-              new Date(ms.dueDate).getTime() < Date.now()
             return (
               <Card key={ms.id} className="overflow-hidden">
                 <CardHeader className="pb-2">
@@ -331,24 +340,32 @@ export function MilestonesView() {
                       {taskCount} task{taskCount === 1 ? '' : 's'}
                     </span>
                     {ms.dueDate && (
-                      <span
-                        className={cn(
-                          'inline-flex items-center gap-1',
-                          overdue && 'text-destructive font-medium'
-                        )}
-                      >
+                      <span className="inline-flex items-center gap-1">
                         <Icons.Calendar className="h-3.5 w-3.5" />
-                        {formatDate(ms.dueDate)}
-                        {overdue ? ' · overdue' : ''}
+                        Due {formatDate(ms.dueDate)}
                       </span>
                     )}
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Button size="sm" variant="outline" onClick={() => openEdit(ms)}>
-                      <Icons.Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    <Button variant="outline" size="sm" onClick={() => openEdit(ms)}>
+                      <Icons.Pencil className="h-3.5 w-3.5 mr-1" /> Edit
                     </Button>
-                    <Button size="sm" variant="ghost" className="text-destructive" onClick={() => remove(ms)}>
-                      <Icons.Trash2 className="mr-1.5 h-3.5 w-3.5" /> Delete
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => remove(ms)}
+                    >
+                      <Icons.Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="ml-auto"
+                      onClick={() => setActiveView('tasks')}
+                      title="Open tasks"
+                    >
+                      <Icons.ArrowRight className="h-3.5 w-3.5 mr-1" /> Tasks
                     </Button>
                   </div>
                 </CardContent>
@@ -359,55 +376,35 @@ export function MilestonesView() {
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{editing ? 'Edit milestone' : 'New milestone'}</DialogTitle>
             <DialogDescription>
-              {editing
-                ? 'Update milestone details and status.'
-                : 'Mark a key deliverable on a project timeline.'}
+              Mark a key delivery target for a project. Tasks can be linked via milestoneId.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-2">
-            <div className="grid gap-2">
+          <div className="grid gap-3 py-2">
+            <div className="grid gap-1.5">
               <Label htmlFor="ms-name">Name</Label>
               <Input
                 id="ms-name"
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                placeholder="e.g. Beta launch"
+                placeholder="Beta launch · Client sign-off"
               />
             </div>
-            <div className="grid gap-2">
+            <div className="grid gap-1.5">
               <Label htmlFor="ms-desc">Description</Label>
               <Textarea
                 id="ms-desc"
                 value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                rows={3}
                 placeholder="Optional details"
+                rows={3}
               />
             </div>
-            <div className="grid gap-2">
-              <Label>Project</Label>
-              <Select
-                value={form.projectId}
-                onValueChange={(v) => setForm((f) => ({ ...f, projectId: v }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select project" />
-                </SelectTrigger>
-                <SelectContent>
-                  {projects.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-2">
+              <div className="grid gap-1.5">
                 <Label>Status</Label>
                 <Select
                   value={form.status}
@@ -425,7 +422,7 @@ export function MilestonesView() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid gap-2">
+              <div className="grid gap-1.5">
                 <Label htmlFor="ms-due">Due date</Label>
                 <Input
                   id="ms-due"
@@ -435,13 +432,31 @@ export function MilestonesView() {
                 />
               </div>
             </div>
+            <div className="grid gap-1.5">
+              <Label>Project</Label>
+              <Select
+                value={form.projectId || undefined}
+                onValueChange={(v) => setForm((f) => ({ ...f, projectId: v }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select project" />
+                </SelectTrigger>
+                <SelectContent>
+                  {projects.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>
               Cancel
             </Button>
             <Button onClick={save} disabled={saving}>
-              {saving ? 'Saving…' : editing ? 'Save changes' : 'Create'}
+              {saving ? 'Saving…' : editing ? 'Save changes' : 'Create milestone'}
             </Button>
           </DialogFooter>
         </DialogContent>

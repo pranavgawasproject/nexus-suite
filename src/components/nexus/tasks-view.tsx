@@ -71,6 +71,14 @@ interface Cycle {
   projectId?: string | null
 }
 
+interface Milestone {
+  id: string
+  name: string
+  status: string
+  projectId: string
+  dueDate?: string | null
+}
+
 interface Task {
   id: string
   title: string
@@ -90,6 +98,8 @@ interface Task {
   projectId: string
   cycleId?: string | null
   cycle?: Cycle | null
+  milestoneId?: string | null
+  milestone?: Milestone | null
 }
 
 const COLUMNS = [
@@ -126,6 +136,7 @@ export function TasksView() {
   const [filterPriority, setFilterPriority] = React.useState<string>('all')
   const [filterCycle, setFilterCycle] = React.useState<string>('all')
   const [cycles, setCycles] = React.useState<Cycle[]>([])
+  const [milestones, setMilestones] = React.useState<Milestone[]>([])
   const [createOpen, setCreateOpen] = React.useState(false)
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null)
 
@@ -142,16 +153,18 @@ export function TasksView() {
       if (filterCycle !== 'all') params.set('cycleId', filterCycle)
       const cycleParams = new URLSearchParams()
       if (filterProject !== 'all') cycleParams.set('projectId', filterProject)
-      const [t, p, teamRes, c] = await Promise.all([
+      const [t, p, teamRes, c, m] = await Promise.all([
         api<{ tasks: Task[] }>(`/api/tasks?${params.toString()}`),
         api<{ projects: Project[] }>('/api/projects'),
         api<{ team: User[] }>('/api/team'),
         api<{ cycles: Cycle[] }>(`/api/cycles?${cycleParams.toString()}`),
+        api<{ milestones: Milestone[] }>(`/api/milestones?${cycleParams.toString()}`),
       ])
       setTasks(t.tasks)
       setProjects(p.projects)
       setTeam(teamRes.team)
       setCycles(c.cycles)
+      setMilestones(m.milestones)
     } catch {
       // ignore
     } finally {
@@ -271,6 +284,7 @@ export function TasksView() {
             projects={projects}
             team={team}
             cycles={cycles}
+            milestones={milestones}
             defaultProject={filterProject !== 'all' ? filterProject : projects[0]?.id}
             defaultCycle={filterCycle !== 'all' ? filterCycle : undefined}
             onCreated={() => load()}
@@ -332,6 +346,12 @@ export function TasksView() {
                             {t.cycle.name}
                           </span>
                         )}
+                        {t.milestone && (
+                          <span className="inline-flex items-center gap-1">
+                            <Icons.Flag className="h-3 w-3" />
+                            {t.milestone.name}
+                          </span>
+                        )}
                         {t.dueDate && (
                           <span className={cn(daysUntil(t.dueDate) !== null && daysUntil(t.dueDate)! < 0 && t.status !== 'done' && 'text-rose-600')}>
                             <Icons.Calendar className="mr-0.5 inline h-3 w-3" />
@@ -363,6 +383,7 @@ export function TasksView() {
         projects={projects}
         team={team}
         cycles={cycles}
+        milestones={milestones}
         onUpdated={() => load()}
       />
     </div>
@@ -446,6 +467,12 @@ function DraggableTask({ task, onClick }: { task: Task; onClick: () => void }) {
             {task.cycle.name}
           </Badge>
         )}
+        {task.milestone && (
+          <Badge variant="outline" className="text-[9px]">
+            <Icons.Flag className="mr-0.5 inline h-2.5 w-2.5" />
+            {task.milestone.name}
+          </Badge>
+        )}
       </div>
       <div className="mt-1.5 text-sm font-medium leading-snug">{task.title}</div>
       {task.project && (
@@ -479,6 +506,7 @@ function CreateTaskDialog({
   projects,
   team,
   cycles,
+  milestones,
   defaultProject,
   defaultCycle,
   onCreated,
@@ -488,6 +516,7 @@ function CreateTaskDialog({
   projects: Project[]
   team: User[]
   cycles: Cycle[]
+  milestones: Milestone[]
   defaultProject?: string
   defaultCycle?: string
   onCreated: () => void
@@ -499,6 +528,7 @@ function CreateTaskDialog({
   const [priority, setPriority] = React.useState('medium')
   const [type, setType] = React.useState('task')
   const [cycleId, setCycleId] = React.useState(defaultCycle || '')
+  const [milestoneId, setMilestoneId] = React.useState('')
   const [dueDate, setDueDate] = React.useState<Date | undefined>(undefined)
   const [estimateHours, setEstimateHours] = React.useState('')
   const [submitting, setSubmitting] = React.useState(false)
@@ -525,6 +555,7 @@ function CreateTaskDialog({
           priority,
           type,
           cycleId: cycleId || null,
+          milestoneId: milestoneId || null,
           dueDate: dueDate ? dueDate.toISOString() : null,
           estimateHours: estimateHours ? Number(estimateHours) : null,
         }),
@@ -536,6 +567,7 @@ function CreateTaskDialog({
       setPriority('medium')
       setType('task')
       setCycleId('')
+      setMilestoneId('')
       setDueDate(undefined)
       setEstimateHours('')
       onOpenChange(false)
@@ -637,22 +669,41 @@ function CreateTaskDialog({
               </Select>
             </div>
           </div>
-          <div>
-            <Label>Cycle / Sprint</Label>
-            <Select value={cycleId || '__none__'} onValueChange={(v) => setCycleId(v === '__none__' ? '' : v)}>
-              <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none__">None</SelectItem>
-                {cycles
-                  .filter((c) => !c.projectId || c.projectId === projectId || !projectId)
-                  .map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.name}
-                      {c.status === 'active' ? ' · active' : ''}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Cycle / Sprint</Label>
+              <Select value={cycleId || '__none__'} onValueChange={(v) => setCycleId(v === '__none__' ? '' : v)}>
+                <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">None</SelectItem>
+                  {cycles
+                    .filter((c) => !c.projectId || c.projectId === projectId || !projectId)
+                    .map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name}
+                        {c.status === 'active' ? ' · active' : ''}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Milestone</Label>
+              <Select value={milestoneId || '__none__'} onValueChange={(v) => setMilestoneId(v === '__none__' ? '' : v)}>
+                <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">None</SelectItem>
+                  {milestones
+                    .filter((m) => m.projectId === projectId || !projectId)
+                    .map((m) => (
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.name}
+                        {m.status === 'completed' ? ' · done' : m.status === 'missed' ? ' · missed' : ''}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -914,6 +965,7 @@ function TaskDetailDialog({
   projects,
   team,
   cycles,
+  milestones,
   onUpdated,
 }: {
   task: Task | null
@@ -921,6 +973,7 @@ function TaskDetailDialog({
   projects: Project[]
   team: User[]
   cycles: Cycle[]
+  milestones: Milestone[]
   onUpdated: () => void
 }) {
   const [edit, setEdit] = React.useState<Task | null>(task)
@@ -967,6 +1020,12 @@ function TaskDetailDialog({
               <Badge variant="secondary" className="text-[10px]">
                 <Icons.RefreshCw className="mr-0.5 inline h-2.5 w-2.5" />
                 {edit.cycle.name}
+              </Badge>
+            )}
+            {edit.milestone && (
+              <Badge variant="outline" className="text-[10px]">
+                <Icons.Flag className="mr-0.5 inline h-2.5 w-2.5" />
+                {edit.milestone.name}
               </Badge>
             )}
             {edit.project && (
@@ -1065,6 +1124,23 @@ function TaskDetailDialog({
                   {cycles.map((c) => (
                     <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs uppercase text-muted-foreground">Milestone</Label>
+              <Select
+                value={edit.milestoneId || edit.milestone?.id || '__none__'}
+                onValueChange={(v) => save({ milestoneId: v === '__none__' ? null : v } as Partial<Task>)}
+              >
+                <SelectTrigger className="mt-1"><SelectValue placeholder="None" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">None</SelectItem>
+                  {milestones
+                    .filter((m) => m.projectId === (edit.projectId || edit.project?.id))
+                    .map((m) => (
+                      <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>

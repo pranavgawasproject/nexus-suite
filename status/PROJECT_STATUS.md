@@ -5,13 +5,14 @@
 **Last reviewed:** 2026-07-28
 **Reviewed by:** Grok
 
-## Track A (this run): Project Milestones UI
+## Track A (this run): Assign milestone on task create/edit
 
-**Code files changed:** `src/components/nexus/milestones-view.tsx`, `src/components/nexus/app-shell.tsx`, `src/components/nexus/sidebar.tsx`, `src/lib/store.ts`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/components/nexus/tasks-view.tsx`, `status/PROJECT_STATUS.md`
 
-- New `MilestonesView`: list/filter by project & status, create/edit dialog, delete, overdue highlight, task counts
-- Wired under Tasks module: sidebar nav item (Flag icon), app-shell lazy route, `ViewKey` + `milestones`
-- Uses existing `/api/milestones` CRUD (requireModule tasks, multi-tenant)
+- CreateTaskDialog: Milestone select (filtered by project), posts `milestoneId`
+- TaskDetailDialog: Milestone select + header badge; PATCH updates `milestoneId`
+- Kanban cards + list rows show milestone badge when linked
+- Loads `/api/milestones` alongside tasks/cycles (reuses project filter)
 
 ## ✅ Completed
 - Enhanced /api/health with Prisma ping and module stats
@@ -28,7 +29,8 @@
 - **Sprint retrospectives UI** (list/create/edit from Cycles view)
 - **Task comments** — schema model + `/api/comments` CRUD + TaskDetailDialog UI + unit tests + CI
 - **Project Milestones** — schema + `/api/milestones` CRUD + unit tests + CI
-- **Project Milestones UI** — list/create/edit/delete + nav under Tasks module
+- **Project Milestones UI** — list/create/edit/delete + nav wiring
+- **Assign milestone on task create/edit** (TasksView selector + badges)
 
 ## 🔧 Needs Fixing
 - (none critical — CI matrix covers tenant, gate, csv, cycles, retros, comments, milestones tests)
@@ -52,8 +54,8 @@
 - [x] Sprint retrospectives UI (list/create from Cycles view)
 - [x] Task comments (schema + API + UI + CI)
 - [x] Project Milestones (schema + API + tests + CI)
-- [x] Milestones UI (list/create/edit)
-- [ ] Assign milestone on task create/edit (TasksView)
+- [x] Milestones UI (list/create/edit + nav)
+- [x] Assign milestone on task create/edit (TasksView selector)
 
 ### Phase 2 — AI Integration
 - [ ] AI-assisted task/project creation and summarization
@@ -78,10 +80,11 @@
 
 - [x] **Sprints / Cycles API + UI** (inspired by Plane) — schema, `/api/cycles`, CyclesView, and Tasks kanban cycle filter/assign done.
 - [x] **Sprint retrospectives API + UI** (inspired by Leantime) — schema + `/api/retrospectives` CRUD + CyclesView list/create/edit.
-- [x] **Project Milestones API + UI** (inspired by Plane / OpenProject) — schema + `/api/milestones` CRUD + MilestonesView; task assignment UI still pending.
+- [x] **Project Milestones API + UI** (inspired by Plane / OpenProject) — schema + `/api/milestones` CRUD + MilestonesView; task-form assign done.
 - [ ] **Two-way GitHub sync** (inspired by Huly & Plane) — sync Tasks/Issues module with GitHub Issues (bi-directional create/update/comment sync). High priority — fits dev-tool-savvy audience.
 - [ ] **Real-time collaborative Wiki/Docs** (inspired by Plane & Huly) — upgrade `docs-view.tsx` from static docs to real-time collaborative editing (e.g. Yjs/CRDT-based).
 - [ ] **Custom fields / metadata-driven forms per module** (inspired by ERPNext DocTypes) — let self-hosters extend Tasks, KRAs, Risks, etc. with custom fields without forking code. Strong fit for open-core/toggleable-module pitch.
 - [ ] **Gantt / timeline view with dependencies** (inspired by OpenProject) — visual project timeline layered on Budget & Resource views. Strong enterprise-buyer signal.
 
-**Suggested build priority:** Task↔milestone assign → GitHub sync → Wiki upgrade → Custom fields → Gantt.
+**Suggested build priority:** GitHub sync → Wiki upgrade → Custom fields → Gantt.
+

@@ -49,6 +49,12 @@ jobs:
       - name: Cycle schema unit tests
         run: bun run test:cycles
 
+      - name: Retrospective schema unit tests
+        run: bun run test:retros
+
+      - name: Task comment schema unit tests
+        run: bun run test:comments
+
       - name: Build
         run: bun run build
 

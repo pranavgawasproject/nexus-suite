@@ -5,13 +5,13 @@
 **Last reviewed:** 2026-07-28
 **Reviewed by:** Grok
 
-## Track A (this run): Restore TaskComment zod schemas (regression fix)
+## Track A (this run): Complete TaskComment Prisma model + wire comment/retro tests in CI
 
-**Code files changed:** `src/lib/schemas.ts`, `status/PROJECT_STATUS.md`
+**Code files changed:** `prisma/schema.prisma`, `.github/workflows/test-ci.yml`, `status/PROJECT_STATUS.md`
 
-- Restored `createTaskCommentSchema`, `updateTaskCommentSchema`, and `taskCommentQuerySchema` that were accidentally overwritten when Retrospective schemas were added (commit c1cefbb).
-- Without these exports, `/api/comments` and `tests/task-comments.test.ts` fail to typecheck/import.
-- Task comments UI in `TasksView` / `TaskDetailDialog` was already wired; backend + schema alignment restored.
+- Added missing `TaskComment` model (API + UI + zod schemas already existed from prior commits)
+- Relations: Task.comments, User.authoredComments, Organization.taskComments
+- CI: run `test:retros` and `test:comments` after cycles tests
 
 ## ✅ Completed
 - Enhanced /api/health with Prisma ping and module stats
@@ -26,12 +26,11 @@
 - **Kanban / Tasks cycle filter + assign cycle on create/edit** (TasksView)
 - **Sprint Retrospective schema + API** (`Retrospective` model, `/api/retrospectives` CRUD, unit tests)
 - **Sprint retrospectives UI** (list/create/edit from Cycles view)
-- **Task comments API + UI** (`TaskComment` model, `/api/comments` CRUD, TaskComments in task detail)
-- **Restore TaskComment zod schemas** (regression after retros schema merge)
+- **Task comments** — schema model + `/api/comments` CRUD + TaskDetailDialog UI + unit tests + CI
 
 ## 🔧 Needs Fixing
 - (none critical — CI matrix covers tenant, gate, csv, cycles, retros, comments tests)
-- After schema change: run `bun run db:push` (or migrate) locally / in deploy so SQLite picks up Cycle, Task.cycleId, Retrospective, and TaskComment
+- After schema change: run `bun run db:push` (or migrate) locally / in deploy so SQLite picks up TaskComment (and prior Cycle / Retrospective if not yet applied)
 
 ## 🚀 Future Plan
 
@@ -49,7 +48,7 @@
 - [x] Kanban cycle filter in Tasks board
 - [x] Sprint retrospectives API (schema + CRUD)
 - [x] Sprint retrospectives UI (list/create from Cycles view)
-- [x] Task comments API + UI + zod schemas restored
+- [x] Task comments (schema + API + UI + CI)
 
 ### Phase 2 — AI Integration
 - [ ] AI-assisted task/project creation and summarization
@@ -74,10 +73,10 @@
 
 - [x] **Sprints / Cycles API + UI** (inspired by Plane) — schema, `/api/cycles`, CyclesView, and Tasks kanban cycle filter/assign done.
 - [x] **Sprint retrospectives API + UI** (inspired by Leantime) — schema + `/api/retrospectives` CRUD + CyclesView list/create/edit.
-- [x] **Task comments API + UI** — `/api/comments` + TaskComments in task detail dialog.
 - [ ] **Two-way GitHub sync** (inspired by Huly & Plane) — sync Tasks/Issues module with GitHub Issues (bi-directional create/update/comment sync). High priority — fits dev-tool-savvy audience.
 - [ ] **Real-time collaborative Wiki/Docs** (inspired by Plane & Huly) — upgrade `docs-view.tsx` from static docs to real-time collaborative editing (e.g. Yjs/CRDT-based).
 - [ ] **Custom fields / metadata-driven forms per module** (inspired by ERPNext DocTypes) — let self-hosters extend Tasks, KRAs, Risks, etc. with custom fields without forking code. Strong fit for open-core/toggleable-module pitch.
 - [ ] **Gantt / timeline view with dependencies** (inspired by OpenProject) — visual project timeline layered on Budget & Resource views. Strong enterprise-buyer signal.
 
 **Suggested build priority:** GitHub sync → Wiki upgrade → Custom fields → Gantt.
+

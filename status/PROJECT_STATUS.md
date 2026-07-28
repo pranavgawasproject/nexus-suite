@@ -5,13 +5,14 @@
 **Last reviewed:** 2026-07-28
 **Reviewed by:** Grok
 
-## Track A (this run): Complete TaskComment Prisma model + wire comment/retro tests in CI
+## Track A (this run): Project Milestones (schema + API + tests + CI)
 
-**Code files changed:** `prisma/schema.prisma`, `.github/workflows/test-ci.yml`, `status/PROJECT_STATUS.md`
+**Code files changed:** `prisma/schema.prisma`, `src/lib/schemas.ts`, `src/app/api/milestones/route.ts`, `tests/milestones.test.ts`, `package.json`, `.github/workflows/test-ci.yml`, `status/PROJECT_STATUS.md`
 
-- Added missing `TaskComment` model (API + UI + zod schemas already existed from prior commits)
-- Relations: Task.comments, User.authoredComments, Organization.taskComments
-- CI: run `test:retros` and `test:comments` after cycles tests
+- Added `Milestone` Prisma model (org + project scoped, optional task linkage via `milestoneId`)
+- Zod schemas: create / update / query
+- `/api/milestones` CRUD gated by `requireModule('tasks')`, multi-tenant, audit log
+- Unit tests + wired into `test:all` and CI
 
 ## ✅ Completed
 - Enhanced /api/health with Prisma ping and module stats
@@ -27,10 +28,11 @@
 - **Sprint Retrospective schema + API** (`Retrospective` model, `/api/retrospectives` CRUD, unit tests)
 - **Sprint retrospectives UI** (list/create/edit from Cycles view)
 - **Task comments** — schema model + `/api/comments` CRUD + TaskDetailDialog UI + unit tests + CI
+- **Project Milestones** — schema + `/api/milestones` CRUD + unit tests + CI
 
 ## 🔧 Needs Fixing
-- (none critical — CI matrix covers tenant, gate, csv, cycles, retros, comments tests)
-- After schema change: run `bun run db:push` (or migrate) locally / in deploy so SQLite picks up TaskComment (and prior Cycle / Retrospective if not yet applied)
+- (none critical — CI matrix covers tenant, gate, csv, cycles, retros, comments, milestones tests)
+- After schema change: run `bun run db:push` (or migrate) locally / in deploy so SQLite picks up Milestone (and prior TaskComment / Cycle / Retrospective if not yet applied)
 
 ## 🚀 Future Plan
 
@@ -49,6 +51,8 @@
 - [x] Sprint retrospectives API (schema + CRUD)
 - [x] Sprint retrospectives UI (list/create from Cycles view)
 - [x] Task comments (schema + API + UI + CI)
+- [x] Project Milestones (schema + API + tests + CI)
+- [ ] Milestones UI (list/create/edit + assign on tasks)
 
 ### Phase 2 — AI Integration
 - [ ] AI-assisted task/project creation and summarization
@@ -73,10 +77,11 @@
 
 - [x] **Sprints / Cycles API + UI** (inspired by Plane) — schema, `/api/cycles`, CyclesView, and Tasks kanban cycle filter/assign done.
 - [x] **Sprint retrospectives API + UI** (inspired by Leantime) — schema + `/api/retrospectives` CRUD + CyclesView list/create/edit.
+- [x] **Project Milestones API** (inspired by Plane / OpenProject) — schema + `/api/milestones` CRUD; UI still pending.
 - [ ] **Two-way GitHub sync** (inspired by Huly & Plane) — sync Tasks/Issues module with GitHub Issues (bi-directional create/update/comment sync). High priority — fits dev-tool-savvy audience.
 - [ ] **Real-time collaborative Wiki/Docs** (inspired by Plane & Huly) — upgrade `docs-view.tsx` from static docs to real-time collaborative editing (e.g. Yjs/CRDT-based).
 - [ ] **Custom fields / metadata-driven forms per module** (inspired by ERPNext DocTypes) — let self-hosters extend Tasks, KRAs, Risks, etc. with custom fields without forking code. Strong fit for open-core/toggleable-module pitch.
 - [ ] **Gantt / timeline view with dependencies** (inspired by OpenProject) — visual project timeline layered on Budget & Resource views. Strong enterprise-buyer signal.
 
-**Suggested build priority:** GitHub sync → Wiki upgrade → Custom fields → Gantt.
+**Suggested build priority:** Milestones UI → GitHub sync → Wiki upgrade → Custom fields → Gantt.
 

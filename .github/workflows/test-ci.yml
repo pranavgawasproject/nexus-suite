@@ -55,6 +55,9 @@ jobs:
       - name: Task comment schema unit tests
         run: bun run test:comments
 
+      - name: Milestone schema unit tests
+        run: bun run test:milestones
+
       - name: Build
         run: bun run build
 

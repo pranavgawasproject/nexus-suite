@@ -53,6 +53,7 @@ model Organization {
   cycles        Cycle[]
   retrospectives Retrospective[]
   taskComments  TaskComment[]
+  milestones    Milestone[]
 }
 
 model User {
@@ -172,6 +173,7 @@ model Project {
   issues      Issue[]
   changeRequests ChangeRequest[]
   cycles      Cycle[]
+  milestones  Milestone[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -199,6 +201,8 @@ model Task {
   position    Int      @default(0)
   cycleId     String?
   cycle       Cycle?   @relation(fields: [cycleId], references: [id], onDelete: SetNull)
+  milestoneId String?
+  milestone   Milestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
   comments    TaskComment[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -261,6 +265,27 @@ model TaskComment {
   updatedAt DateTime @updatedAt
 
   @@index([orgId, taskId])
+}
+
+// ============================================================
+// Project Milestones (Tasks module — inspired by Plane / OpenProject)
+// ============================================================
+
+model Milestone {
+  id          String   @id @default(cuid())
+  orgId       String
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  status      String   @default("planned") // planned | active | completed
+  dueDate     DateTime?
+  tasks       Task[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([orgId, projectId])
 }
 
 // ============================================================

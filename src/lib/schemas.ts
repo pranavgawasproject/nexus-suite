@@ -517,3 +517,31 @@ export const updateTaskCommentSchema = z.object({
 export const taskCommentQuerySchema = z.object({
   taskId: z.string().min(1, 'taskId is required'),
 })
+
+// ============================================================
+// Project Milestones (Tasks module)
+// ============================================================
+
+export const milestoneStatusEnum = z.enum(['planned', 'active', 'completed'])
+
+export const createMilestoneSchema = z.object({
+  projectId: z.string().min(1, 'projectId is required'),
+  name: z.string().min(1, 'name is required').max(200),
+  description: z.string().max(5000).optional().nullable(),
+  status: milestoneStatusEnum.optional().default('planned'),
+  dueDate: z.string().datetime().optional().nullable(),
+})
+
+export const updateMilestoneSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1).max(200).optional(),
+  description: z.string().max(5000).optional().nullable(),
+  status: milestoneStatusEnum.optional(),
+  dueDate: z.string().datetime().optional().nullable(),
+  projectId: z.string().min(1).optional(),
+})
+
+export const milestoneQuerySchema = z.object({
+  projectId: z.string().optional(),
+  status: z.string().optional(),
+})

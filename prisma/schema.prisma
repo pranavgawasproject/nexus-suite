@@ -54,6 +54,7 @@ model Organization {
   retrospectives Retrospective[]
   taskComments  TaskComment[]
   milestones    Milestone[]
+  taskDependencies TaskDependency[]
 }
 
 model User {
@@ -204,6 +205,8 @@ model Task {
   milestoneId String?
   milestone   Milestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
   comments    TaskComment[]
+  dependenciesFrom TaskDependency[] @relation("DepFrom")
+  dependenciesTo   TaskDependency[] @relation("DepTo")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -677,3 +680,19 @@ model Signature {
   createdAt    DateTime @default(now())
 }
 
+// Task dependencies (blocks / relates — foundation for Gantt)
+model TaskDependency {
+  id           String   @id @default(cuid())
+  orgId        String
+  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  fromTaskId   String
+  fromTask     Task     @relation("DepFrom", fields: [fromTaskId], references: [id], onDelete: Cascade)
+  toTaskId     String
+  toTask       Task     @relation("DepTo", fields: [toTaskId], references: [id], onDelete: Cascade)
+  type         String   @default("blocks") // blocks | relates
+  createdAt    DateTime @default(now())
+
+  @@unique([orgId, fromTaskId, toTaskId, type])
+  @@index([orgId, fromTaskId])
+  @@index([orgId, toTaskId])
+}

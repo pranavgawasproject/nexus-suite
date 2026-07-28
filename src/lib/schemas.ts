@@ -548,3 +548,22 @@ export const milestoneQuerySchema = z.object({
   projectId: z.string().optional(),
   status: z.string().optional(),
 })
+
+// ============================================================
+// Task Dependencies (Tasks module — foundation for Gantt)
+// ============================================================
+
+export const dependencyTypeEnum = z.enum(['blocks', 'relates'])
+
+export const createTaskDependencySchema = z.object({
+  fromTaskId: z.string().min(1, 'fromTaskId is required'),
+  toTaskId: z.string().min(1, 'toTaskId is required'),
+  type: dependencyTypeEnum.optional().default('blocks'),
+}).refine((d) => d.fromTaskId !== d.toTaskId, {
+  message: 'fromTaskId and toTaskId must differ',
+  path: ['toTaskId'],
+})
+
+export const taskDependencyQuerySchema = z.object({
+  taskId: z.string().min(1, 'taskId is required'),
+})

@@ -58,6 +58,9 @@ jobs:
       - name: Milestone schema unit tests
         run: bun run test:milestones
 
+      - name: Task dependency schema unit tests
+        run: bun run test:dependencies
+
       - name: Build
         run: bun run build
 

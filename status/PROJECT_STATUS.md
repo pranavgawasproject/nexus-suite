@@ -5,14 +5,14 @@
 **Last reviewed:** 2026-07-28
 **Reviewed by:** Grok
 
-## Track A (this run): Assign milestone on task create/edit
+## Track A (this run): Task dependencies schema + API + tests
 
-**Code files changed:** `src/components/nexus/tasks-view.tsx`, `status/PROJECT_STATUS.md`
+**Code files changed:** `prisma/schema.prisma`, `src/lib/schemas.ts`, `src/app/api/dependencies/route.ts`, `tests/task-dependencies.test.ts`, `package.json`, `.github/workflows/test-ci.yml`, `status/PROJECT_STATUS.md`
 
-- CreateTaskDialog: Milestone select (filtered by project), posts `milestoneId`
-- TaskDetailDialog: Milestone select + header badge; PATCH updates `milestoneId`
-- Kanban cards + list rows show milestone badge when linked
-- Loads `/api/milestones` alongside tasks/cycles (reuses project filter)
+- `TaskDependency` model (fromTask → toTask, type blocks|relates), org-scoped, unique per edge+type
+- Zod: `createTaskDependencySchema`, `taskDependencyQuerySchema` (rejects self-deps)
+- `/api/dependencies` GET (by taskId), POST, DELETE under tasks module + audit
+- Unit tests + `test:dependencies` in package.json and CI
 
 ## ✅ Completed
 - Enhanced /api/health with Prisma ping and module stats
@@ -31,10 +31,11 @@
 - **Project Milestones** — schema + `/api/milestones` CRUD + unit tests + CI
 - **Project Milestones UI** — list/create/edit/delete + nav wiring
 - **Assign milestone on task create/edit** (TasksView selector + badges)
+- **Task dependencies** — schema + `/api/dependencies` CRUD + unit tests + CI (Gantt foundation)
 
 ## 🔧 Needs Fixing
-- (none critical — CI matrix covers tenant, gate, csv, cycles, retros, comments, milestones tests)
-- After schema change: run `bun run db:push` (or migrate) locally / in deploy so SQLite picks up Milestone (and prior TaskComment / Cycle / Retrospective if not yet applied)
+- (none critical — CI matrix covers tenant, gate, csv, cycles, retros, comments, milestones, dependencies tests)
+- After schema change: run `bun run db:push` (or migrate) locally / in deploy so SQLite picks up TaskDependency (and prior Milestone / TaskComment / Cycle / Retrospective if not yet applied)
 
 ## 🚀 Future Plan
 
@@ -56,6 +57,8 @@
 - [x] Project Milestones (schema + API + tests + CI)
 - [x] Milestones UI (list/create/edit + nav)
 - [x] Assign milestone on task create/edit (TasksView selector)
+- [x] Task dependencies (schema + API + tests + CI)
+- [ ] Task dependencies UI in task detail dialog
 
 ### Phase 2 — AI Integration
 - [ ] AI-assisted task/project creation and summarization
@@ -81,10 +84,11 @@
 - [x] **Sprints / Cycles API + UI** (inspired by Plane) — schema, `/api/cycles`, CyclesView, and Tasks kanban cycle filter/assign done.
 - [x] **Sprint retrospectives API + UI** (inspired by Leantime) — schema + `/api/retrospectives` CRUD + CyclesView list/create/edit.
 - [x] **Project Milestones API + UI** (inspired by Plane / OpenProject) — schema + `/api/milestones` CRUD + MilestonesView; task-form assign done.
+- [x] **Task dependencies API** (Gantt foundation, inspired by OpenProject) — `TaskDependency` + `/api/dependencies`.
 - [ ] **Two-way GitHub sync** (inspired by Huly & Plane) — sync Tasks/Issues module with GitHub Issues (bi-directional create/update/comment sync). High priority — fits dev-tool-savvy audience.
 - [ ] **Real-time collaborative Wiki/Docs** (inspired by Plane & Huly) — upgrade `docs-view.tsx` from static docs to real-time collaborative editing (e.g. Yjs/CRDT-based).
 - [ ] **Custom fields / metadata-driven forms per module** (inspired by ERPNext DocTypes) — let self-hosters extend Tasks, KRAs, Risks, etc. with custom fields without forking code. Strong fit for open-core/toggleable-module pitch.
-- [ ] **Gantt / timeline view with dependencies** (inspired by OpenProject) — visual project timeline layered on Budget & Resource views. Strong enterprise-buyer signal.
+- [ ] **Gantt / timeline view with dependencies** (inspired by OpenProject) — visual project timeline layered on Budget & Resource views. Strong enterprise-buyer signal. Depends on task dependencies API (done).
 
-**Suggested build priority:** GitHub sync → Wiki upgrade → Custom fields → Gantt.
+**Suggested build priority:** Dependencies UI → Gantt → GitHub sync → Wiki upgrade → Custom fields.
 

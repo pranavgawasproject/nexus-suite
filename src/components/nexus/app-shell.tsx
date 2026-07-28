@@ -86,7 +86,7 @@ const MilestonesView = dynamic(
 function ViewLoading() {
   return (
     <div className="flex items-center justify-center py-20 text-sm text-muted-foreground">
-      <div className="animate-pulse">Loadingâ¦</div>
+      <div className="animate-pulse">Loading…</div>
     </div>
   )
 }
@@ -103,7 +103,7 @@ export function AppShell() {
   if (!booted) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading workspaceâ¦</div>
+        <div className="animate-pulse text-muted-foreground">Loading workspace…</div>
       </div>
     )
   }
@@ -168,9 +168,9 @@ export function AppShell() {
         <footer className="mt-auto border-t bg-muted/30 px-4 lg:px-6 py-3">
           <div className="mx-auto max-w-7xl flex items-center justify-between text-xs text-muted-foreground">
             <span>
-              Nexus Suite v0.1 Â· {modules.filter((m) => m.state === 'active' || m.state === 'trial').length}/{modules.length} modules active
+              Nexus Suite v0.1 · {modules.filter((m) => m.state === 'active' || m.state === 'trial').length}/{modules.length} modules active
             </span>
-            <span>Phase 1 MVP Â· {new Date().getFullYear()}</span>
+            <span>Phase 1 MVP · {new Date().getFullYear()}</span>
           </div>
         </footer>
       </div>

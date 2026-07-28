@@ -225,7 +225,8 @@ export function MilestonesView() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Project Milestones</h1>
           <p className="text-sm text-muted-foreground">
-            {milestones.length} milestone{milestones.length === 1 ? '' : 's'} · {counts.active} active
+            {milestones.length} milestone{milestones.length === 1 ? '' : 's'} · {counts.active} active ·{' '}
+            {counts.completed} completed
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -253,119 +254,91 @@ export function MilestonesView() {
               ))}
             </SelectContent>
           </Select>
-          <Button size="sm" onClick={openCreate} disabled={projects.length === 0}>
-            <Icons.Plus className="h-4 w-4" />
-            <span className="ml-1.5">New milestone</span>
+          <Button onClick={openCreate} className="h-9">
+            <Icons.Plus className="mr-2 h-4 w-4" /> New milestone
           </Button>
         </div>
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-3">
-        {(['planned', 'active', 'completed'] as const).map((s) => (
-          <Card key={s} className="border-dashed">
-            <CardContent className="p-4 flex items-center justify-between">
-              <div>
-                <div className="text-xs uppercase tracking-wider text-muted-foreground">
-                  {STATUS_META[s].label}
-                </div>
-                <div className="text-2xl font-semibold">{counts[s]}</div>
-              </div>
-              <Badge className={cn('border-0', STATUS_META[s].className)}>{s}</Badge>
-            </CardContent>
-          </Card>
-        ))}
       </div>
 
       {loading ? (
         <div className="py-16 text-center text-sm text-muted-foreground animate-pulse">
           Loading milestones…
         </div>
-      ) : projects.length === 0 ? (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <Icons.FolderOpen className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
-            <h3 className="text-lg font-semibold">No projects yet</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Create a project first, then add milestones to track delivery targets.
-            </p>
-            <Button className="mt-4" onClick={() => setActiveView('tasks')}>
-              <Icons.ArrowRight className="mr-2 h-4 w-4" /> Open Tasks
-            </Button>
-          </CardContent>
-        </Card>
       ) : milestones.length === 0 ? (
         <Card>
           <CardContent className="p-12 text-center">
             <Icons.Flag className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
             <h3 className="text-lg font-semibold">No milestones yet</h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              Define project milestones to mark key delivery dates and group related tasks.
+              Create milestones to track key project delivery targets.
             </p>
             <Button className="mt-4" onClick={openCreate}>
-              <Icons.Plus className="mr-2 h-4 w-4" /> Create first milestone
+              <Icons.Plus className="mr-2 h-4 w-4" /> Create milestone
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {milestones.map((ms) => {
             const meta = STATUS_META[ms.status]
-            const taskCount = ms._count?.tasks ?? 0
+            const overdue =
+              ms.dueDate &&
+              ms.status !== 'completed' &&
+              new Date(ms.dueDate).getTime() < Date.now()
             return (
-              <Card key={ms.id} className="overflow-hidden">
+              <Card key={ms.id} className="group relative overflow-hidden">
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <CardTitle className="text-base truncate">{ms.name}</CardTitle>
-                      <CardDescription className="mt-1 line-clamp-2">
-                        {ms.description || 'No description'}
+                      <CardDescription className="mt-0.5 flex items-center gap-1.5">
+                        {ms.project?.color && (
+                          <span
+                            className="inline-block h-2 w-2 rounded-full shrink-0"
+                            style={{ backgroundColor: ms.project.color }}
+                          />
+                        )}
+                        <span className="truncate">{ms.project?.name ?? 'Project'}</span>
                       </CardDescription>
                     </div>
-                    <Badge className={cn('shrink-0 border-0', meta.className)}>{meta.label}</Badge>
+                    <Badge className={cn('shrink-0', meta.className)} variant="secondary">
+                      {meta.label}
+                    </Badge>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                    {ms.project && (
-                      <span className="inline-flex items-center gap-1">
-                        <span
-                          className="h-2 w-2 rounded-full"
-                          style={{ backgroundColor: ms.project.color || '#64748b' }}
-                        />
-                        {ms.project.name}
+                <CardContent className="space-y-3 pt-0">
+                  {ms.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-2">{ms.description}</p>
+                  )}
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                    {ms.dueDate && (
+                      <span
+                        className={cn(
+                          'inline-flex items-center gap-1',
+                          overdue && 'text-red-600 dark:text-red-400 font-medium'
+                        )}
+                      >
+                        <Icons.Calendar className="h-3.5 w-3.5" />
+                        {formatDate(ms.dueDate)}
+                        {overdue && ' · overdue'}
                       </span>
                     )}
                     <span className="inline-flex items-center gap-1">
                       <Icons.ListTodo className="h-3.5 w-3.5" />
-                      {taskCount} task{taskCount === 1 ? '' : 's'}
+                      {ms._count?.tasks ?? 0} task{(ms._count?.tasks ?? 0) === 1 ? '' : 's'}
                     </span>
-                    {ms.dueDate && (
-                      <span className="inline-flex items-center gap-1">
-                        <Icons.Calendar className="h-3.5 w-3.5" />
-                        Due {formatDate(ms.dueDate)}
-                      </span>
-                    )}
                   </div>
-                  <div className="flex flex-wrap items-center gap-2 pt-1">
-                    <Button variant="outline" size="sm" onClick={() => openEdit(ms)}>
-                      <Icons.Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+                  <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                    <Button variant="ghost" size="sm" className="h-8" onClick={() => openEdit(ms)}>
+                      <Icons.Pencil className="mr-1 h-3.5 w-3.5" /> Edit
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-destructive hover:text-destructive"
+                      className="h-8 text-destructive hover:text-destructive"
                       onClick={() => remove(ms)}
                     >
-                      <Icons.Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="ml-auto"
-                      onClick={() => setActiveView('tasks')}
-                      title="Open tasks"
-                    >
-                      <Icons.ArrowRight className="h-3.5 w-3.5 mr-1" /> Tasks
+                      <Icons.Trash2 className="mr-1 h-3.5 w-3.5" /> Delete
                     </Button>
                   </div>
                 </CardContent>
@@ -376,24 +349,26 @@ export function MilestonesView() {
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{editing ? 'Edit milestone' : 'New milestone'}</DialogTitle>
             <DialogDescription>
-              Mark a key delivery target for a project. Tasks can be linked via milestoneId.
+              {editing
+                ? 'Update milestone details and status.'
+                : 'Define a delivery target for a project.'}
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-3 py-2">
-            <div className="grid gap-1.5">
+          <div className="grid gap-4 py-2">
+            <div className="grid gap-2">
               <Label htmlFor="ms-name">Name</Label>
               <Input
                 id="ms-name"
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                placeholder="Beta launch · Client sign-off"
+                placeholder="e.g. Beta launch"
               />
             </div>
-            <div className="grid gap-1.5">
+            <div className="grid gap-2">
               <Label htmlFor="ms-desc">Description</Label>
               <Textarea
                 id="ms-desc"
@@ -403,8 +378,26 @@ export function MilestonesView() {
                 rows={3}
               />
             </div>
+            <div className="grid gap-2">
+              <Label>Project</Label>
+              <Select
+                value={form.projectId}
+                onValueChange={(v) => setForm((f) => ({ ...f, projectId: v }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select project" />
+                </SelectTrigger>
+                <SelectContent>
+                  {projects.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-1.5">
+              <div className="grid gap-2">
                 <Label>Status</Label>
                 <Select
                   value={form.status}
@@ -422,7 +415,7 @@ export function MilestonesView() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid gap-1.5">
+              <div className="grid gap-2">
                 <Label htmlFor="ms-due">Due date</Label>
                 <Input
                   id="ms-due"
@@ -432,31 +425,13 @@ export function MilestonesView() {
                 />
               </div>
             </div>
-            <div className="grid gap-1.5">
-              <Label>Project</Label>
-              <Select
-                value={form.projectId || undefined}
-                onValueChange={(v) => setForm((f) => ({ ...f, projectId: v }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select project" />
-                </SelectTrigger>
-                <SelectContent>
-                  {projects.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>
               Cancel
             </Button>
             <Button onClick={save} disabled={saving}>
-              {saving ? 'Saving…' : editing ? 'Save changes' : 'Create milestone'}
+              {saving ? 'Saving…' : editing ? 'Save changes' : 'Create'}
             </Button>
           </DialogFooter>
         </DialogContent>

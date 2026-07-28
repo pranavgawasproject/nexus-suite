@@ -22,6 +22,7 @@ export type ViewKey =
   | 'audit'
   | 'apikeys'
   | 'cycles'
+  | 'milestones'
 
 export interface OrgState {
   id: string

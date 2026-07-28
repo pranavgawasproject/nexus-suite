@@ -19,12 +19,14 @@ export async function GET(req: NextRequest) {
         ...(data.status && data.status !== 'all' ? { status: data.status } : {}),
         ...(data.assigneeId && data.assigneeId !== 'all' ? { assigneeId: data.assigneeId } : {}),
         ...(data.cycleId && data.cycleId !== 'all' ? { cycleId: data.cycleId } : {}),
+        ...(data.milestoneId && data.milestoneId !== 'all' ? { milestoneId: data.milestoneId } : {}),
       },
       include: {
         assignee: { select: { id: true, name: true, email: true, avatarUrl: true } },
         reporter: { select: { id: true, name: true, email: true } },
         project: { select: { id: true, name: true, color: true } },
         cycle: { select: { id: true, name: true, status: true } },
+        milestone: { select: { id: true, name: true, status: true } },
       },
       orderBy: { position: 'asc' },
     })
@@ -59,6 +61,7 @@ export async function POST(req: NextRequest) {
         estimateHours: data.estimateHours ?? null,
         tags: data.tags || null,
         cycleId: data.cycleId || null,
+        milestoneId: data.milestoneId || null,
         position: (maxPos._max.position ?? -1) + 1,
       },
       include: {
@@ -74,7 +77,7 @@ export async function POST(req: NextRequest) {
     if (data.assigneeId && data.assigneeId !== g.ctx!.user?.id) {
       await createNotification(g.ctx!.org.id, data.assigneeId, {
         title: 'New task assigned',
-        body: `“${task.title}” was assigned to you.`,
+        body: `â${task.title}â was assigned to you.`,
         category: 'task',
         link: 'tasks',
       })
@@ -106,6 +109,7 @@ export async function PATCH(req: NextRequest) {
         ...(data.tags !== undefined && { tags: data.tags }),
         ...(data.position !== undefined && { position: data.position }),
         ...(data.cycleId !== undefined && { cycleId: data.cycleId || null }),
+        ...(data.milestoneId !== undefined && { milestoneId: data.milestoneId || null }),
       },
       include: {
         assignee: { select: { id: true, name: true, email: true, avatarUrl: true } },

@@ -5,14 +5,13 @@
 **Last reviewed:** 2026-07-28
 **Reviewed by:** Grok
 
-## Track A (this run): Project Milestones (schema + API + tests + CI)
+## Track A (this run): Project Milestones UI + task milestoneId wiring
 
-**Code files changed:** `prisma/schema.prisma`, `src/lib/schemas.ts`, `src/app/api/milestones/route.ts`, `tests/milestones.test.ts`, `package.json`, `.github/workflows/test-ci.yml`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/components/nexus/milestones-view.tsx`, `src/components/nexus/app-shell.tsx`, `src/components/nexus/sidebar.tsx`, `src/lib/store.ts`, `src/lib/schemas.ts`, `src/app/api/tasks/route.ts`, `status/PROJECT_STATUS.md`
 
-- Added `Milestone` Prisma model (org + project scoped, optional task linkage via `milestoneId`)
-- Zod schemas: create / update / query
-- `/api/milestones` CRUD gated by `requireModule('tasks')`, multi-tenant, audit log
-- Unit tests + wired into `test:all` and CI
+- New MilestonesView: list/create/edit/delete, status + project filters, overdue highlighting
+- Sidebar nav + ViewKey + app-shell dynamic import under Tasks module
+- `milestoneId` on task create/update/query schemas and `/api/tasks` (filter, assign, include)
 
 ## ✅ Completed
 - Enhanced /api/health with Prisma ping and module stats
@@ -29,10 +28,12 @@
 - **Sprint retrospectives UI** (list/create/edit from Cycles view)
 - **Task comments** — schema model + `/api/comments` CRUD + TaskDetailDialog UI + unit tests + CI
 - **Project Milestones** — schema + `/api/milestones` CRUD + unit tests + CI
+- **Project Milestones UI** — MilestonesView list/create/edit + nav; `milestoneId` on tasks API/schemas
 
 ## 🔧 Needs Fixing
 - (none critical — CI matrix covers tenant, gate, csv, cycles, retros, comments, milestones tests)
 - After schema change: run `bun run db:push` (or migrate) locally / in deploy so SQLite picks up Milestone (and prior TaskComment / Cycle / Retrospective if not yet applied)
+- TasksView UI: optional filter/assign milestone on create/edit (API already supports `milestoneId`)
 
 ## 🚀 Future Plan
 
@@ -52,7 +53,8 @@
 - [x] Sprint retrospectives UI (list/create from Cycles view)
 - [x] Task comments (schema + API + UI + CI)
 - [x] Project Milestones (schema + API + tests + CI)
-- [ ] Milestones UI (list/create/edit + assign on tasks)
+- [x] Milestones UI (list/create/edit + API assign support)
+- [ ] TasksView: milestone filter + assign on task create/edit (API ready)
 
 ### Phase 2 — AI Integration
 - [ ] AI-assisted task/project creation and summarization
@@ -77,11 +79,10 @@
 
 - [x] **Sprints / Cycles API + UI** (inspired by Plane) — schema, `/api/cycles`, CyclesView, and Tasks kanban cycle filter/assign done.
 - [x] **Sprint retrospectives API + UI** (inspired by Leantime) — schema + `/api/retrospectives` CRUD + CyclesView list/create/edit.
-- [x] **Project Milestones API** (inspired by Plane / OpenProject) — schema + `/api/milestones` CRUD; UI still pending.
+- [x] **Project Milestones API + UI** (inspired by Plane / OpenProject) — schema + `/api/milestones` CRUD + MilestonesView; TasksView assign still optional follow-up.
 - [ ] **Two-way GitHub sync** (inspired by Huly & Plane) — sync Tasks/Issues module with GitHub Issues (bi-directional create/update/comment sync). High priority — fits dev-tool-savvy audience.
 - [ ] **Real-time collaborative Wiki/Docs** (inspired by Plane & Huly) — upgrade `docs-view.tsx` from static docs to real-time collaborative editing (e.g. Yjs/CRDT-based).
 - [ ] **Custom fields / metadata-driven forms per module** (inspired by ERPNext DocTypes) — let self-hosters extend Tasks, KRAs, Risks, etc. with custom fields without forking code. Strong fit for open-core/toggleable-module pitch.
 - [ ] **Gantt / timeline view with dependencies** (inspired by OpenProject) — visual project timeline layered on Budget & Resource views. Strong enterprise-buyer signal.
 
-**Suggested build priority:** Milestones UI → GitHub sync → Wiki upgrade → Custom fields → Gantt.
-
+**Suggested build priority:** TasksView milestone assign → GitHub sync → Wiki upgrade → Custom fields → Gantt.

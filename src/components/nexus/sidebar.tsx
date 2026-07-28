@@ -39,6 +39,12 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       icon: 'Repeat' as keyof typeof Icons,
       moduleKey: 'tasks' as ModuleKey,
     },
+    {
+      view: 'milestones' as ViewKey,
+      label: 'Milestones',
+      icon: 'Flag' as keyof typeof Icons,
+      moduleKey: 'tasks' as ModuleKey,
+    },
   ]
 
   const settingsNav: NavItem[] = [
@@ -83,7 +89,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         </div>
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-semibold text-sidebar-foreground">Nexus Suite</div>
-          <div className="truncate text-xs text-sidebar-foreground/60">{org?.name ?? 'Loading…'}</div>
+          <div className="truncate text-xs text-sidebar-foreground/60">{org?.name ?? 'Loadingâ¦'}</div>
         </div>
       </div>
 
@@ -107,7 +113,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                 onClick={() => setActiveView('settings')}
                 className="text-sidebar-primary underline-offset-2 hover:underline"
               >
-                Enable some →
+                Enable some â
               </button>
             </div>
           )}
@@ -128,7 +134,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             {user?.name?.charAt(0).toUpperCase() ?? '?'}
           </div>
           <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-medium text-sidebar-foreground">{user?.name ?? '—'}</div>
+            <div className="truncate text-sm font-medium text-sidebar-foreground">{user?.name ?? 'â'}</div>
             <div className="truncate text-xs text-sidebar-foreground/60">
               {user?.designation || user?.role}
             </div>
@@ -144,7 +150,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             rel="noreferrer"
             className="text-[10px] text-sidebar-foreground/40 hover:text-sidebar-foreground"
           >
-            v0.1 · PRD v2
+            v0.1 Â· PRD v2
           </Link>
         </div>
       </div>

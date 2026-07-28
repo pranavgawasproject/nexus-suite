@@ -21,6 +21,7 @@ export const createTaskSchema = z.object({
   estimateHours: z.number().min(0).optional().nullable(),
   tags: z.string().max(500).optional().nullable(),
   cycleId: z.string().optional().nullable(),
+  milestoneId: z.string().optional().nullable(),
 })
 
 export const updateTaskSchema = z.object({
@@ -37,6 +38,7 @@ export const updateTaskSchema = z.object({
   tags: z.string().max(500).optional().nullable(),
   position: z.number().int().min(0).optional(),
   cycleId: z.string().optional().nullable(),
+  milestoneId: z.string().optional().nullable(),
 })
 
 export const createProjectSchema = z.object({
@@ -273,6 +275,7 @@ export const taskQuerySchema = z.object({
   status: z.string().optional(),
   assigneeId: z.string().optional(),
   cycleId: z.string().optional(), // filter tasks by cycle/sprint; omit or 'all' = no filter
+  milestoneId: z.string().optional(), // filter tasks by milestone; omit or 'all' = no filter
 })
 
 export const bookingQuerySchema = z.object({
@@ -362,7 +365,7 @@ export const updateChangeRequestSchema = z.object({
 })
 
 // ============================================================
-// Policy schemas (Module 10 â Governance)
+// Policy schemas (Module 10 Ã¢ÂÂ Governance)
 // ============================================================
 
 export const policyTypeEnum = z.enum([
@@ -411,7 +414,7 @@ export const fxRateSchema = z.object({
 })
 
 // ============================================================
-// CSV / JSON Import schemas (Data Portability — PRD §5)
+// CSV / JSON Import schemas (Data Portability â PRD Â§5)
 // ============================================================
 
 export const importTaskRowSchema = z.object({
@@ -429,7 +432,7 @@ export const importTasksSchema = z.object({
   projectId: z.string().min(1, 'projectId is required'),
   /** Pre-parsed rows (from client-side mapping UI) */
   rows: z.array(importTaskRowSchema).min(1).max(500).optional(),
-  /** Raw CSV text — header row required; columns auto-mapped by common aliases */
+  /** Raw CSV text â header row required; columns auto-mapped by common aliases */
   csv: z.string().min(1).max(500_000).optional(),
 }).refine((d) => Boolean(d.rows?.length) || Boolean(d.csv?.trim()), {
   message: 'Provide either rows[] or csv text',
@@ -470,7 +473,7 @@ export const cycleQuerySchema = z.object({
 })
 
 // ============================================================
-// Retrospectives (Sprint review — tasks module)
+// Retrospectives (Sprint review â tasks module)
 // ============================================================
 
 export const retroStatusEnum = z.enum(['draft', 'published', 'archived'])

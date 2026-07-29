@@ -567,3 +567,24 @@ export const createTaskDependencySchema = z.object({
 export const taskDependencyQuerySchema = z.object({
   taskId: z.string().min(1).optional(),
 })
+
+// ============================================================
+// Task Checklist Items (Tasks module)
+// ============================================================
+
+export const createTaskChecklistItemSchema = z.object({
+  taskId: z.string().min(1, 'taskId is required'),
+  title: z.string().min(1, 'title is required').max(500),
+  position: z.number().int().min(0).optional(),
+})
+
+export const updateTaskChecklistItemSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1).max(500).optional(),
+  completed: z.boolean().optional(),
+  position: z.number().int().min(0).optional(),
+})
+
+export const taskChecklistQuerySchema = z.object({
+  taskId: z.string().min(1, 'taskId is required'),
+})

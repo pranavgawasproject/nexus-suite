@@ -55,6 +55,7 @@ model Organization {
   taskComments  TaskComment[]
   milestones    Milestone[]
   taskDependencies TaskDependency[]
+  taskChecklistItems TaskChecklistItem[]
 }
 
 model User {
@@ -207,6 +208,7 @@ model Task {
   comments    TaskComment[]
   dependenciesFrom TaskDependency[] @relation("DepFrom")
   dependenciesTo   TaskDependency[] @relation("DepTo")
+  checklistItems TaskChecklistItem[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -696,3 +698,20 @@ model TaskDependency {
   @@index([orgId, fromTaskId])
   @@index([orgId, toTaskId])
 }
+
+// Task checklist items (Tasks module — lightweight sub-steps on a task)
+model TaskChecklistItem {
+  id          String   @id @default(cuid())
+  orgId       String
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  title       String
+  completed   Boolean  @default(false)
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([orgId, taskId])
+}
+

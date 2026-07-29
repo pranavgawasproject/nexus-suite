@@ -1146,6 +1146,147 @@ function TaskDependencies({ taskId }: { taskId: string }) {
   )
 }
 
+
+interface ChecklistItem {
+  id: string
+  title: string
+  completed: boolean
+  position: number
+}
+
+function TaskChecklist({ taskId }: { taskId: string }) {
+  const [items, setItems] = React.useState<ChecklistItem[]>([])
+  const [loading, setLoading] = React.useState(true)
+  const [newTitle, setNewTitle] = React.useState('')
+  const [saving, setSaving] = React.useState(false)
+
+  const load = React.useCallback(async () => {
+    setLoading(true)
+    try {
+      const d = await api<{ items: ChecklistItem[] }>(`/api/checklists?taskId=${encodeURIComponent(taskId)}`)
+      setItems(d.items || [])
+    } catch {
+      toast.error('Failed to load checklist')
+    } finally {
+      setLoading(false)
+    }
+  }, [taskId])
+
+  React.useEffect(() => {
+    load()
+  }, [load])
+
+  const add = async () => {
+    const title = newTitle.trim()
+    if (!title) return
+    setSaving(true)
+    try {
+      const d = await api<{ item: ChecklistItem }>('/api/checklists', {
+        method: 'POST',
+        body: JSON.stringify({ taskId, title }),
+      })
+      setItems((prev) => [...prev, d.item])
+      setNewTitle('')
+      toast.success('Checklist item added')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to add item')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const toggle = async (id: string, completed: boolean) => {
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, completed } : i)))
+    try {
+      await api('/api/checklists', {
+        method: 'PATCH',
+        body: JSON.stringify({ id, completed }),
+      })
+    } catch {
+      toast.error('Failed to update item')
+      load()
+    }
+  }
+
+  const remove = async (id: string) => {
+    if (!confirm('Remove this checklist item?')) return
+    try {
+      await api(`/api/checklists?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
+      setItems((prev) => prev.filter((i) => i.id !== id))
+      toast.success('Item removed')
+    } catch {
+      toast.error('Failed to remove item')
+    }
+  }
+
+  const done = items.filter((i) => i.completed).length
+  const total = items.length
+
+  return (
+    <div className="space-y-2 border-t pt-4">
+      <div className="flex items-center justify-between">
+        <h4 className="text-sm font-medium flex items-center gap-2">
+          <Icons.CheckSquare className="h-4 w-4" />
+          Checklist{' '}
+          {total > 0 && (
+            <Badge variant="secondary" className="text-[10px] h-5 px-1.5">
+              {done}/{total}
+            </Badge>
+          )}
+        </h4>
+      </div>
+      {loading ? (
+        <p className="text-xs text-muted-foreground flex items-center gap-1.5 py-2">
+          <Icons.Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading checklist…
+        </p>
+      ) : items.length === 0 ? (
+        <p className="text-xs text-muted-foreground py-2">No checklist items yet. Break the task into steps.</p>
+      ) : (
+        <ul className="space-y-1.5">
+          {items.map((item) => (
+            <li key={item.id} className="flex items-center gap-2 group">
+              <input
+                type="checkbox"
+                checked={item.completed}
+                onChange={(e) => toggle(item.id, e.target.checked)}
+                className="h-3.5 w-3.5 rounded border-input"
+              />
+              <span
+                className={
+                  'flex-1 text-sm ' +
+                  (item.completed ? 'line-through text-muted-foreground' : '')
+                }
+              >
+                {item.title}
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 opacity-0 group-hover:opacity-100"
+                onClick={() => remove(item.id)}
+              >
+                <Icons.Trash2 className="h-3 w-3" />
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="flex gap-2 pt-1">
+        <Input
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && add()}
+          placeholder="Add a checklist item…"
+          className="h-8 text-sm"
+        />
+        <Button size="sm" className="h-8" onClick={add} disabled={saving || !newTitle.trim()}>
+          {saving ? <Icons.Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Icons.Plus className="h-3.5 w-3.5" />}
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 function TaskDetailDialog({
   task,
   onClose,
@@ -1377,6 +1518,8 @@ function TaskDetailDialog({
               </div>
             </div>
           )}
+
+          <TaskChecklist taskId={task.id} />
 
           <TaskComments taskId={task.id} />
 

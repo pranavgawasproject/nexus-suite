@@ -5,14 +5,14 @@
 **Last reviewed:** 2026-07-29
 **Reviewed by:** Grok
 
-## Track A (this run): Gantt / timeline view with dependencies
+## Track A (this run): Task checklists
 
-**Code files changed:** `src/components/nexus/gantt-view.tsx`, `src/components/nexus/app-shell.tsx`, `src/components/nexus/sidebar.tsx`, `src/lib/store.ts`, `src/lib/schemas.ts`, `src/app/api/dependencies/route.ts`, `tests/task-dependencies.test.ts`, `status/PROJECT_STATUS.md`
+**Code files changed:** `prisma/schema.prisma`, `src/lib/schemas.ts`, `src/app/api/checklists/route.ts`, `src/components/nexus/tasks-view.tsx`, `tests/task-checklists.test.ts`, `package.json`, `.github/workflows/test-ci.yml`, `status/PROJECT_STATUS.md`
 
-- New `GanttView`: timeline bars by due date (estimate-hours length), project/status filters, today marker
-- Dependency hints (blocks / blocked by) from org-wide `/api/dependencies`
-- Nav: Gantt under Tasks module; ViewKey `gantt`
-- `taskDependencyQuerySchema.taskId` optional so Gantt can load all edges in one request
+- New `TaskChecklistItem` model (org-scoped, ordered by position)
+- `/api/checklists` CRUD under tasks module (`requireModule`, zod, audit)
+- Task detail dialog: checklist with add / toggle complete / delete + progress badge
+- Unit tests + `test:checklists` wired into `test:all` and CI
 
 ## ✅ Completed
 - Enhanced /api/health with Prisma ping and module stats
@@ -34,10 +34,11 @@
 - **Task dependencies** — schema + `/api/dependencies` CRUD + unit tests + CI (Gantt foundation)
 - **Task dependencies UI** in task detail dialog (list/add/remove blocks & relates)
 - **Gantt / timeline view** with dependency labels, filters, nav under Tasks
+- **Task checklists** — schema + `/api/checklists` CRUD + UI in task detail + unit tests + CI
 
 ## 🔧 Needs Fixing
-- (none critical — CI matrix covers tenant, gate, csv, cycles, retros, comments, milestones, dependencies tests)
-- After schema change: run `bun run db:push` (or migrate) locally / in deploy so SQLite picks up TaskDependency (and prior Milestone / TaskComment / Cycle / Retrospective if not yet applied)
+- (none critical — CI matrix covers tenant, gate, csv, cycles, retros, comments, milestones, dependencies, checklists tests)
+- After schema change: run `bun run db:push` (or migrate) locally / in deploy so SQLite picks up TaskChecklistItem (and prior TaskDependency / Milestone / TaskComment / Cycle / Retrospective if not yet applied)
 
 ## 🚀 Future Plan
 
@@ -62,6 +63,7 @@
 - [x] Task dependencies (schema + API + tests + CI)
 - [x] Task dependencies UI in task detail dialog
 - [x] Gantt / timeline view with dependencies
+- [x] Task checklists (schema + API + UI + CI)
 
 ### Phase 2 — AI Integration
 - [ ] AI-assisted task/project creation and summarization
@@ -90,6 +92,7 @@
 - [x] **Task dependencies API** (Gantt foundation, inspired by OpenProject) — `TaskDependency` + `/api/dependencies`.
 - [x] **Task dependencies UI** in task detail dialog.
 - [x] **Gantt / timeline view with dependencies** (inspired by OpenProject) — CSS timeline bars, filters, dependency labels.
+- [x] **Task checklists** (inspired by Plane / Trello) — `TaskChecklistItem` + `/api/checklists` + task detail UI.
 - [ ] **Two-way GitHub sync** (inspired by Huly & Plane) — sync Tasks/Issues module with GitHub Issues (bi-directional create/update/comment sync). High priority — fits dev-tool-savvy audience.
 - [ ] **Real-time collaborative Wiki/Docs** (inspired by Plane & Huly) — upgrade `docs-view.tsx` from static docs to real-time collaborative editing (e.g. Yjs/CRDT-based).
 - [ ] **Custom fields / metadata-driven forms per module** (inspired by ERPNext DocTypes) — let self-hosters extend Tasks, KRAs, Risks, etc. with custom fields without forking code. Strong fit for open-core/toggleable-module pitch.

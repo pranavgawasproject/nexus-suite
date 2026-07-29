@@ -268,7 +268,7 @@ export function TasksView() {
               {cycles.map((c) => (
                 <SelectItem key={c.id} value={c.id}>
                   {c.name}
-                  {c.status === 'active' ? ' · active' : c.status === 'completed' ? ' · done' : ''}
+                  {c.status === 'active' ? ' Â· active' : c.status === 'completed' ? ' Â· done' : ''}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -384,6 +384,7 @@ export function TasksView() {
         team={team}
         cycles={cycles}
         milestones={milestones}
+        tasks={tasks}
         onUpdated={() => load()}
       />
     </div>
@@ -610,7 +611,7 @@ function CreateTaskDialog({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              placeholder="Add context, acceptance criteria, or links…"
+              placeholder="Add context, acceptance criteria, or linksâ¦"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -681,7 +682,7 @@ function CreateTaskDialog({
                     .map((c) => (
                       <SelectItem key={c.id} value={c.id}>
                         {c.name}
-                        {c.status === 'active' ? ' · active' : ''}
+                        {c.status === 'active' ? ' Â· active' : ''}
                       </SelectItem>
                     ))}
                 </SelectContent>
@@ -698,7 +699,7 @@ function CreateTaskDialog({
                     .map((m) => (
                       <SelectItem key={m.id} value={m.id}>
                         {m.name}
-                        {m.status === 'completed' ? ' · done' : m.status === 'missed' ? ' · missed' : ''}
+                        {m.status === 'completed' ? ' Â· done' : m.status === 'missed' ? ' Â· missed' : ''}
                       </SelectItem>
                     ))}
                 </SelectContent>
@@ -748,6 +749,215 @@ function CreateTaskDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  )
+}
+
+
+interface TaskDependency {
+  id: string
+  type: 'blocks' | 'relates'
+  fromTaskId: string
+  toTaskId: string
+  fromTask: { id: string; title: string; status: string }
+  toTask: { id: string; title: string; status: string }
+  createdAt?: string
+}
+
+function TaskDependencies({
+  taskId,
+  tasks,
+}: {
+  taskId: string
+  tasks: Task[]
+}) {
+  const [deps, setDeps] = React.useState<TaskDependency[]>([])
+  const [loading, setLoading] = React.useState(true)
+  const [submitting, setSubmitting] = React.useState(false)
+  const [otherTaskId, setOtherTaskId] = React.useState('')
+  const [depType, setDepType] = React.useState<'blocks' | 'relates'>('blocks')
+  const [direction, setDirection] = React.useState<'blocks' | 'blocked_by'>('blocks')
+
+  const load = React.useCallback(async () => {
+    setLoading(true)
+    try {
+      const d = await api<{ dependencies: TaskDependency[] }>(
+        `/api/dependencies?taskId=${encodeURIComponent(taskId)}`
+      )
+      setDeps(d.dependencies || [])
+    } catch {
+      toast.error('Failed to load dependencies')
+    } finally {
+      setLoading(false)
+    }
+  }, [taskId])
+
+  React.useEffect(() => {
+    load()
+  }, [load])
+
+  const linkedIds = React.useMemo(() => {
+    const s = new Set<string>()
+    for (const d of deps) {
+      s.add(d.fromTaskId)
+      s.add(d.toTaskId)
+    }
+    s.delete(taskId)
+    return s
+  }, [deps, taskId])
+
+  const candidateTasks = tasks.filter((t) => t.id !== taskId && !linkedIds.has(t.id))
+
+  const add = async () => {
+    if (!otherTaskId) return
+    setSubmitting(true)
+    try {
+      const fromTaskId = direction === 'blocks' ? taskId : otherTaskId
+      const toTaskId = direction === 'blocks' ? otherTaskId : taskId
+      const d = await api<{ dependency: TaskDependency }>('/api/dependencies', {
+        method: 'POST',
+        body: JSON.stringify({ fromTaskId, toTaskId, type: depType }),
+      })
+      setDeps((prev) => [...prev, d.dependency])
+      setOtherTaskId('')
+      toast.success('Dependency added')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to add dependency')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const remove = async (id: string) => {
+    if (!confirm('Remove this dependency?')) return
+    try {
+      await api(`/api/dependencies?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
+      setDeps((prev) => prev.filter((d) => d.id !== id))
+      toast.success('Dependency removed')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to remove')
+    }
+  }
+
+  const labelFor = (d: TaskDependency) => {
+    const other = d.fromTaskId === taskId ? d.toTask : d.fromTask
+    if (d.type === 'relates') {
+      return { verb: 'relates to', other }
+    }
+    if (d.fromTaskId === taskId) {
+      return { verb: 'blocks', other }
+    }
+    return { verb: 'blocked by', other }
+  }
+
+  return (
+    <div className="border-t pt-4">
+      <div className="flex items-center justify-between mb-2">
+        <Label className="text-xs uppercase text-muted-foreground flex items-center gap-1.5">
+          <Icons.GitBranch className="h-3.5 w-3.5" />
+          Dependencies {deps.length > 0 && (
+            <Badge variant="secondary" className="text-[10px] h-5 px-1.5">{deps.length}</Badge>
+          )}
+        </Label>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground py-4">
+          <Icons.Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading dependencies…
+        </div>
+      ) : deps.length === 0 ? (
+        <p className="text-xs text-muted-foreground py-2">No dependencies yet.</p>
+      ) : (
+        <ul className="space-y-2 max-h-40 overflow-y-auto pr-1">
+          {deps.map((d) => {
+            const { verb, other } = labelFor(d)
+            return (
+              <li key={d.id} className="flex items-center gap-2 rounded-md border bg-muted/20 px-2.5 py-1.5 text-sm">
+                <Badge
+                  variant={d.type === 'blocks' ? 'default' : 'secondary'}
+                  className="text-[10px] capitalize shrink-0"
+                >
+                  {verb}
+                </Badge>
+                <span className="min-w-0 flex-1 truncate" title={other.title}>
+                  {other.title}
+                </span>
+                <Badge variant="outline" className="text-[10px] capitalize shrink-0">
+                  {other.status.replace('_', ' ')}
+                </Badge>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-7 w-7 shrink-0 text-destructive"
+                  title="Remove"
+                  onClick={() => remove(d.id)}
+                >
+                  <Icons.Trash2 className="h-3 w-3" />
+                </Button>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+
+      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end">
+        <div className="flex-1 min-w-0">
+          <Label className="text-[10px] uppercase text-muted-foreground">Task</Label>
+          <Select value={otherTaskId} onValueChange={setOtherTaskId}>
+            <SelectTrigger className="mt-0.5 h-8 text-xs">
+              <SelectValue placeholder="Select task…" />
+            </SelectTrigger>
+            <SelectContent>
+              {candidateTasks.length === 0 ? (
+                <SelectItem value="__none__" disabled>No other tasks</SelectItem>
+              ) : (
+                candidateTasks.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>
+                    {t.title}
+                  </SelectItem>
+                ))
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="w-full sm:w-[120px]">
+          <Label className="text-[10px] uppercase text-muted-foreground">Relation</Label>
+          <Select
+            value={depType === 'relates' ? 'relates' : direction}
+            onValueChange={(v) => {
+              if (v === 'relates') {
+                setDepType('relates')
+              } else {
+                setDepType('blocks')
+                setDirection(v as 'blocks' | 'blocked_by')
+              }
+            }}
+          >
+            <SelectTrigger className="mt-0.5 h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="blocks">Blocks</SelectItem>
+              <SelectItem value="blocked_by">Blocked by</SelectItem>
+              <SelectItem value="relates">Relates to</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <Button
+          size="sm"
+          className="h-8"
+          onClick={add}
+          disabled={submitting || !otherTaskId || otherTaskId === '__none__'}
+        >
+          {submitting ? (
+            <Icons.Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <>
+              <Icons.Plus className="mr-1 h-3.5 w-3.5" /> Add
+            </>
+          )}
+        </Button>
+      </div>
+    </div>
   )
 }
 
@@ -847,7 +1057,7 @@ function TaskComments({ taskId }: { taskId: string }) {
 
       {loading ? (
         <div className="flex items-center gap-2 text-xs text-muted-foreground py-4">
-          <Icons.Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading comments…
+          <Icons.Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading commentsâ¦
         </div>
       ) : comments.length === 0 ? (
         <p className="text-xs text-muted-foreground py-2">No comments yet. Start the discussion.</p>
@@ -932,7 +1142,7 @@ function TaskComments({ taskId }: { taskId: string }) {
           value={body}
           onChange={(e) => setBody(e.target.value)}
           rows={2}
-          placeholder="Write a comment…"
+          placeholder="Write a commentâ¦"
           className="text-sm"
           onKeyDown={(e) => {
             if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -945,7 +1155,7 @@ function TaskComments({ taskId }: { taskId: string }) {
           <Button size="sm" onClick={post} disabled={submitting || !body.trim()}>
             {submitting ? (
               <>
-                <Icons.Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Posting…
+                <Icons.Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Postingâ¦
               </>
             ) : (
               <>
@@ -966,6 +1176,7 @@ function TaskDetailDialog({
   team,
   cycles,
   milestones,
+  tasks,
   onUpdated,
 }: {
   task: Task | null
@@ -974,6 +1185,7 @@ function TaskDetailDialog({
   team: User[]
   cycles: Cycle[]
   milestones: Milestone[]
+  tasks: Task[]
   onUpdated: () => void
 }) {
   const [edit, setEdit] = React.useState<Task | null>(task)
@@ -1191,6 +1403,8 @@ function TaskDetailDialog({
             </div>
           )}
 
+          <TaskDependencies taskId={task.id} tasks={tasks} />
+
           <TaskComments taskId={task.id} />
         </div>
 
@@ -1317,7 +1531,7 @@ function AiTaskButton({ projects, team, onCreated }: { projects: Project[]; team
             />
           </div>
           <Button onClick={parse} disabled={loading || !input.trim()} variant="outline" className="w-full">
-            {loading ? <><Icons.Loader2 className="mr-2 h-4 w-4 animate-spin" /> Parsing…</> : <><Icons.Sparkles className="mr-2 h-4 w-4" /> Parse with AI</>}
+            {loading ? <><Icons.Loader2 className="mr-2 h-4 w-4 animate-spin" /> Parsingâ¦</> : <><Icons.Sparkles className="mr-2 h-4 w-4" /> Parse with AI</>}
           </Button>
 
           {parsed && (
@@ -1340,7 +1554,7 @@ function AiTaskButton({ projects, team, onCreated }: { projects: Project[]; team
                 {parsed.tags?.map((t) => <Badge key={t} variant="secondary" className="text-[10px]">#{t}</Badge>)}
               </div>
               {parsed.assigneeName && !team.find((u) => u.name.toLowerCase().includes(parsed.assigneeName!.toLowerCase())) && (
-                <div className="text-[10px] text-amber-600">⚠ No team member matched "{parsed.assigneeName}" — task will be unassigned.</div>
+                <div className="text-[10px] text-amber-600">â  No team member matched "{parsed.assigneeName}" â task will be unassigned.</div>
               )}
             </div>
           )}
@@ -1348,7 +1562,7 @@ function AiTaskButton({ projects, team, onCreated }: { projects: Project[]; team
         <DialogFooter>
           <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
           <Button onClick={create} disabled={!parsed || creating || !projects[0]}>
-            {creating ? <><Icons.Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating…</> : <>Create task</>}
+            {creating ? <><Icons.Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creatingâ¦</> : <>Create task</>}
           </Button>
         </DialogFooter>
       </DialogContent>

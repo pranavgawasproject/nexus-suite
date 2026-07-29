@@ -5,14 +5,13 @@
 **Last reviewed:** 2026-07-29
 **Reviewed by:** Grok
 
-## Track A (this run): Task worklogs (time entries)
+## Track A (this run): Remove broken duplicate TaskTimeEntry API
 
-**Code files changed:** `prisma/schema.prisma`, `src/lib/schemas.ts`, `package.json`, `.github/workflows/test-ci.yml`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/app/api/time-entries/route.ts` (deleted), `src/lib/schemas.ts`, `tests/task-time-entries.test.ts` (deleted), `package.json`, `.github/workflows/test-ci.yml`, `status/PROJECT_STATUS.md`
 
-- Added `TaskWorklog` Prisma model (org-scoped; author + hours + note + loggedAt; indexes)
-- Zod schemas for create/update/query already used by `/api/worklogs` and TaskWorklogs UI
-- Wire `test:worklogs` into `package.json` / `test:all` and CI
-- Recalc of `Task.spentHours` already implemented in worklogs API
+- `/api/time-entries` referenced non-existent Prisma model `TaskTimeEntry` (only `TaskWorklog` exists)
+- Removed dead route, zod schemas, unit tests, package script, and CI step
+- Canonical time tracking remains `/api/worklogs` + `TaskWorklog` (UI already uses it)
 
 ## ✅ Completed
 - Enhanced /api/health with Prisma ping and module stats
@@ -36,11 +35,11 @@
 - **Gantt / timeline view** with dependency labels, filters, nav under Tasks
 - **Task checklists** — schema + `/api/checklists` CRUD + UI in task detail + unit tests + CI
 - **Task worklogs (time entries)** — `TaskWorklog` model + `/api/worklogs` CRUD + TaskWorklogs UI + unit tests + CI; auto-updates spentHours
+- **Removed broken `/api/time-entries` duplicate** (no Prisma model; worklogs is canonical)
 
 ## 🔧 Needs Fixing
-- (none critical — CI matrix covers tenant, gate, csv, cycles, retros, comments, milestones, dependencies, checklists, time-entries, worklogs tests)
+- (none critical — CI matrix covers tenant, gate, csv, cycles, retros, comments, milestones, dependencies, checklists, worklogs tests)
 - After schema change: run `bun run db:push` (or migrate) locally / in deploy so SQLite picks up TaskWorklog (and prior models if not yet applied)
-- Optional cleanup: duplicate `/api/time-entries` + `TaskTimeEntry` schemas vs worklogs — prefer worklogs as canonical; remove or alias time-entries later
 
 ## 🚀 Future Plan
 
@@ -67,6 +66,7 @@
 - [x] Gantt / timeline view with dependencies
 - [x] Task checklists (schema + API + UI + CI)
 - [x] Task worklogs / time entries (schema + API + UI + CI)
+- [x] Remove broken TaskTimeEntry duplicate API
 
 ### Phase 2 — AI Integration
 - [ ] AI-assisted task/project creation and summarization

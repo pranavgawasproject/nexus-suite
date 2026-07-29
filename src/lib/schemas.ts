@@ -565,5 +565,5 @@ export const createTaskDependencySchema = z.object({
 })
 
 export const taskDependencyQuerySchema = z.object({
-  taskId: z.string().min(1, 'taskId is required'),
+  taskId: z.string().min(1).optional(),
 })

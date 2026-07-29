@@ -46,6 +46,13 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       icon: 'Flag' as keyof typeof Icons,
       moduleKey: 'tasks' as ModuleKey,
     },
+    // Gantt / timeline (Tasks module)
+    {
+      view: 'gantt' as ViewKey,
+      label: 'Gantt',
+      icon: 'GanttChart' as keyof typeof Icons,
+      moduleKey: 'tasks' as ModuleKey,
+    },
   ]
 
   const settingsNav: NavItem[] = [

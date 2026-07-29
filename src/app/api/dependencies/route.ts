@@ -14,18 +14,22 @@ export async function GET(req: NextRequest) {
     const { data, error } = await parseQuery(req, taskDependencyQuerySchema)
     if (error) return error
 
-    const task = await db.task.findFirst({
-      where: { id: data.taskId, orgId: g.ctx!.org.id },
-      select: { id: true },
-    })
-    if (!task) {
-      return NextResponse.json({ error: 'Task not found' }, { status: 404 })
+    if (data.taskId) {
+      const task = await db.task.findFirst({
+        where: { id: data.taskId, orgId: g.ctx!.org.id },
+        select: { id: true },
+      })
+      if (!task) {
+        return NextResponse.json({ error: 'Task not found' }, { status: 404 })
+      }
     }
 
     const dependencies = await db.taskDependency.findMany({
       where: {
         orgId: g.ctx!.org.id,
-        OR: [{ fromTaskId: data.taskId }, { toTaskId: data.taskId }],
+        ...(data.taskId
+          ? { OR: [{ fromTaskId: data.taskId }, { toTaskId: data.taskId }] }
+          : {}),
       },
       include: {
         fromTask: { select: { id: true, title: true, status: true } },

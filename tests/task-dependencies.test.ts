@@ -62,9 +62,9 @@ describe("createTaskDependencySchema", () => {
 });
 
 describe("taskDependencyQuerySchema", () => {
-  test("requires taskId", () => {
+  test("allows missing taskId (list all org dependencies)", () => {
     const r = taskDependencyQuerySchema.safeParse({});
-    expect(r.success).toBe(false);
+    expect(r.success).toBe(true);
   });
 
   test("accepts taskId", () => {

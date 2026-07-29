@@ -82,6 +82,10 @@ const MilestonesView = dynamic(
   () => import('./milestones-view').then((m) => m.MilestonesView),
   { ssr: false, loading: () => <ViewLoading /> }
 )
+const GanttView = dynamic(
+  () => import('./gantt-view').then((m) => m.GanttView),
+  { ssr: false, loading: () => <ViewLoading /> }
+)
 
 function ViewLoading() {
   return (
@@ -163,6 +167,7 @@ export function AppShell() {
             {activeView === 'audit' && <AuditView />}
             {activeView === 'cycles' && <CyclesView />}
             {activeView === 'milestones' && <MilestonesView />}
+            {activeView === 'gantt' && <GanttView />}
           </div>
         </main>
         <footer className="mt-auto border-t bg-muted/30 px-4 lg:px-6 py-3">

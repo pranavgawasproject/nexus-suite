@@ -23,6 +23,7 @@ export type ViewKey =
   | 'apikeys'
   | 'cycles'
   | 'milestones'
+  | 'gantt'
 
 export interface OrgState {
   id: string

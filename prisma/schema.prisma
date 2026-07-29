@@ -56,6 +56,7 @@ model Organization {
   milestones    Milestone[]
   taskDependencies TaskDependency[]
   taskChecklistItems TaskChecklistItem[]
+  taskTimeEntries TaskTimeEntry[]
 }
 
 model User {
@@ -94,6 +95,7 @@ model User {
   updatedPolicies    Policy[]     @relation("PolicyUpdatedBy")
   authoredRetros     Retrospective[] @relation("RetroAuthor")
   authoredComments   TaskComment[]   @relation("CommentAuthor")
+  timeEntries        TaskTimeEntry[] @relation("TimeEntryUser")
 }
 
 model Department {
@@ -209,6 +211,7 @@ model Task {
   dependenciesFrom TaskDependency[] @relation("DepFrom")
   dependenciesTo   TaskDependency[] @relation("DepTo")
   checklistItems TaskChecklistItem[]
+  timeEntries TaskTimeEntry[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -715,3 +718,24 @@ model TaskChecklistItem {
   @@index([orgId, taskId])
 }
 
+// ============================================================
+// Task time entries (work logs — log hours against a task)
+// ============================================================
+
+model TaskTimeEntry {
+  id          String   @id @default(cuid())
+  orgId       String
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation("TimeEntryUser", fields: [userId], references: [id], onDelete: Cascade)
+  hours       Float
+  note        String?
+  loggedAt    DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([orgId, taskId])
+  @@index([orgId, userId])
+}

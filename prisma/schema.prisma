@@ -56,8 +56,7 @@ model Organization {
   milestones    Milestone[]
   taskDependencies TaskDependency[]
   taskChecklistItems TaskChecklistItem[]
-  taskTimeEntries TaskTimeEntry[]
-  taskWorklogs   TaskWorklog[]
+  taskWorklogs     TaskWorklog[]
 }
 
 model User {
@@ -96,8 +95,7 @@ model User {
   updatedPolicies    Policy[]     @relation("PolicyUpdatedBy")
   authoredRetros     Retrospective[] @relation("RetroAuthor")
   authoredComments   TaskComment[]   @relation("CommentAuthor")
-  timeEntries        TaskTimeEntry[] @relation("TimeEntryUser")
-  worklogs           TaskWorklog[]   @relation("WorklogAuthor")
+  authoredWorklogs   TaskWorklog[]   @relation("WorklogAuthor")
 }
 
 model Department {
@@ -213,7 +211,6 @@ model Task {
   dependenciesFrom TaskDependency[] @relation("DepFrom")
   dependenciesTo   TaskDependency[] @relation("DepTo")
   checklistItems TaskChecklistItem[]
-  timeEntries TaskTimeEntry[]
   worklogs    TaskWorklog[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -721,42 +718,20 @@ model TaskChecklistItem {
   @@index([orgId, taskId])
 }
 
-// ============================================================
-// Task time entries (work logs — log hours against a task)
-// ============================================================
-
-model TaskTimeEntry {
-  id          String   @id @default(cuid())
-  orgId       String
-  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  taskId      String
-  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  userId      String
-  user        User     @relation("TimeEntryUser", fields: [userId], references: [id], onDelete: Cascade)
-  hours       Float
-  note        String?
-  loggedAt    DateTime @default(now())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([orgId, taskId])
-  @@index([orgId, userId])
-}
-
-// Task worklogs / time entries (Tasks module — log hours against a task)
+// Task worklogs (time entries — log hours against a task; updates spentHours)
 model TaskWorklog {
-  id          String   @id @default(cuid())
-  orgId       String
-  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  taskId      String
-  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  authorId    String
-  author      User     @relation("WorklogAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  hours       Float
-  note        String?
-  loggedAt    DateTime @default(now())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation("WorklogAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  hours     Float
+  note      String?
+  loggedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([orgId, taskId])
   @@index([orgId, authorId])

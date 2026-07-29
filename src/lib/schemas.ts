@@ -613,7 +613,7 @@ export const taskTimeEntryQuerySchema = z.object({
 })
 
 // ============================================================
-// Task Worklogs / Time entries (Tasks module)
+// Task Worklogs (time entries — Tasks module)
 // ============================================================
 
 export const createTaskWorklogSchema = z.object({
@@ -633,3 +633,4 @@ export const updateTaskWorklogSchema = z.object({
 export const taskWorklogQuerySchema = z.object({
   taskId: z.string().min(1, 'taskId is required'),
 })
+

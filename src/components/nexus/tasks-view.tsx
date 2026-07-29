@@ -1147,6 +1147,143 @@ function TaskDependencies({ taskId }: { taskId: string }) {
 }
 
 
+
+
+interface WorklogItem {
+  id: string
+  hours: number
+  note?: string | null
+  loggedAt: string
+  author?: { id: string; name: string; email: string } | null
+}
+
+function TaskWorklogs({ taskId }: { taskId: string }) {
+  const [items, setItems] = React.useState<WorklogItem[]>([])
+  const [spentHours, setSpentHours] = React.useState(0)
+  const [loading, setLoading] = React.useState(true)
+  const [hours, setHours] = React.useState('')
+  const [note, setNote] = React.useState('')
+  const [saving, setSaving] = React.useState(false)
+
+  const load = React.useCallback(async () => {
+    setLoading(true)
+    try {
+      const d = await api<{ worklogs: WorklogItem[]; spentHours: number }>(
+        `/api/worklogs?taskId=${encodeURIComponent(taskId)}`
+      )
+      setItems(d.worklogs || [])
+      setSpentHours(d.spentHours ?? 0)
+    } catch {
+      toast.error('Failed to load worklogs')
+    } finally {
+      setLoading(false)
+    }
+  }, [taskId])
+
+  React.useEffect(() => {
+    load()
+  }, [load])
+
+  const add = async () => {
+    const h = parseFloat(hours)
+    if (!h || h <= 0) return
+    setSaving(true)
+    try {
+      const d = await api<{ worklog: WorklogItem; spentHours: number }>('/api/worklogs', {
+        method: 'POST',
+        body: JSON.stringify({ taskId, hours: h, note: note.trim() || undefined }),
+      })
+      setItems((prev) => [d.worklog, ...prev])
+      setSpentHours(d.spentHours)
+      setHours('')
+      setNote('')
+      toast.success('Time logged')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to log time')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const remove = async (id: string) => {
+    if (!confirm('Remove this time entry?')) return
+    try {
+      const d = await api<{ spentHours: number }>(`/api/worklogs?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      })
+      setItems((prev) => prev.filter((i) => i.id !== id))
+      setSpentHours(d.spentHours ?? 0)
+      toast.success('Entry removed')
+    } catch {
+      toast.error('Failed to remove entry')
+    }
+  }
+
+  return (
+    <div className="space-y-2 border-t pt-4">
+      <div className="flex items-center justify-between">
+        <h4 className="text-sm font-medium flex items-center gap-2">
+          <Icons.Clock className="h-4 w-4" />
+          Time logged{' '}
+          <Badge variant="secondary" className="text-[10px] h-5 px-1.5">
+            {spentHours.toFixed(2)}h
+          </Badge>
+        </h4>
+      </div>
+      {loading ? (
+        <p className="text-xs text-muted-foreground flex items-center gap-1.5 py-2">
+          <Icons.Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading worklogs…
+        </p>
+      ) : items.length === 0 ? (
+        <p className="text-xs text-muted-foreground py-2">No time entries yet. Log hours spent on this task.</p>
+      ) : (
+        <ul className="space-y-1.5 max-h-40 overflow-y-auto">
+          {items.map((item) => (
+            <li key={item.id} className="flex items-start gap-2 group text-sm">
+              <span className="font-medium tabular-nums w-12 shrink-0">{item.hours}h</span>
+              <div className="flex-1 min-w-0">
+                <span className="text-muted-foreground text-xs">
+                  {item.author?.name || 'Someone'} · {new Date(item.loggedAt).toLocaleDateString()}
+                </span>
+                {item.note && <p className="text-xs truncate">{item.note}</p>}
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 opacity-0 group-hover:opacity-100 shrink-0"
+                onClick={() => remove(item.id)}
+              >
+                <Icons.Trash2 className="h-3 w-3" />
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="flex gap-2 pt-1 items-center">
+        <Input
+          type="number"
+          min={0.25}
+          step={0.25}
+          value={hours}
+          onChange={(e) => setHours(e.target.value)}
+          placeholder="Hours"
+          className="h-8 text-sm w-20"
+        />
+        <Input
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && add()}
+          placeholder="Note (optional)…"
+          className="h-8 text-sm flex-1"
+        />
+        <Button size="sm" className="h-8" onClick={add} disabled={saving || !hours || parseFloat(hours) <= 0}>
+          {saving ? <Icons.Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Log'}
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 interface ChecklistItem {
   id: string
   title: string
@@ -1520,6 +1657,8 @@ function TaskDetailDialog({
           )}
 
           <TaskChecklist taskId={task.id} />
+
+          <TaskWorklogs taskId={task.id} />
 
           <TaskComments taskId={task.id} />
 

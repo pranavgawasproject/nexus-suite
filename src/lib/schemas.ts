@@ -611,3 +611,25 @@ export const updateTaskTimeEntrySchema = z.object({
 export const taskTimeEntryQuerySchema = z.object({
   taskId: z.string().min(1, 'taskId is required'),
 })
+
+// ============================================================
+// Task Worklogs / Time entries (Tasks module)
+// ============================================================
+
+export const createTaskWorklogSchema = z.object({
+  taskId: z.string().min(1, 'taskId is required'),
+  hours: z.number().positive('hours must be positive').max(24),
+  note: z.string().max(2000).optional(),
+  loggedAt: z.string().datetime().optional(),
+})
+
+export const updateTaskWorklogSchema = z.object({
+  id: z.string().min(1),
+  hours: z.number().positive().max(24).optional(),
+  note: z.string().max(2000).optional().nullable(),
+  loggedAt: z.string().datetime().optional(),
+})
+
+export const taskWorklogQuerySchema = z.object({
+  taskId: z.string().min(1, 'taskId is required'),
+})

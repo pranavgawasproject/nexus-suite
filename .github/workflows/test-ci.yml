@@ -64,8 +64,8 @@ jobs:
       - name: Task checklist schema unit tests
         run: bun run test:checklists
 
-      - name: Task time entry schema unit tests
-        run: bun run test:time-entries
+      - name: Task worklog schema unit tests
+        run: bun run test:worklogs
 
       - name: Build
         run: bun run build

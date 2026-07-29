@@ -739,3 +739,23 @@ model TaskTimeEntry {
   @@index([orgId, taskId])
   @@index([orgId, userId])
 }
+
+// Task worklogs / time entries (Tasks module — log hours against a task)
+model TaskWorklog {
+  id          String   @id @default(cuid())
+  orgId       String
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User     @relation("WorklogAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  hours       Float
+  note        String?
+  loggedAt    DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([orgId, taskId])
+  @@index([orgId, authorId])
+}
+

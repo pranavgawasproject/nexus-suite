@@ -5,14 +5,23 @@
 **Last reviewed:** 2026-07-29
 **Reviewed by:** Grok
 
-## Track A (this run): Task time entries (work logs)
+## Track A (this run): Task worklogs / time tracking
 
-**Code files changed:** `prisma/schema.prisma`, `src/lib/schemas.ts`, `src/app/api/time-entries/route.ts`, `tests/task-time-entries.test.ts`, `package.json`, `.github/workflows/test-ci.yml`, `status/PROJECT_STATUS.md`
+**Code files changed:** `prisma/schema.prisma`, `src/lib/schemas.ts`, `src/app/api/worklogs/route.ts`, `src/components/nexus/tasks-view.tsx`, `tests/task-worklogs.test.ts`, `package.json`, `.github/workflows/test-ci.yml`, `status/PROJECT_STATUS.md`
 
-- New `TaskTimeEntry` model (org-scoped; hours + note + loggedAt; user relation)
-- `/api/time-entries` CRUD under tasks module (`requireModule`, zod, audit)
-- Create/update/delete recalculates `Task.spentHours` from entry sum
-- Unit tests + `test:time-entries` wired into `test:all` and CI
+- New `TaskWorklog` model (org-scoped; updates `Task.spentHours` aggregate)
+- `/api/worklogs` CRUD under tasks module (`requireModule`, zod, audit)
+- Task detail dialog: time log list + add hours/note + total badge
+- Unit tests + `test:worklogs` wired into `test:all` and CI
+
+## Previous Track A: Task checklists
+
+**Code files changed:** `prisma/schema.prisma`, `src/lib/schemas.ts`, `src/app/api/checklists/route.ts`, `src/components/nexus/tasks-view.tsx`, `tests/task-checklists.test.ts`, `package.json`, `.github/workflows/test-ci.yml`, `status/PROJECT_STATUS.md`
+
+- New `TaskChecklistItem` model (org-scoped, ordered by position)
+- `/api/checklists` CRUD under tasks module (`requireModule`, zod, audit)
+- Task detail dialog: checklist with add / toggle complete / delete + progress badge
+- Unit tests + `test:checklists` wired into `test:all` and CI
 
 ## ✅ Completed
 - Enhanced /api/health with Prisma ping and module stats
@@ -35,12 +44,11 @@
 - **Task dependencies UI** in task detail dialog (list/add/remove blocks & relates)
 - **Gantt / timeline view** with dependency labels, filters, nav under Tasks
 - **Task checklists** — schema + `/api/checklists` CRUD + UI in task detail + unit tests + CI
-- **Task time entries (work logs)** — schema + `/api/time-entries` CRUD + spentHours recalc + unit tests + CI
+- **Task worklogs / time tracking** — schema + `/api/worklogs` CRUD + UI + unit tests + CI
 
 ## 🔧 Needs Fixing
-- (none critical — CI matrix covers tenant, gate, csv, cycles, retros, comments, milestones, dependencies, checklists, time-entries tests)
-- After schema change: run `bun run db:push` (or migrate) locally / in deploy so SQLite picks up TaskTimeEntry (and prior models if not yet applied)
-- **Task time entries UI** in task detail dialog (list / log hours / delete) — API ready; UI next
+- (none critical — CI matrix covers tenant, gate, csv, cycles, retros, comments, milestones, dependencies, checklists tests)
+- After schema change: run `bun run db:push` (includes TaskWorklog; (or migrate) locally / in deploy so SQLite picks up TaskChecklistItem (and prior TaskDependency / Milestone / TaskComment / Cycle / Retrospective if not yet applied)
 
 ## 🚀 Future Plan
 
@@ -66,8 +74,7 @@
 - [x] Task dependencies UI in task detail dialog
 - [x] Gantt / timeline view with dependencies
 - [x] Task checklists (schema + API + UI + CI)
-- [x] Task time entries API (schema + CRUD + spentHours sync + CI)
-- [ ] Task time entries UI in task detail dialog
+- [x] Task worklogs / time tracking (schema + API + UI + CI)
 
 ### Phase 2 — AI Integration
 - [ ] AI-assisted task/project creation and summarization
@@ -97,10 +104,10 @@
 - [x] **Task dependencies UI** in task detail dialog.
 - [x] **Gantt / timeline view with dependencies** (inspired by OpenProject) — CSS timeline bars, filters, dependency labels.
 - [x] **Task checklists** (inspired by Plane / Trello) — `TaskChecklistItem` + `/api/checklists` + task detail UI.
-- [x] **Task time entries / work logs** (inspired by Plane / OpenProject) — `TaskTimeEntry` + `/api/time-entries` + spentHours recalc; UI pending.
+- [x] **Task worklogs / time tracking** — `TaskWorklog` + `/api/worklogs` + task detail UI (updates spentHours).
 - [ ] **Two-way GitHub sync** (inspired by Huly & Plane) — sync Tasks/Issues module with GitHub Issues (bi-directional create/update/comment sync). High priority — fits dev-tool-savvy audience.
 - [ ] **Real-time collaborative Wiki/Docs** (inspired by Plane & Huly) — upgrade `docs-view.tsx` from static docs to real-time collaborative editing (e.g. Yjs/CRDT-based).
 - [ ] **Custom fields / metadata-driven forms per module** (inspired by ERPNext DocTypes) — let self-hosters extend Tasks, KRAs, Risks, etc. with custom fields without forking code. Strong fit for open-core/toggleable-module pitch.
 
-**Suggested build priority:** Time entries UI → GitHub sync → Wiki upgrade → Custom fields → self-host deploy polish.
+**Suggested build priority:** GitHub sync → Wiki upgrade → Custom fields → self-host deploy polish.
 

@@ -588,3 +588,26 @@ export const updateTaskChecklistItemSchema = z.object({
 export const taskChecklistQuerySchema = z.object({
   taskId: z.string().min(1, 'taskId is required'),
 })
+
+// ============================================================
+// Task Time Entries (work logs — Tasks module)
+// ============================================================
+
+export const createTaskTimeEntrySchema = z.object({
+  taskId: z.string().min(1, 'taskId is required'),
+  hours: z.number().positive('hours must be positive').max(24 * 7),
+  note: z.string().max(2000).optional(),
+  loggedAt: z.string().datetime().optional(),
+  userId: z.string().min(1).optional(), // defaults to current user when omitted
+})
+
+export const updateTaskTimeEntrySchema = z.object({
+  id: z.string().min(1),
+  hours: z.number().positive().max(24 * 7).optional(),
+  note: z.string().max(2000).optional().nullable(),
+  loggedAt: z.string().datetime().optional(),
+})
+
+export const taskTimeEntryQuerySchema = z.object({
+  taskId: z.string().min(1, 'taskId is required'),
+})

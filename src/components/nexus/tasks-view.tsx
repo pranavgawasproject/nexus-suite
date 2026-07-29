@@ -79,6 +79,16 @@ interface Milestone {
   dueDate?: string | null
 }
 
+interface TaskDependency {
+  id: string
+  type: 'blocks' | 'relates'
+  fromTaskId: string
+  toTaskId: string
+  fromTask: { id: string; title: string; status: string }
+  toTask: { id: string; title: string; status: string }
+  createdAt?: string
+}
+
 interface Task {
   id: string
   title: string
@@ -384,7 +394,7 @@ export function TasksView() {
         team={team}
         cycles={cycles}
         milestones={milestones}
-        tasks={tasks}
+        allTasks={tasks}
         onUpdated={() => load()}
       />
     </div>
@@ -752,30 +762,22 @@ function CreateTaskDialog({
   )
 }
 
-
-interface TaskDependency {
+interface TaskComment {
   id: string
-  type: 'blocks' | 'relates'
-  fromTaskId: string
-  toTaskId: string
-  fromTask: { id: string; title: string; status: string }
-  toTask: { id: string; title: string; status: string }
-  createdAt?: string
+  body: string
+  createdAt: string
+  updatedAt?: string
+  author: { id: string; name: string; email: string; avatarUrl?: string | null }
 }
 
-function TaskDependencies({
-  taskId,
-  tasks,
-}: {
-  taskId: string
-  tasks: Task[]
-}) {
+
+function TaskDependencies({ taskId, allTasks }: { taskId: string; allTasks: Task[] }) {
   const [deps, setDeps] = React.useState<TaskDependency[]>([])
   const [loading, setLoading] = React.useState(true)
-  const [submitting, setSubmitting] = React.useState(false)
   const [otherTaskId, setOtherTaskId] = React.useState('')
   const [depType, setDepType] = React.useState<'blocks' | 'relates'>('blocks')
   const [direction, setDirection] = React.useState<'blocks' | 'blocked_by'>('blocks')
+  const [submitting, setSubmitting] = React.useState(false)
 
   const load = React.useCallback(async () => {
     setLoading(true)
@@ -796,23 +798,26 @@ function TaskDependencies({
   }, [load])
 
   const linkedIds = React.useMemo(() => {
-    const s = new Set<string>()
+    const ids = new Set<string>()
     for (const d of deps) {
-      s.add(d.fromTaskId)
-      s.add(d.toTaskId)
+      ids.add(d.fromTaskId)
+      ids.add(d.toTaskId)
     }
-    s.delete(taskId)
-    return s
+    ids.delete(taskId)
+    return ids
   }, [deps, taskId])
 
-  const candidateTasks = tasks.filter((t) => t.id !== taskId && !linkedIds.has(t.id))
+  const candidates = allTasks.filter((t) => t.id !== taskId && !linkedIds.has(t.id))
 
   const add = async () => {
-    if (!otherTaskId) return
+    if (!otherTaskId) {
+      toast.error('Select a task')
+      return
+    }
+    const fromTaskId = direction === 'blocks' ? taskId : otherTaskId
+    const toTaskId = direction === 'blocks' ? otherTaskId : taskId
     setSubmitting(true)
     try {
-      const fromTaskId = direction === 'blocks' ? taskId : otherTaskId
-      const toTaskId = direction === 'blocks' ? otherTaskId : taskId
       const d = await api<{ dependency: TaskDependency }>('/api/dependencies', {
         method: 'POST',
         body: JSON.stringify({ fromTaskId, toTaskId, type: depType }),
@@ -839,14 +844,14 @@ function TaskDependencies({
   }
 
   const labelFor = (d: TaskDependency) => {
-    const other = d.fromTaskId === taskId ? d.toTask : d.fromTask
     if (d.type === 'relates') {
-      return { verb: 'relates to', other }
+      const other = d.fromTaskId === taskId ? d.toTask : d.fromTask
+      return { verb: 'Relates to', other }
     }
     if (d.fromTaskId === taskId) {
-      return { verb: 'blocks', other }
+      return { verb: 'Blocks', other: d.toTask }
     }
-    return { verb: 'blocked by', other }
+    return { verb: 'Blocked by', other: d.fromTask }
   }
 
   return (
@@ -854,44 +859,43 @@ function TaskDependencies({
       <div className="flex items-center justify-between mb-2">
         <Label className="text-xs uppercase text-muted-foreground flex items-center gap-1.5">
           <Icons.GitBranch className="h-3.5 w-3.5" />
-          Dependencies {deps.length > 0 && (
+          Dependencies{' '}
+          {deps.length > 0 && (
             <Badge variant="secondary" className="text-[10px] h-5 px-1.5">{deps.length}</Badge>
           )}
         </Label>
       </div>
 
       {loading ? (
-        <div className="flex items-center gap-2 text-xs text-muted-foreground py-4">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground py-3">
           <Icons.Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading dependencies…
         </div>
       ) : deps.length === 0 ? (
-        <p className="text-xs text-muted-foreground py-2">No dependencies yet.</p>
+        <p className="text-xs text-muted-foreground py-2">No dependencies yet. Link blocking or related tasks.</p>
       ) : (
-        <ul className="space-y-2 max-h-40 overflow-y-auto pr-1">
+        <ul className="space-y-2 max-h-40 overflow-y-auto pr-1 mb-3">
           {deps.map((d) => {
             const { verb, other } = labelFor(d)
             return (
-              <li key={d.id} className="flex items-center gap-2 rounded-md border bg-muted/20 px-2.5 py-1.5 text-sm">
-                <Badge
-                  variant={d.type === 'blocks' ? 'default' : 'secondary'}
-                  className="text-[10px] capitalize shrink-0"
-                >
-                  {verb}
-                </Badge>
-                <span className="min-w-0 flex-1 truncate" title={other.title}>
-                  {other.title}
-                </span>
-                <Badge variant="outline" className="text-[10px] capitalize shrink-0">
-                  {other.status.replace('_', ' ')}
-                </Badge>
+              <li
+                key={d.id}
+                className="flex items-center justify-between gap-2 rounded-md border bg-muted/20 px-2.5 py-2 text-xs"
+              >
+                <div className="min-w-0 flex-1">
+                  <span className="font-medium text-muted-foreground">{verb}</span>{' '}
+                  <span className="font-medium truncate">{other.title}</span>
+                  <Badge variant="outline" className="ml-1.5 text-[9px] capitalize">
+                    {other.status.replace('_', ' ')}
+                  </Badge>
+                </div>
                 <Button
-                  size="icon"
                   variant="ghost"
-                  className="h-7 w-7 shrink-0 text-destructive"
-                  title="Remove"
+                  size="sm"
+                  className="h-7 w-7 p-0 shrink-0 text-muted-foreground hover:text-destructive"
                   onClick={() => remove(d.id)}
+                  title="Remove dependency"
                 >
-                  <Icons.Trash2 className="h-3 w-3" />
+                  <Icons.X className="h-3.5 w-3.5" />
                 </Button>
               </li>
             )
@@ -899,74 +903,67 @@ function TaskDependencies({
         </ul>
       )}
 
-      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end">
-        <div className="flex-1 min-w-0">
-          <Label className="text-[10px] uppercase text-muted-foreground">Task</Label>
-          <Select value={otherTaskId} onValueChange={setOtherTaskId}>
-            <SelectTrigger className="mt-0.5 h-8 text-xs">
-              <SelectValue placeholder="Select task…" />
-            </SelectTrigger>
-            <SelectContent>
-              {candidateTasks.length === 0 ? (
-                <SelectItem value="__none__" disabled>No other tasks</SelectItem>
-              ) : (
-                candidateTasks.map((t) => (
+      <div className="space-y-2 rounded-md border bg-muted/10 p-2.5">
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <Label className="text-[10px] uppercase text-muted-foreground">Relation</Label>
+            <Select
+              value={depType === 'relates' ? 'relates' : direction}
+              onValueChange={(v) => {
+                if (v === 'relates') {
+                  setDepType('relates')
+                } else {
+                  setDepType('blocks')
+                  setDirection(v as 'blocks' | 'blocked_by')
+                }
+              }}
+            >
+              <SelectTrigger className="mt-1 h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="blocks">This blocks…</SelectItem>
+                <SelectItem value="blocked_by">This is blocked by…</SelectItem>
+                <SelectItem value="relates">Relates to…</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-[10px] uppercase text-muted-foreground">Task</Label>
+            <Select value={otherTaskId || '__none__'} onValueChange={(v) => setOtherTaskId(v === '__none__' ? '' : v)}>
+              <SelectTrigger className="mt-1 h-8 text-xs">
+                <SelectValue placeholder="Select task" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">Select task</SelectItem>
+                {candidates.map((t) => (
                   <SelectItem key={t.id} value={t.id}>
                     {t.title}
                   </SelectItem>
-                ))
-              )}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="w-full sm:w-[120px]">
-          <Label className="text-[10px] uppercase text-muted-foreground">Relation</Label>
-          <Select
-            value={depType === 'relates' ? 'relates' : direction}
-            onValueChange={(v) => {
-              if (v === 'relates') {
-                setDepType('relates')
-              } else {
-                setDepType('blocks')
-                setDirection(v as 'blocks' | 'blocked_by')
-              }
-            }}
-          >
-            <SelectTrigger className="mt-0.5 h-8 text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="blocks">Blocks</SelectItem>
-              <SelectItem value="blocked_by">Blocked by</SelectItem>
-              <SelectItem value="relates">Relates to</SelectItem>
-            </SelectContent>
-          </Select>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <Button
           size="sm"
-          className="h-8"
+          className="h-8 w-full text-xs"
           onClick={add}
-          disabled={submitting || !otherTaskId || otherTaskId === '__none__'}
+          disabled={submitting || !otherTaskId}
         >
           {submitting ? (
-            <Icons.Loader2 className="h-3.5 w-3.5 animate-spin" />
+            <>
+              <Icons.Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Adding…
+            </>
           ) : (
             <>
-              <Icons.Plus className="mr-1 h-3.5 w-3.5" /> Add
+              <Icons.Plus className="mr-1.5 h-3.5 w-3.5" /> Add dependency
             </>
           )}
         </Button>
       </div>
     </div>
   )
-}
-
-interface TaskComment {
-  id: string
-  body: string
-  createdAt: string
-  updatedAt?: string
-  author: { id: string; name: string; email: string; avatarUrl?: string | null }
 }
 
 function TaskComments({ taskId }: { taskId: string }) {
@@ -1176,7 +1173,7 @@ function TaskDetailDialog({
   team,
   cycles,
   milestones,
-  tasks,
+  allTasks,
   onUpdated,
 }: {
   task: Task | null
@@ -1185,7 +1182,7 @@ function TaskDetailDialog({
   team: User[]
   cycles: Cycle[]
   milestones: Milestone[]
-  tasks: Task[]
+  allTasks: Task[]
   onUpdated: () => void
 }) {
   const [edit, setEdit] = React.useState<Task | null>(task)
@@ -1403,7 +1400,7 @@ function TaskDetailDialog({
             </div>
           )}
 
-          <TaskDependencies taskId={task.id} tasks={tasks} />
+          <TaskDependencies taskId={task.id} allTasks={allTasks} />
 
           <TaskComments taskId={task.id} />
         </div>

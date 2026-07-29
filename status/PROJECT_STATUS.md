@@ -5,7 +5,14 @@
 **Last reviewed:** 2026-07-29
 **Reviewed by:** Grok
 
-## Track A (this run): Task worklogs / time tracking
+## Track A (this run): Fix TaskWorklog Prisma relations
+
+**Code files changed:** `prisma/schema.prisma`, `status/PROJECT_STATUS.md`
+
+- Wired missing `taskWorklogs` / `worklogs` relations on `Organization`, `User` (`WorklogAuthor`), and `Task` so Prisma client validates after the worklogs feature landed
+- No API/UI change — pure schema integrity fix so `db:push` / generate succeeds
+
+## Previous Track A: Task worklogs / time tracking
 
 **Code files changed:** `prisma/schema.prisma`, `src/lib/schemas.ts`, `src/app/api/worklogs/route.ts`, `src/components/nexus/tasks-view.tsx`, `tests/task-worklogs.test.ts`, `package.json`, `.github/workflows/test-ci.yml`, `status/PROJECT_STATUS.md`
 
@@ -47,8 +54,8 @@
 - **Task worklogs / time tracking** — schema + `/api/worklogs` CRUD + UI + unit tests + CI
 
 ## 🔧 Needs Fixing
-- (none critical — CI matrix covers tenant, gate, csv, cycles, retros, comments, milestones, dependencies, checklists tests)
-- After schema change: run `bun run db:push` (includes TaskWorklog; (or migrate) locally / in deploy so SQLite picks up TaskChecklistItem (and prior TaskDependency / Milestone / TaskComment / Cycle / Retrospective if not yet applied)
+- (none critical — CI matrix covers tenant, gate, csv, cycles, retros, comments, milestones, dependencies, checklists, worklogs tests)
+- After schema change: run `bun run db:push` (or migrate) locally / in deploy so SQLite picks up TaskWorklog + TaskChecklistItem (and prior TaskDependency / Milestone / TaskComment / Cycle / Retrospective if not yet applied)
 
 ## 🚀 Future Plan
 

@@ -57,6 +57,7 @@ model Organization {
   taskDependencies TaskDependency[]
   taskChecklistItems TaskChecklistItem[]
   taskTimeEntries TaskTimeEntry[]
+  taskWorklogs   TaskWorklog[]
 }
 
 model User {
@@ -96,6 +97,7 @@ model User {
   authoredRetros     Retrospective[] @relation("RetroAuthor")
   authoredComments   TaskComment[]   @relation("CommentAuthor")
   timeEntries        TaskTimeEntry[] @relation("TimeEntryUser")
+  worklogs           TaskWorklog[]   @relation("WorklogAuthor")
 }
 
 model Department {
@@ -212,6 +214,7 @@ model Task {
   dependenciesTo   TaskDependency[] @relation("DepTo")
   checklistItems TaskChecklistItem[]
   timeEntries TaskTimeEntry[]
+  worklogs    TaskWorklog[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

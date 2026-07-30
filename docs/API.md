@@ -41,6 +41,10 @@ Create keys in **Settings → API Keys & Webhooks**. Keys are shown once at crea
 - `GET /api/v1/leaves?userId=&status=&limit=` — list leave requests (max 100)
 - `POST /api/v1/leaves` — submit a leave request (`write`; emits `leave.created` webhook)
 
+### KRA / KPA (Module 2)
+- `GET /api/v1/kras?userId=&cycle=&status=&limit=` — list KRAs (max 100)
+- `POST /api/v1/kras` — create a KRA (`write`; emits `kra.created` webhook)
+
 ### Risk & Issue (Module 6)
 - `GET /api/v1/risks?projectId=&status=&category=&limit=` — list risks (max 100)
 - `POST /api/v1/risks` — create a risk (`write`; emits `risk.created` webhook)

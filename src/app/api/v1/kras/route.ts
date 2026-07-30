@@ -5,7 +5,7 @@ import { createKraSchema } from '@/lib/schemas'
 import { emitEvent } from '@/lib/webhooks'
 
 /**
- * Public API — KRAs / KPAs (Module 2).
+ * Public API — KRAs (Module 2 KRA/KPA).
  * GET list (read), POST create (write). Module-gated via requirePublicApi('kra').
  */
 
@@ -36,6 +36,8 @@ export async function GET(req: NextRequest) {
       targetRating: true,
       selfRating: true,
       managerRating: true,
+      selfComment: true,
+      managerComment: true,
       status: true,
       createdAt: true,
       updatedAt: true,
@@ -72,8 +74,8 @@ export async function POST(req: NextRequest) {
       title: data.title,
       description: data.description || null,
       cycle: data.cycle,
-      weight: data.weight ?? 25,
-      targetRating: data.targetRating ?? 3,
+      weight: data.weight,
+      targetRating: data.targetRating,
       status: 'draft',
     },
     select: {

@@ -29,11 +29,17 @@ Create keys in **Settings → API Keys & Webhooks**. Keys are shown once at crea
 - `GET /api/v1/tasks?projectId=&status=&assigneeId=&limit=` — list tasks (max 100)
 - `POST /api/v1/tasks` — create a task (requires `write` scope)
 - `GET /api/v1/projects?status=` — list projects
+- `GET /api/v1/worklogs?taskId=` — list worklogs for a task
+- `POST /api/v1/worklogs` — log time against a task (`write`)
 
 ### Rooms (Module 3)
 - `GET /api/v1/rooms` — list active rooms
 - `GET /api/v1/bookings?roomId=&from=&to=` — list bookings
 - `POST /api/v1/bookings` — create a booking (with automatic conflict check)
+
+### Risk & Issue (Module 6)
+- `GET /api/v1/risks?projectId=&status=&category=&limit=` — list risks (max 100)
+- `POST /api/v1/risks` — create a risk (`write`; emits `risk.created` webhook)
 
 ### Disabled modules
 Endpoints for disabled modules return **403** (not 404) with body:
@@ -72,11 +78,13 @@ Failed deliveries retry up to 5 times with exponential backoff: 1m, 5m, 25m, 2h,
 
 ```
 task.created        task.updated        task.deleted
+task.worklog.created
 booking.confirmed   booking.cancelled
 leave.created       leave.approved      leave.rejected
 kra.created         kra.updated
 expense.created     budget.upserted
 document.created    document.updated
+risk.created
 ```
 
 Subscribe to all with `*`, or use prefix matching like `task.*`.

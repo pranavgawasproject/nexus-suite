@@ -611,3 +611,12 @@ export const taskWorklogQuerySchema = z.object({
   taskId: z.string().min(1, 'taskId is required'),
 })
 
+// Public API create worklog — authorId required (no session user on API keys)
+export const createPublicTaskWorklogSchema = z.object({
+  taskId: z.string().min(1, 'taskId is required'),
+  authorId: z.string().min(1, 'authorId is required'),
+  hours: z.number().positive('hours must be positive').max(24),
+  note: z.string().max(2000).optional(),
+  loggedAt: z.string().datetime().optional(),
+})
+

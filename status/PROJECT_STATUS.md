@@ -5,13 +5,13 @@
 **Last reviewed:** 2026-07-30
 **Reviewed by:** Grok (daily maintainer)
 
-## Track A (this run): Public API v1 GET/POST issues
+## Track A (this run): Public API v1 GET/POST kras
 
-**Code files changed:** `src/app/api/v1/issues/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/app/api/v1/kras/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
 
-- Expose module-gated issue list/create for API-key clients under `/api/v1/issues`
-- Validate projectId/assigneeId/reporterId against org; emit `issue.created` webhook
-- Document endpoints in docs/API.md (also document previously shipped `/api/v1/leaves`)
+- Expose module-gated KRA list/create for API-key clients under `/api/v1/kras`
+- Validate userId against org; emit `kra.created` webhook
+- Document endpoints in docs/API.md
 
 ## ✅ Completed
 - Enhanced /api/health with Prisma ping and module stats
@@ -39,6 +39,7 @@
 - **parentId subtasks** wired through schemas, API, tests, and CI
 - **Public API v1** for tasks, projects, worklogs, rooms, bookings, risks, leaves, me
 - **Public API v1 GET/POST issues** (`/api/v1/issues`, module-gated, webhook on create)
+- **Public API v1 GET/POST kras** (`/api/v1/kras`, module-gated, webhook on create)
 - **2026-07-29 code audit** confirmed Prisma models, API routes, and UI view files exist for all 10 PRD modules
 
 ## 🔧 Needs Fixing
@@ -83,6 +84,7 @@
 - [x] Task worklogs / time entries (schema + API + UI + CI)
 - [x] Remove broken TaskTimeEntry duplicate API
 - [x] Public API v1 issues
+- [x] Public API v1 kras
 
 ### Phase 2 — AI Integration
 - [ ] AI-assisted task/project creation and summarization
@@ -116,6 +118,6 @@
 - [ ] **Two-way GitHub sync** (inspired by Huly & Plane) — sync Tasks/Issues module with GitHub Issues (bi-directional create/update/comment sync). High priority — fits dev-tool-savvy audience.
 - [ ] **Real-time collaborative Wiki/Docs** (inspired by Plane & Huly) — upgrade `docs-view.tsx` from static docs to real-time collaborative editing (e.g. Yjs/CRDT-based).
 - [ ] **Custom fields / metadata-driven forms per module** (inspired by ERPNext DocTypes) — let self-hosters extend Tasks, KRAs, Risks, etc. with custom fields without forking code. Strong fit for open-core/toggleable-module pitch.
-- [ ] **Public API coverage for remaining modules** (KRAs, budgets/expenses, documents, allocations, change-requests).
+- [ ] **Public API coverage for remaining modules** (budgets/expenses, documents, allocations, change-requests). KRAs done.
 
 **Suggested build priority:** GitHub sync → more public API modules → Wiki upgrade → Custom fields → self-host deploy polish.

@@ -2,16 +2,16 @@
 
 > **This file is the single source of truth for "where things actually stand."**
 
-**Last reviewed:** 2026-07-29
-**Reviewed by:** Grok (dev log), Claude (code audit update)
+**Last reviewed:** 2026-07-30
+**Reviewed by:** Grok (daily maintainer)
 
-## Track A (this run): Remove broken duplicate TaskTimeEntry API
+## Track A (this run): Public API v1 GET/POST issues
 
-**Code files changed:** `src/app/api/time-entries/route.ts` (deleted), `src/lib/schemas.ts`, `tests/task-time-entries.test.ts` (deleted), `package.json`, `.github/workflow/test-ci.yml`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/app/api/v1/issues/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
 
-- `/api/time-entries` referenced non-existent Prisma model `TaskTimeEntry` (only `TaskWorklog` exists)
-- Removed dead route, zod schemas, unit tests, package script, and CI step
-- Canonical time tracking remains `/api/worklogs` + `TaskWorklog` (UI already uses it)
+- Expose module-gated issue list/create for API-key clients under `/api/v1/issues`
+- Validate projectId/assigneeId/reporterId against org; emit `issue.created` webhook
+- Document endpoints in docs/API.md (also document previously shipped `/api/v1/leaves`)
 
 ## ✅ Completed
 - Enhanced /api/health with Prisma ping and module stats
@@ -36,26 +36,30 @@
 - **Task checklists** — schema + `/api/checklists` CRUD + UI in task detail + unit tests + CI
 - **Task worklogs (time entries)** — `TaskWorklog` model + `/api/worklogs` CRUD + TaskWorklogs UI + unit tests + CI; auto-updates spentHours
 - **Removed broken `/api/time-entries` duplicate** (no Prisma model; worklogs is canonical)
-- **2026-07-29 code audit** confirmed Prisma models, API routes, and UI view files exist for all 10 PRD modules (see Phase 1 checklist below) — not just Tasks & Projects
+- **parentId subtasks** wired through schemas, API, tests, and CI
+- **Public API v1** for tasks, projects, worklogs, rooms, bookings, risks, leaves, me
+- **Public API v1 GET/POST issues** (`/api/v1/issues`, module-gated, webhook on create)
+- **2026-07-29 code audit** confirmed Prisma models, API routes, and UI view files exist for all 10 PRD modules
 
 ## 🔧 Needs Fixing
 - (none critical — CI matrix covers tenant, gate, csv, cycles, retros, comments, milestones, dependencies, checklists, worklogs tests)
 - After schema change: run `bun run db:push` (or migrate) locally / in deploy so SQLite picks up TaskWorklog (and prior models if not yet applied)
 - **Follow-up needed:** the module-by-module check below confirms model + API route + UI file *existence* only. A deeper pass (full CRUD wiring, empty states, permissions, test coverage) is still recommended per module before treating any of them as launch-ready.
+- Public API docs lag slightly behind shipped routes; keep `docs/API.md` in sync when adding endpoints.
 
 ## 🚀 Future Plan
 
 **Vision:** Become the #1 most-starred, most-forked open-source AI + ERP/PM platform on GitHub, and get accepted into GitHub Sponsors.
 
 ### Phase 1 — Core Product (core modules built; deeper QA pass recommended)
-- [x] Tasks & Projects — full depth (cycles, retros, comments, milestones, dependencies, checklists, worklogs, Gantt)
+- [x] Tasks & Projects — full depth (cycles, retros, comments, milestones, dependencies, checklists, worklogs, Gantt, subtasks)
 - [x] KRA/KPA — `Kra` model + `/api/kras` + `kra-view.tsx`
 - [x] Room & Resource Booking — `Room`/`Booking` models + `/api/rooms`, `/api/bookings` + `rooms-view.tsx`
 - [x] Resource & Capacity — `Allocation` model + `/api/allocations` + `resource-view.tsx`
 - [x] Budget & Financial Tracking — `Budget`/`Expense` models + `/api/budgets`, `/api/expenses` + `budget-view.tsx`
-- [x] Risk & Issue Management — `Risk`/`Issue`/`ChangeRequest` models + `/api/risks`, `/api/issues`, `/api/change-requests` + `risk-view.tsx`
+- [x] Risk & Issue Management — `Risk`/`Issue`/`ChangeRequest` models + `/api/risks`, `/api/issues`, `/api/change-requests` + `risk-view.tsx` + public API for risks/issues
 - [x] Collaboration & Docs — `Document`/`DocumentVersion` models + `/api/documents` + `docs-view.tsx`
-- [x] Leave & Attendance — `Holiday`/`Leave`/`Attendance` models + `/api/holidays`, `/api/leaves`, `/api/attendance` + `leave-view.tsx`
+- [x] Leave & Attendance — `Holiday`/`Leave`/`Attendance` models + `/api/holidays`, `/api/leaves`, `/api/attendance` + `leave-view.tsx` + public API leaves
 - [x] Reporting & Analytics — `reporting-view.tsx` + `/api/dashboard`, `/api/export`
 - [x] Governance & Compliance — `Policy`/`Signature` models + `/api/policies` + `governance-view.tsx`
 - [x] CSV import wizard UI
@@ -78,6 +82,7 @@
 - [x] Task checklists (schema + API + UI + CI)
 - [x] Task worklogs / time entries (schema + API + UI + CI)
 - [x] Remove broken TaskTimeEntry duplicate API
+- [x] Public API v1 issues
 
 ### Phase 2 — AI Integration
 - [ ] AI-assisted task/project creation and summarization
@@ -98,7 +103,7 @@
 
 ## 🏆 Competitor-Inspired Features (Future)
 
-> Researched from top open-source PM/ERP repos (Plane ⭐ 55k, Huly ⭐ 24.5k, ERPNext ⭐ 37.2k, OpenProject, Leantime, Focalboard) — features worth adding to Nexus Suite to compete at their level.
+> Researched from top open-source PM/ERP repos (Plane, Huly, ERPNext, OpenProject, Leantime, Focalboard) — features worth adding to Nexus Suite to compete at their level.
 
 - [x] **Sprints / Cycles API + UI** (inspired by Plane) — schema, `/api/cycles`, CyclesView, and Tasks kanban cycle filter/assign done.
 - [x] **Sprint retrospectives API + UI** (inspired by Leantime) — schema + `/api/retrospectives` CRUD + CyclesView list/create/edit.
@@ -111,5 +116,6 @@
 - [ ] **Two-way GitHub sync** (inspired by Huly & Plane) — sync Tasks/Issues module with GitHub Issues (bi-directional create/update/comment sync). High priority — fits dev-tool-savvy audience.
 - [ ] **Real-time collaborative Wiki/Docs** (inspired by Plane & Huly) — upgrade `docs-view.tsx` from static docs to real-time collaborative editing (e.g. Yjs/CRDT-based).
 - [ ] **Custom fields / metadata-driven forms per module** (inspired by ERPNext DocTypes) — let self-hosters extend Tasks, KRAs, Risks, etc. with custom fields without forking code. Strong fit for open-core/toggleable-module pitch.
+- [ ] **Public API coverage for remaining modules** (KRAs, budgets/expenses, documents, allocations, change-requests).
 
-**Suggested build priority:** GitHub sync → Wiki upgrade → Custom fields → self-host deploy polish.
+**Suggested build priority:** GitHub sync → more public API modules → Wiki upgrade → Custom fields → self-host deploy polish.

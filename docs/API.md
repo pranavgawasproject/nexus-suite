@@ -37,9 +37,15 @@ Create keys in **Settings → API Keys & Webhooks**. Keys are shown once at crea
 - `GET /api/v1/bookings?roomId=&from=&to=` — list bookings
 - `POST /api/v1/bookings` — create a booking (with automatic conflict check)
 
+### Leave & Attendance (Module 8)
+- `GET /api/v1/leaves?userId=&status=&limit=` — list leave requests (max 100)
+- `POST /api/v1/leaves` — submit a leave request (`write`; emits `leave.created` webhook)
+
 ### Risk & Issue (Module 6)
 - `GET /api/v1/risks?projectId=&status=&category=&limit=` — list risks (max 100)
 - `POST /api/v1/risks` — create a risk (`write`; emits `risk.created` webhook)
+- `GET /api/v1/issues?projectId=&status=&severity=&limit=` — list issues (max 100)
+- `POST /api/v1/issues` — create an issue (`write`; emits `issue.created` webhook)
 
 ### Disabled modules
 Endpoints for disabled modules return **403** (not 404) with body:

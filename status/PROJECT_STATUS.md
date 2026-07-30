@@ -5,12 +5,12 @@
 **Last reviewed:** 2026-07-30
 **Reviewed by:** Grok (daily maintainer)
 
-## Track A (this run): Public API v1 GET/POST kras
+## Track A (this run): Public API v1 GET/POST budgets + expenses
 
-**Code files changed:** `src/app/api/v1/kras/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/app/api/v1/budgets/route.ts`, `src/app/api/v1/expenses/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
 
-- Expose module-gated KRA list/create for API-key clients under `/api/v1/kras`
-- Validate userId against org; emit `kra.created` webhook
+- Expose module-gated budget list/upsert and expense list/create under `/api/v1/budgets` and `/api/v1/expenses`
+- Validate projectId / incurredById against org; emit `budget.upserted` and `expense.created` webhooks
 - Document endpoints in docs/API.md
 
 ## ✅ Completed
@@ -37,8 +37,10 @@
 - **Task worklogs (time entries)** — `TaskWorklog` model + `/api/worklogs` CRUD + TaskWorklogs UI + unit tests + CI; auto-updates spentHours
 - **Removed broken `/api/time-entries` duplicate** (no Prisma model; worklogs is canonical)
 - **parentId subtasks** wired through schemas, API, tests, and CI
-- **Public API v1** for tasks, projects, worklogs, rooms, bookings, risks, leaves, me, issues
+- **Public API v1** for tasks, projects, worklogs, rooms, bookings, risks, leaves, me
+- **Public API v1 GET/POST issues** (`/api/v1/issues`, module-gated, webhook on create)
 - **Public API v1 GET/POST kras** (`/api/v1/kras`, module-gated, webhook on create)
+- **Public API v1 GET/POST budgets + expenses** (`/api/v1/budgets`, `/api/v1/expenses`, module-gated, webhooks)
 - **2026-07-29 code audit** confirmed Prisma models, API routes, and UI view files exist for all 10 PRD modules
 
 ## 🔧 Needs Fixing
@@ -84,6 +86,7 @@
 - [x] Remove broken TaskTimeEntry duplicate API
 - [x] Public API v1 issues
 - [x] Public API v1 kras
+- [x] Public API v1 budgets + expenses
 
 ### Phase 2 — AI Integration
 - [ ] AI-assisted task/project creation and summarization
@@ -117,6 +120,6 @@
 - [ ] **Two-way GitHub sync** (inspired by Huly & Plane) — sync Tasks/Issues module with GitHub Issues (bi-directional create/update/comment sync). High priority — fits dev-tool-savvy audience.
 - [ ] **Real-time collaborative Wiki/Docs** (inspired by Plane & Huly) — upgrade `docs-view.tsx` from static docs to real-time collaborative editing (e.g. Yjs/CRDT-based).
 - [ ] **Custom fields / metadata-driven forms per module** (inspired by ERPNext DocTypes) — let self-hosters extend Tasks, KRAs, Risks, etc. with custom fields without forking code. Strong fit for open-core/toggleable-module pitch.
-- [ ] **Public API coverage for remaining modules** (budgets/expenses, documents, allocations, change-requests).
+- [ ] **Public API coverage for remaining modules** (documents, allocations, change-requests). Budgets/expenses + KRAs done.
 
 **Suggested build priority:** GitHub sync → more public API modules → Wiki upgrade → Custom fields → self-host deploy polish.

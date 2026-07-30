@@ -1,75 +1,83 @@
 # Nexus Suite — Project Status
 
-> **This file is the single source of truth for "where things actually stand."**
+**Last reviewed:** 2026-07-30  
+**Maintainer note:** Autonomous daily runs must prefer Track A (real code) over docs-only commits.
 
-**Last reviewed:** 2026-07-30
-**Reviewed by:** Grok (autonomous daily maintainer)
-
-## Track A (this run): Task subtasks via parentId
-
-**Code files changed:** `src/lib/schemas.ts`, `src/app/api/tasks/route.ts`, `tests/task-subtasks.test.ts`, `package.json`, `.github/workflows/test-ci.yml`, `status/PROJECT_STATUS.md`
-
-- Wired existing `Task.parentId` column through zod schemas (`create` / `update` / query)
-- `/api/tasks` POST/PATCH validate parent (same org + project, one nesting level, no self-parent)
-- GET supports `parentId` / `parentId=none` (top-level only) and returns `subtaskCount`
-- DELETE of a parent orphans children (clears their parentId) instead of cascading delete
-- Unit tests + `test:subtasks` wired into `test:all` and CI
-
-## Previous Track A: Task worklogs / time tracking
-
-- `TaskWorklog` model, `/api/worklogs`, UI in task detail, tests + CI
-
-## Previous Track A: Task checklists
-
-- `TaskChecklistItem` model, `/api/checklists`, UI, tests + CI
+---
 
 ## ✅ Completed
-- Enhanced /api/health with Prisma ping and module stats
-- CSV import API + wizard UI for tasks
-- Cycles / Sprints schema + API + UI + kanban filter
-- Sprint retrospectives API + UI
-- Task comments, milestones, dependencies, Gantt view
-- Task checklists and worklogs / time tracking
-- **Task subtasks (parentId)** — schemas + API validation + list filter + subtaskCount + tests/CI
+
+### Core
+- Row-level multi-tenancy (`orgId` on tables + query scoping)
+- Auth (NextAuth), org/user/department models
+- Module marketplace + `requireModule()` / public API module gate (403 when disabled)
+- Notifications, audit log, API keys, webhooks (HMAC, retry queue)
+- Docker Compose self-host kit, seed demo org
+
+### Module 1 — Tasks & Projects
+- Projects, tasks, cycles, milestones, dependencies, checklists, comments
+- Retrospectives, CSV import/export
+- **Task worklogs / time tracking** — Prisma `TaskWorklog`, `/api/worklogs` (CRUD), UI, unit tests, spentHours rollup
+- **Public API** — `/api/v1/tasks`, `/api/v1/projects`, **`/api/v1/worklogs`** (GET list by taskId, POST log time)
+
+### Module 2 — KRA/KPA
+- Model + `/api/kras` + UI surface
+
+### Module 3 — Rooms
+- Rooms, bookings, holidays; `/api/v1/rooms`, `/api/v1/bookings`
+
+### Module 4 — Resource & Capacity
+- Allocations API + UI
+
+### Module 5 — Budget & Financial
+- Budgets, expenses, GST helpers, AI budget-anomalies route
+
+### Module 6 — Risk & Issue
+- Risks, issues, change requests
+
+### Module 7 — Collaboration & Docs
+- Documents + versions API
+
+### Module 8 — Leave & Attendance
+- Leaves, attendance, holidays
+- **Public API** — **`/api/v1/leaves`** (GET list by userId/status, POST create leave request)
+
+### Module 9 — Reporting
+- Dashboard + search routes
+
+### Module 10 — Governance
+- Policies, signatures, audit export
+
+### Quality
+- Tenant isolation tests, module-gate tests, worklog/schema unit tests, CI workflow
+
+---
 
 ## 🔧 Needs Fixing
-- (none critical)
-- UI: expose parent selector / nested list in TasksView (API ready; UI polish next)
-- After pull: `bun run db:push` if local SQLite lags schema (parentId already on Task)
 
-## 🚀 Future Plan
+- [ ] Wire `emitEvent` consistently on all mutating internal routes (not only public v1)
+- [ ] Public API coverage gaps: budget, risks, kras still internal-only (leave done 2026-07-30)
+- [ ] Webhook delivery integration tests (HMAC verify + retry backoff)
+- [ ] Replace demo-session `getDemoContext()` paths with real session auth for production hardening
 
-**Vision:** Become the #1 most-starred, most-forked open-source AI + ERP/PM platform on GitHub, and get accepted into GitHub Sponsors.
+---
 
-### Phase 1 — Core Product (in progress)
-- [x] Task subtasks API (parentId)
-- [ ] Task subtasks UI in TasksView (parent picker + nested display)
-- [ ] Polish self-host deploy kit (Docker Compose one-command installer, docs)
-- [x] Cycles, retrospectives, comments, milestones, dependencies, Gantt, checklists, worklogs
+## 🔮 Future
 
-### Phase 2 — AI Integration
-- [ ] AI-assisted task/project creation and summarization
-- [ ] AI-powered reporting & analytics insights
-- [ ] AI copilot for admins
+- [ ] Two-way Google Calendar / Outlook sync for rooms
+- [ ] Slack / Teams native notifications
+- [ ] SAML/OIDC (PRD: core, not gated)
+- [ ] Scheduled report exports
+- [ ] Full org JSON export wizard
+- [ ] i18n string externalization (Hindi + demand-based)
+- [ ] Public API PATCH for leave approve/reject (currently internal-only)
 
-### Phase 3 — Growth & Community
-- [ ] Public launch push (Reddit, HN, Product Hunt)
-- [ ] Polished README, demo video/GIFs, live demo instance
-- [ ] GitHub Sponsors acceptance
-- [ ] Grow contributor base
+---
 
-### Phase 4 — Monetization (open-core)
-- [ ] Managed hosting offering
-- [ ] Support SLAs
-- [ ] Compliance add-ons
+## Recent maintainer runs
 
-## 🏆 Competitor-Inspired Features (Future)
-
-- [x] Sprints / Cycles, retrospectives, milestones, dependencies, Gantt, checklists, worklogs
-- [x] **Subtasks (parentId)** — API + schemas (inspired by Plane / Asana)
-- [ ] Subtasks UI polish
-- [ ] **Two-way GitHub sync** (inspired by Huly & Plane)
-- [ ] **Real-time collaborative Wiki/Docs** (Yjs/CRDT)
-- [ ] **Custom fields / metadata-driven forms** (inspired by ERPNext DocTypes)
-
-**Suggested build priority:** Subtasks UI → GitHub sync → Wiki upgrade → Custom fields → self-host polish.
+| Date | Track | Summary |
+|------|-------|---------|
+| 2026-07-29 | A | TaskWorklog schema + `/api/worklogs` + tests; removed broken TaskTimeEntry API |
+| 2026-07-30 | A | Public API `/api/v1/worklogs`; restored this status file from PLACEHOLDER |
+| 2026-07-30 | A | Public API `/api/v1/leaves` (GET + POST); module-gated, emitEvent on create |

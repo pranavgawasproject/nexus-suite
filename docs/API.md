@@ -51,6 +51,12 @@ Create keys in **Settings → API Keys & Webhooks**. Keys are shown once at crea
 - `GET /api/v1/issues?projectId=&status=&severity=&limit=` — list issues (max 100)
 - `POST /api/v1/issues` — create an issue (`write`; emits `issue.created` webhook)
 
+### Budget & Financial (Module 5)
+- `GET /api/v1/budgets?projectId=&limit=` — list project budgets (max 100)
+- `POST /api/v1/budgets` — create or upsert budget for a project (`write`; emits `budget.upserted` webhook)
+- `GET /api/v1/expenses?projectId=&category=&limit=` — list expenses (max 100)
+- `POST /api/v1/expenses` — create an expense (`write`; requires `incurredById`; emits `expense.created` webhook)
+
 ### Disabled modules
 Endpoints for disabled modules return **403** (not 404) with body:
 ```json

@@ -57,6 +57,10 @@ Create keys in **Settings → API Keys & Webhooks**. Keys are shown once at crea
 - `GET /api/v1/expenses?projectId=&category=&limit=` — list expenses (max 100)
 - `POST /api/v1/expenses` — create an expense (`write`; requires `incurredById`; emits `expense.created` webhook)
 
+### Collaboration & Docs (Module 7)
+- `GET /api/v1/documents?parentId=&limit=` — list documents (max 100; `parentId=root` for top-level)
+- `POST /api/v1/documents` — create a document (`write`; emits `document.created` webhook; creates initial version snapshot)
+
 ### Disabled modules
 Endpoints for disabled modules return **403** (not 404) with body:
 ```json

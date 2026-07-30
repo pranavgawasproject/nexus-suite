@@ -5,12 +5,12 @@
 **Last reviewed:** 2026-07-30
 **Reviewed by:** Grok (daily maintainer)
 
-## Track A (this run): Public API v1 GET/POST budgets + expenses
+## Track A (this run): Public API v1 GET/POST documents
 
-**Code files changed:** `src/app/api/v1/budgets/route.ts`, `src/app/api/v1/expenses/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/app/api/v1/documents/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
 
-- Expose module-gated budget list/upsert and expense list/create under `/api/v1/budgets` and `/api/v1/expenses`
-- Validate projectId / incurredById against org; emit `budget.upserted` and `expense.created` webhooks
+- Expose module-gated document list/create under `/api/v1/documents` (collab module)
+- Validate parentId against org; unique slug per org; initial DocumentVersion snapshot; emit `document.created` webhook
 - Document endpoints in docs/API.md
 
 ## ✅ Completed
@@ -87,6 +87,7 @@
 - [x] Public API v1 issues
 - [x] Public API v1 kras
 - [x] Public API v1 budgets + expenses
+- [x] Public API v1 documents
 
 ### Phase 2 — AI Integration
 - [ ] AI-assisted task/project creation and summarization
@@ -120,6 +121,6 @@
 - [ ] **Two-way GitHub sync** (inspired by Huly & Plane) — sync Tasks/Issues module with GitHub Issues (bi-directional create/update/comment sync). High priority — fits dev-tool-savvy audience.
 - [ ] **Real-time collaborative Wiki/Docs** (inspired by Plane & Huly) — upgrade `docs-view.tsx` from static docs to real-time collaborative editing (e.g. Yjs/CRDT-based).
 - [ ] **Custom fields / metadata-driven forms per module** (inspired by ERPNext DocTypes) — let self-hosters extend Tasks, KRAs, Risks, etc. with custom fields without forking code. Strong fit for open-core/toggleable-module pitch.
-- [ ] **Public API coverage for remaining modules** (documents, allocations, change-requests). Budgets/expenses + KRAs done.
+- [ ] **Public API coverage for remaining modules** (allocations, change-requests). Documents + budgets/expenses + KRAs done.
 
 **Suggested build priority:** GitHub sync → more public API modules → Wiki upgrade → Custom fields → self-host deploy polish.

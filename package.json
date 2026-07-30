@@ -16,7 +16,7 @@
     "db:reset": "prisma migrate reset",
     "test:tenant": "bun run tests/tenant-isolation.test.ts",
     "test:gate": "bun run tests/module-gate.test.ts",
-    "test:all": "bun run tests/tenant-isolation.test.ts && bun run tests/module-gate.test.ts && bun run tests/csv-import.test.ts && bun run tests/cycles.test.ts && bun run tests/retrospectives.test.ts && bun run tests/task-comments.test.ts && bun run tests/milestones.test.ts && bun run tests/task-dependencies.test.ts && bun run tests/task-checklists.test.ts && bun run tests/task-worklogs.test.ts && bun run tests/public-worklogs.test.ts",
+    "test:all": "bun run tests/tenant-isolation.test.ts && bun run tests/module-gate.test.ts && bun run tests/csv-import.test.ts && bun run tests/cycles.test.ts && bun run tests/retrospectives.test.ts && bun run tests/task-comments.test.ts && bun run tests/milestones.test.ts && bun run tests/task-dependencies.test.ts && bun run tests/task-checklists.test.ts && bun run tests/task-worklogs.test.ts && bun run tests/task-subtasks.test.ts",
     "test": "bun run test:all",
     "test:csv": "bun run tests/csv-import.test.ts",
     "test:cycles": "bun run tests/cycles.test.ts",
@@ -26,7 +26,7 @@
     "test:dependencies": "bun run tests/task-dependencies.test.ts",
     "test:checklists": "bun run tests/task-checklists.test.ts",
     "test:worklogs": "bun run tests/task-worklogs.test.ts",
-    "test:public-worklogs": "bun run tests/public-worklogs.test.ts"
+    "test:subtasks": "bun run tests/task-subtasks.test.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

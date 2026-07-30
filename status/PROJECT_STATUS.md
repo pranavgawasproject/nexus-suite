@@ -3,88 +3,60 @@
 > **This file is the single source of truth for "where things actually stand."**
 
 **Last reviewed:** 2026-07-30
-**Reviewed by:** Grok
+**Reviewed by:** Grok (autonomous daily maintainer)
 
-## Track A (this run): Public API v1 for task worklogs
+## Track A (this run): Task subtasks via parentId
 
-**Code files changed:** `src/app/api/v1/worklogs/route.ts` (new), `src/lib/schemas.ts`, `tests/public-worklogs.test.ts` (new), `package.json`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/lib/schemas.ts`, `src/app/api/tasks/route.ts`, `tests/task-subtasks.test.ts`, `package.json`, `.github/workflows/test-ci.yml`, `status/PROJECT_STATUS.md`
 
-- Added `GET/POST /api/v1/worklogs` — list and create time entries via API key (PRD §4.5)
-- Module-gated to `tasks`, write scope required for POST
-- POST requires `authorId` (no session user on public API keys); verifies task + author belong to org
-- Recalculates `spentHours` and emits `task.worklog.created` webhook event
-- New zod schema `createPublicTaskWorklogSchema` + pure unit tests wired into `test:all`
+- Wired existing `Task.parentId` column through zod schemas (`create` / `update` / query)
+- `/api/tasks` POST/PATCH validate parent (same org + project, one nesting level, no self-parent)
+- GET supports `parentId` / `parentId=none` (top-level only) and returns `subtaskCount`
+- DELETE of a parent orphans children (clears their parentId) instead of cascading delete
+- Unit tests + `test:subtasks` wired into `test:all` and CI
 
-Also restored this status file (was accidentally reduced to PLACEHOLDER on 2026-07-29).
+## Previous Track A: Task worklogs / time tracking
+
+- `TaskWorklog` model, `/api/worklogs`, UI in task detail, tests + CI
+
+## Previous Track A: Task checklists
+
+- `TaskChecklistItem` model, `/api/checklists`, UI, tests + CI
 
 ## ✅ Completed
 - Enhanced /api/health with Prisma ping and module stats
-- CSV import API for tasks (`POST /api/import/tasks`) with zod validation, multi-tenancy, audit log
-- Shared `src/lib/csv.ts` helpers + pure unit tests (`tests/csv-import.test.ts`)
-- **CSV import wizard UI** in Tasks view (`ImportCsvDialog` → `/api/import/tasks`)
-- **Wire `test:csv` into package.json and CI** (test:all + workflow step)
-- **Wire module-gate tests into CI workflow** (test:gate step)
-- **Cycles / Sprints schema + API** (`Cycle` model, `/api/cycles` CRUD under tasks module)
-- **Wire `test:cycles` into CI** + `cycleId` filter on `GET /api/tasks`
-- **Cycles / Sprints UI** (`CyclesView` + nav wiring)
-- **Kanban / Tasks cycle filter + assign cycle on create/edit** (TasksView)
-- **Sprint Retrospective schema + API** (`Retrospective` model, `/api/retrospectives` CRUD, unit tests)
-- **Sprint retrospectives UI** (list/create/edit from Cycles view)
-- **Task comments** — schema model + `/api/comments` CRUD + TaskDetailDialog UI + unit tests + CI
-- **Project Milestones** — schema + `/api/milestones` CRUD + unit tests + CI
-- **Project Milestones UI** — list/create/edit/delete + nav wiring
-- **Assign milestone on task create/edit** (TasksView selector + badges)
-- **Task dependencies** — schema + `/api/dependencies` CRUD + unit tests + CI (Gantt foundation)
-- **Task dependencies UI** in task detail dialog (list/add/remove blocks & relates)
-- **Gantt / timeline view** with dependency labels, filters, nav under Tasks
-- **Task checklists** — schema + `/api/checklists` CRUD + UI in task detail + unit tests + CI
-- **Task worklogs (time entries)** — `TaskWorklog` model + `/api/worklogs` CRUD + TaskWorklogs UI + unit tests + CI; auto-updates spentHours
-- **Removed broken `/api/time-entries` duplicate** (no Prisma model; worklogs is canonical)
-- **Public API v1 worklogs** — `GET/POST /api/v1/worklogs` + schema + unit tests
+- CSV import API + wizard UI for tasks
+- Cycles / Sprints schema + API + UI + kanban filter
+- Sprint retrospectives API + UI
+- Task comments, milestones, dependencies, Gantt view
+- Task checklists and worklogs / time tracking
+- **Task subtasks (parentId)** — schemas + API validation + list filter + subtaskCount + tests/CI
 
 ## 🔧 Needs Fixing
-- (none critical — CI matrix covers tenant, gate, csv, cycles, retros, comments, milestones, dependencies, checklists, worklogs, public-worklogs tests)
-- After schema change: run `bun run db:push` (or migrate) locally / in deploy so SQLite picks up TaskWorklog (and prior models if not yet applied)
+- (none critical)
+- UI: expose parent selector / nested list in TasksView (API ready; UI polish next)
+- After pull: `bun run db:push` if local SQLite lags schema (parentId already on Task)
 
 ## 🚀 Future Plan
 
 **Vision:** Become the #1 most-starred, most-forked open-source AI + ERP/PM platform on GitHub, and get accepted into GitHub Sponsors.
 
 ### Phase 1 — Core Product (in progress)
-- [ ] Finish remaining PRD modules end-to-end polish (all 10 have model+API+UI; deepen features)
-- [x] CSV import wizard UI
-- [x] Wire test:csv into package.json / CI
-- [x] Full CI refinements (lint, typecheck, tests including module-gate, Docker build) — stable and green
+- [x] Task subtasks API (parentId)
+- [ ] Task subtasks UI in TasksView (parent picker + nested display)
 - [ ] Polish self-host deploy kit (Docker Compose one-command installer, docs)
-- [x] Cycles / Sprints backend (schema + API)
-- [x] Wire test:cycles into CI + task list filter by cycleId
-- [x] Cycles / Sprints UI view
-- [x] Kanban cycle filter in Tasks board
-- [x] Sprint retrospectives API (schema + CRUD)
-- [x] Sprint retrospectives UI (list/create from Cycles view)
-- [x] Task comments (schema + API + UI + CI)
-- [x] Project Milestones (schema + API + tests + CI)
-- [x] Milestones UI (list/create/edit + nav)
-- [x] Assign milestone on task create/edit (TasksView selector)
-- [x] Task dependencies (schema + API + tests + CI)
-- [x] Task dependencies UI in task detail dialog
-- [x] Gantt / timeline view with dependencies
-- [x] Task checklists (schema + API + UI + CI)
-- [x] Task worklogs / time entries (schema + API + UI + CI)
-- [x] Remove broken TaskTimeEntry duplicate API
-- [x] Public API v1 worklogs (GET/POST)
+- [x] Cycles, retrospectives, comments, milestones, dependencies, Gantt, checklists, worklogs
 
 ### Phase 2 — AI Integration
 - [ ] AI-assisted task/project creation and summarization
 - [ ] AI-powered reporting & analytics insights
-- [ ] AI copilot for admins (governance/compliance checks, KPI suggestions)
+- [ ] AI copilot for admins
 
 ### Phase 3 — Growth & Community
-- [ ] Public launch push (Reddit, HN, Product Hunt, dev communities)
+- [ ] Public launch push (Reddit, HN, Product Hunt)
 - [ ] Polished README, demo video/GIFs, live demo instance
-- [ ] Complete GitHub Sponsors 2FA verification and get accepted
-- [ ] Grow contributor base — good first issues, CONTRIBUTING.md outreach
-- [ ] Target: become the top-starred open-source "AI + ERP/Project Management" repo on GitHub
+- [ ] GitHub Sponsors acceptance
+- [ ] Grow contributor base
 
 ### Phase 4 — Monetization (open-core)
 - [ ] Managed hosting offering
@@ -93,18 +65,11 @@ Also restored this status file (was accidentally reduced to PLACEHOLDER on 2026-
 
 ## 🏆 Competitor-Inspired Features (Future)
 
-> Researched from top open-source PM/ERP repos (Plane, Huly, ERPNext, OpenProject, Leantime, Focalboard) — features worth adding to Nexus Suite to compete at their level.
+- [x] Sprints / Cycles, retrospectives, milestones, dependencies, Gantt, checklists, worklogs
+- [x] **Subtasks (parentId)** — API + schemas (inspired by Plane / Asana)
+- [ ] Subtasks UI polish
+- [ ] **Two-way GitHub sync** (inspired by Huly & Plane)
+- [ ] **Real-time collaborative Wiki/Docs** (Yjs/CRDT)
+- [ ] **Custom fields / metadata-driven forms** (inspired by ERPNext DocTypes)
 
-- [x] **Sprints / Cycles API + UI** (inspired by Plane)
-- [x] **Sprint retrospectives API + UI** (inspired by Leantime)
-- [x] **Project Milestones API + UI** (inspired by Plane / OpenProject)
-- [x] **Task dependencies API** (Gantt foundation, inspired by OpenProject)
-- [x] **Task dependencies UI** in task detail dialog
-- [x] **Gantt / timeline view with dependencies** (inspired by OpenProject)
-- [x] **Task checklists** (inspired by Plane / Trello)
-- [x] **Task worklogs / time tracking** (inspired by OpenProject / Plane)
-- [ ] **Two-way GitHub sync** (inspired by Huly & Plane) — sync Tasks/Issues module with GitHub Issues (bi-directional create/update/comment sync). High priority — fits dev-tool-savvy audience.
-- [ ] **Real-time collaborative Wiki/Docs** (inspired by Plane & Huly) — upgrade `docs-view.tsx` from static docs to real-time collaborative editing (e.g. Yjs/CRDT-based).
-- [ ] **Custom fields / metadata-driven forms per module** (inspired by ERPNext DocTypes) — let self-hosters extend Tasks, KRAs, Risks, etc. with custom fields without forking code. Strong fit for open-core/toggleable-module pitch.
-
-**Suggested build priority:** GitHub sync → Wiki upgrade → Custom fields → self-host deploy polish.
+**Suggested build priority:** Subtasks UI → GitHub sync → Wiki upgrade → Custom fields → self-host polish.

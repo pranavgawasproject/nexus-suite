@@ -67,6 +67,9 @@ jobs:
       - name: Task worklog schema unit tests
         run: bun run test:worklogs
 
+      - name: Task subtask schema unit tests
+        run: bun run test:subtasks
+
       - name: Build
         run: bun run build
 

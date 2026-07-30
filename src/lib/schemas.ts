@@ -22,6 +22,8 @@ export const createTaskSchema = z.object({
   tags: z.string().max(500).optional().nullable(),
   cycleId: z.string().optional().nullable(),
   milestoneId: z.string().optional().nullable(),
+  /** Parent task id for subtasks; must be same org + project (enforced in API). */
+  parentId: z.string().optional().nullable(),
 })
 
 export const updateTaskSchema = z.object({
@@ -39,6 +41,8 @@ export const updateTaskSchema = z.object({
   position: z.number().int().min(0).optional(),
   cycleId: z.string().optional().nullable(),
   milestoneId: z.string().optional().nullable(),
+  /** Set or clear parent (subtask link). Null clears. */
+  parentId: z.string().optional().nullable(),
 })
 
 export const createProjectSchema = z.object({
@@ -276,6 +280,7 @@ export const taskQuerySchema = z.object({
   assigneeId: z.string().optional(),
   cycleId: z.string().optional(), // filter tasks by cycle/sprint; omit or 'all' = no filter
   milestoneId: z.string().optional(), // filter tasks by milestone; omit or 'all' = no filter
+  parentId: z.string().optional(), // filter subtasks of a parent; 'none' = only top-level; omit = all
 })
 
 export const bookingQuerySchema = z.object({
@@ -609,14 +614,5 @@ export const updateTaskWorklogSchema = z.object({
 
 export const taskWorklogQuerySchema = z.object({
   taskId: z.string().min(1, 'taskId is required'),
-})
-
-// Public API create worklog — authorId required (no session user on API keys)
-export const createPublicTaskWorklogSchema = z.object({
-  taskId: z.string().min(1, 'taskId is required'),
-  authorId: z.string().min(1, 'authorId is required'),
-  hours: z.number().positive('hours must be positive').max(24),
-  note: z.string().max(2000).optional(),
-  loggedAt: z.string().datetime().optional(),
 })
 

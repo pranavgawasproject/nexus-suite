@@ -89,6 +89,7 @@
 - [x] Public API v1 budgets + expenses
 - [x] Public API v1 documents
 - [x] Public API v1 allocations
+- [x] Public API v1 allocations
 - [x] Public API v1 change-requests
 
 ### Phase 2 — AI Integration

@@ -44,6 +44,8 @@ Create keys in **Settings → API Keys & Webhooks**. Keys are shown once at crea
 ### Leave & Attendance (Module 8)
 - `GET /api/v1/leaves?userId=&status=&limit=` — list leave requests (max 100)
 - `POST /api/v1/leaves` — submit a leave request (`write`; emits `leave.created` webhook)
+- `GET /api/v1/holidays?limit=` — list organization holidays (max 100)
+- `POST /api/v1/holidays` — create a holiday (`write`; unique date per org; emits `holiday.created` webhook)
 
 ### KRA / KPA (Module 2)
 - `GET /api/v1/kras?userId=&cycle=&status=&limit=` — list KRAs (max 100)

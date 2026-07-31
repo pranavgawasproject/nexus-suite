@@ -635,3 +635,15 @@ export const createPublicTaskCommentSchema = z.object({
   authorId: z.string().min(1, 'authorId is required'),
   body: z.string().min(1, 'body is required').max(5000, 'body too long'),
 })
+
+/** Public retrospective create — optional authorId (API key has no user). */
+export const createPublicRetrospectiveSchema = z.object({
+  cycleId: z.string().min(1, 'cycleId is required'),
+  title: z.string().min(1, 'title is required').max(200),
+  wentWell: z.string().max(10000).optional().nullable(),
+  toImprove: z.string().max(10000).optional().nullable(),
+  actionItems: z.string().max(10000).optional().nullable(),
+  status: retroStatusEnum.optional().default('draft'),
+  authorId: z.string().min(1).optional(),
+})
+

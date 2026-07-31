@@ -39,6 +39,8 @@ Create keys in **Settings → API Keys & Webhooks**. Keys are shown once at crea
 - `POST /api/v1/checklists` — create a checklist item (`write`; requires `taskId`, `title`; emits `task.checklist.created`)
 - `GET /api/v1/milestones?projectId=&status=&limit=` — list project milestones (max 100)
 - `POST /api/v1/milestones` — create a milestone (`write`; requires `projectId`, `name`; emits `milestone.created` webhook)
+- `GET /api/v1/retrospectives?cycleId=&status=&limit=` — list sprint retrospectives (max 100)
+- `POST /api/v1/retrospectives` — create a retrospective (`write`; requires `cycleId`, `title`; optional `authorId`, `wentWell`, `toImprove`, `actionItems`, `status`; emits `retrospective.created`)
 
 ### Rooms (Module 3)
 - `GET /api/v1/rooms` — list active rooms
@@ -129,6 +131,7 @@ document.created    document.updated
 risk.created        issue.created
 allocation.created  change_request.created
 milestone.created
+retrospective.created
 policy.created      policy.updated
 ```
 

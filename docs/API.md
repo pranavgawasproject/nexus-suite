@@ -57,6 +57,10 @@ Create keys in **Settings → API Keys & Webhooks**. Keys are shown once at crea
 - `GET /api/v1/expenses?projectId=&category=&limit=` — list expenses (max 100)
 - `POST /api/v1/expenses` — create an expense (`write`; requires `incurredById`; emits `expense.created` webhook)
 
+### Resource & Capacity (Module 4)
+- `GET /api/v1/allocations?userId=&projectId=&limit=` — list resource allocations (max 100)
+- `POST /api/v1/allocations` — create an allocation (`write`; requires `userId` + `projectId`; emits `allocation.created` webhook)
+
 ### Collaboration & Docs (Module 7)
 - `GET /api/v1/documents?parentId=&limit=` — list documents (max 100; `parentId=root` for top-level)
 - `POST /api/v1/documents` — create a document (`write`; emits `document.created` webhook; creates initial version snapshot)

@@ -5,15 +5,20 @@
 **Last reviewed:** 2026-07-31
 **Reviewed by:** Grok (daily maintainer)
 
-## Track A (this run): Public API v1 GET/POST attendance
+## Track A (this run): Public API v1 GET/POST milestones + policies
 
-**Code files changed:** `src/app/api/v1/attendance/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/app/api/v1/milestones/route.ts`, `src/app/api/v1/policies/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
 
-- Expose module-gated attendance list + check-in/check-out under `/api/v1/attendance` (leave module)
-- Zod validation via `attendanceSchema`; 409 on double check-in/out; emit `attendance.check_in` / `attendance.check_out` webhooks
+- Expose module-gated milestones list + create under `/api/v1/milestones` (tasks module)
+- Expose module-gated policies list + upsert under `/api/v1/policies` (governance module)
+- Zod validation via existing schemas; emit `milestone.created`, `policy.created` / `policy.updated` webhooks
 - Document endpoints + events in docs/API.md
 
 ## ✅ Completed
+
+- **Public API v1 GET/POST milestones** (`/api/v1/milestones`, tasks module)
+- **Public API v1 GET/POST policies** (`/api/v1/policies`, governance module)
+
 - Enhanced /api/health with Prisma ping and module stats
 - CSV import API for tasks (`POST /api/import/tasks`) with zod validation, multi-tenancy, audit log
 - Shared `src/lib/csv.ts` helpers + pure unit tests (`tests/csv-import.test.ts`)
@@ -97,6 +102,8 @@
 - [x] Public API v1 change-requests
 - [x] Public API v1 holidays
 - [x] Public API v1 attendance
+- [x] Public API v1 milestones
+- [x] Public API v1 policies
 
 ### Phase 2 — AI Integration
 - [ ] AI-assisted task/project creation and summarization
@@ -130,7 +137,7 @@
 - [ ] **Two-way GitHub sync** (inspired by Huly & Plane) — sync Tasks/Issues module with GitHub Issues (bi-directional create/update/comment sync). High priority — fits dev-tool-savvy audience.
 - [ ] **Real-time collaborative Wiki/Docs** (inspired by Plane & Huly) — upgrade `docs-view.tsx` from static docs to real-time collaborative editing (e.g. Yjs/CRDT-based).
 - [ ] **Custom fields / metadata-driven forms per module** (inspired by ERPNext DocTypes) — let self-hosters extend Tasks, KRAs, Risks, etc. with custom fields without forking code. Strong fit for open-core/toggleable-module pitch.
-- [ ] **Public API coverage for remaining modules** (policies/governance, milestones, cycles via v1). Attendance + holidays + allocations + change-requests + documents + budgets/expenses + KRAs done.
+- [x] **Public API coverage for remaining modules** (policies/governance, milestones via v1 done; cycles still open). Attendance + holidays + allocations + change-requests + documents + budgets/expenses + KRAs + milestones + policies done.
 
-**Suggested build priority:** GitHub sync → more public API modules (policies, attendance) → Wiki upgrade → Custom fields → self-host deploy polish.
+**Suggested build priority:** GitHub sync → public API cycles → Wiki upgrade → Custom fields → self-host deploy polish.
 

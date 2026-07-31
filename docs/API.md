@@ -31,6 +31,8 @@ Create keys in **Settings → API Keys & Webhooks**. Keys are shown once at crea
 - `GET /api/v1/projects?status=` — list projects
 - `GET /api/v1/worklogs?taskId=` — list worklogs for a task
 - `POST /api/v1/worklogs` — log time against a task (`write`)
+- `GET /api/v1/milestones?projectId=&status=&limit=` — list project milestones (max 100)
+- `POST /api/v1/milestones` — create a milestone (`write`; requires `projectId`, `name`; emits `milestone.created` webhook)
 
 ### Rooms (Module 3)
 - `GET /api/v1/rooms` — list active rooms
@@ -68,6 +70,10 @@ Create keys in **Settings → API Keys & Webhooks**. Keys are shown once at crea
 ### Collaboration & Docs (Module 7)
 - `GET /api/v1/documents?parentId=&limit=` — list documents (max 100; `parentId=root` for top-level)
 - `POST /api/v1/documents` — create a document (`write`; emits `document.created` webhook; creates initial version snapshot)
+
+### Governance & Compliance (Module 10)
+- `GET /api/v1/policies?type=&limit=` — list governance policies (max 100; filter by type)
+- `POST /api/v1/policies` — create or upsert policy by type (`write`; one policy per type per org; emits `policy.created` / `policy.updated` webhook)
 
 ### Disabled modules
 Endpoints for disabled modules return **403** (not 404) with body:
@@ -116,6 +122,8 @@ expense.created     budget.upserted
 document.created    document.updated
 risk.created        issue.created
 allocation.created  change_request.created
+milestone.created
+policy.created      policy.updated
 ```
 
 Subscribe to all with `*`, or use prefix matching like `task.*`.

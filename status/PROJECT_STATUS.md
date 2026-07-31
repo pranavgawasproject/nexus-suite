@@ -1,20 +1,26 @@
-# Nexus Suite â Project Status
+# Nexus Suite — Project Status
 
 > **This file is the single source of truth for "where things actually stand."**
 
 **Last reviewed:** 2026-07-31
 **Reviewed by:** Grok (daily maintainer)
 
-## Track A (this run): Public API v1 GET/POST cycles
+## Track A (this run): Public API v1 GET/POST comments + checklists
 
-**Code files changed:** `src/app/api/v1/cycles/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/app/api/v1/comments/route.ts`, `src/app/api/v1/checklists/route.ts`, `src/lib/schemas.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
 
-- Expose module-gated cycles list + create under `/api/v1/cycles` (tasks module)
-- Zod validation via `createCycleSchema`; emit `cycle.created` webhook
-- Document endpoints + event in docs/API.md
+- Expose module-gated task comments list + create under `/api/v1/comments` (tasks module)
+- Expose module-gated task checklist items list + create under `/api/v1/checklists` (tasks module)
+- Zod validation; `createPublicTaskCommentSchema` (requires `authorId` for API-key auth); reuse `createTaskChecklistItemSchema`
+- Emit `task.comment.created` and `task.checklist.created` webhooks
+- Document endpoints + events (and cycles) in docs/API.md
+- Also added missing `createPublicTaskWorklogSchema` referenced by existing worklogs v1 route
 
-## â Completed
+## ✅ Completed
 
+- **Public API v1 GET/POST comments** (`/api/v1/comments`, tasks module)
+- **Public API v1 GET/POST checklists** (`/api/v1/checklists`, tasks module)
+- **Public API v1 GET/POST cycles** (`/api/v1/cycles`, tasks module)
 - **Public API v1 GET/POST milestones** (`/api/v1/milestones`, tasks module)
 - **Public API v1 GET/POST policies** (`/api/v1/policies`, governance module)
 
@@ -103,6 +109,9 @@
 - [x] Public API v1 attendance
 - [x] Public API v1 milestones
 - [x] Public API v1 policies
+- [x] Public API v1 comments
+- [x] Public API v1 checklists
+- [x] Public API v1 cycles
 - [x] Public API v1 cycles
 
 ### Phase 2 â AI Integration

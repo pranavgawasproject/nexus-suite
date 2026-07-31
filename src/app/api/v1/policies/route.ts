@@ -5,9 +5,8 @@ import { upsertPolicySchema } from '@/lib/schemas'
 import { emitEvent } from '@/lib/webhooks'
 
 /**
- * Public API — Governance Policies (Module 10 Governance & Compliance).
+ * Public API — Policies (Module 10 Governance & Compliance).
  * GET list (read), POST upsert (write). Module-gated via requirePublicApi('governance').
- * One policy per type per org (upsert on type).
  */
 
 // GET /api/v1/policies?type=&limit=
@@ -30,8 +29,8 @@ export async function GET(req: NextRequest) {
       name: true,
       config: true,
       active: true,
+      createdAt: true,
       updatedAt: true,
-      updatedBy: { select: { id: true, name: true } },
     },
     orderBy: { type: 'asc' },
     take: limit,
@@ -39,13 +38,8 @@ export async function GET(req: NextRequest) {
 
   return apiOk({
     policies: policies.map((p) => ({
-      id: p.id,
-      type: p.type,
-      name: p.name,
+      ...p,
       config: JSON.parse(p.config),
-      active: p.active,
-      updatedAt: p.updatedAt,
-      updatedBy: p.updatedBy,
     })),
   })
 }
@@ -61,10 +55,17 @@ export async function POST(req: NextRequest) {
 
   const configStr = JSON.stringify(data.config)
   const existing = await db.policy.findUnique({
-    where: { orgId_type: { orgId: g.ctx!.orgId, type: data.type } },
+    where: {
+      orgId_type: {
+        orgId: g.ctx!.orgId,
+        type: data.type,
+      },
+    },
   })
 
   let policy
+  let eventName: 'policy.created' | 'policy.updated'
+
   if (existing) {
     policy = await db.policy.update({
       where: { id: existing.id },
@@ -79,9 +80,11 @@ export async function POST(req: NextRequest) {
         name: true,
         config: true,
         active: true,
+        createdAt: true,
         updatedAt: true,
       },
     })
+    eventName = 'policy.updated'
   } else {
     policy = await db.policy.create({
       data: {
@@ -97,9 +100,11 @@ export async function POST(req: NextRequest) {
         name: true,
         config: true,
         active: true,
+        createdAt: true,
         updatedAt: true,
       },
     })
+    eventName = 'policy.created'
   }
 
   const payload = {
@@ -108,17 +113,9 @@ export async function POST(req: NextRequest) {
     name: policy.name,
     config: JSON.parse(policy.config),
     active: policy.active,
-    updatedAt: policy.updatedAt,
   }
 
-  await emitEvent(g.ctx!.orgId, existing ? 'policy.updated' : 'policy.created', {
-    policy: {
-      id: policy.id,
-      type: policy.type,
-      name: policy.name,
-      active: policy.active,
-    },
-  })
+  await emitEvent(g.ctx!.orgId, eventName, { policy: payload })
 
-  return apiOk({ policy: payload }, existing ? 200 : 201)
+  return apiOk({ policy: { ...payload, createdAt: policy.createdAt, updatedAt: policy.updatedAt } }, existing ? 200 : 201)
 }

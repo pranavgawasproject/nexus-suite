@@ -5,12 +5,12 @@
 **Last reviewed:** 2026-07-31
 **Reviewed by:** Grok (daily maintainer)
 
-## Track A (this run): Public API v1 GET/POST allocations + change-requests
+## Track A (this run): Public API v1 GET/POST allocations
 
-**Code files changed:** `src/app/api/v1/allocations/route.ts`, `src/app/api/v1/change-requests/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/app/api/v1/allocations/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
 
-- Expose module-gated allocation list/create under `/api/v1/allocations` (resource module); validate userId/projectId against org; emit `allocation.created` webhook
-- Expose module-gated change-request list/create under `/api/v1/change-requests` (risk module); validate projectId; emit `change_request.created` webhook
+- Expose module-gated allocation list/create under `/api/v1/allocations` (resource module)
+- Validate userId and projectId against org; emit `allocation.created` webhook on create
 - Document endpoints in docs/API.md
 
 ## ✅ Completed
@@ -41,6 +41,8 @@
 - **Public API v1 GET/POST issues** (`/api/v1/issues`, module-gated, webhook on create)
 - **Public API v1 GET/POST kras** (`/api/v1/kras`, module-gated, webhook on create)
 - **Public API v1 GET/POST budgets + expenses** (`/api/v1/budgets`, `/api/v1/expenses`, module-gated, webhooks)
+- **Public API v1 GET/POST documents** (`/api/v1/documents`, module-gated, webhook on create)
+- **Public API v1 GET/POST allocations** (`/api/v1/allocations`, module-gated, webhook on create)
 - **2026-07-29 code audit** confirmed Prisma models, API routes, and UI view files exist for all 10 PRD modules
 
 ## 🔧 Needs Fixing
@@ -89,8 +91,6 @@
 - [x] Public API v1 budgets + expenses
 - [x] Public API v1 documents
 - [x] Public API v1 allocations
-- [x] Public API v1 allocations
-- [x] Public API v1 change-requests
 
 ### Phase 2 — AI Integration
 - [ ] AI-assisted task/project creation and summarization
@@ -124,6 +124,6 @@
 - [ ] **Two-way GitHub sync** (inspired by Huly & Plane) — sync Tasks/Issues module with GitHub Issues (bi-directional create/update/comment sync). High priority — fits dev-tool-savvy audience.
 - [ ] **Real-time collaborative Wiki/Docs** (inspired by Plane & Huly) — upgrade `docs-view.tsx` from static docs to real-time collaborative editing (e.g. Yjs/CRDT-based).
 - [ ] **Custom fields / metadata-driven forms per module** (inspired by ERPNext DocTypes) — let self-hosters extend Tasks, KRAs, Risks, etc. with custom fields without forking code. Strong fit for open-core/toggleable-module pitch.
-- [x] **Public API coverage for remaining modules** (allocations, change-requests). Documents + budgets/expenses + KRAs + allocations + change-requests done.
+- [ ] **Public API coverage for remaining modules** (change-requests). Allocations + documents + budgets/expenses + KRAs done.
 
-**Suggested build priority:** GitHub sync → more public API modules → Wiki upgrade → Custom fields → self-host deploy polish.
+**Suggested build priority:** GitHub sync → more public API modules (change-requests) → Wiki upgrade → Custom fields → self-host deploy polish.

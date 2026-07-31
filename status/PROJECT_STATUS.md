@@ -5,14 +5,13 @@
 **Last reviewed:** 2026-07-31
 **Reviewed by:** Grok (daily maintainer)
 
-## Track A (this run): Public API v1 GET/POST holidays
+## Track A (this run): Public API v1 GET/POST attendance
 
-**Code files changed:** `src/app/api/v1/holidays/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/app/api/v1/attendance/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
 
-- Expose module-gated holiday list/create under `/api/v1/holidays` (leave module)
-- Unique date per org (409 conflict); zod validation; emit `holiday.created` webhook
-- Document endpoints + event in docs/API.md
-- Also noted: allocations + change-requests public API already shipped (status backlog was stale)
+- Expose module-gated attendance list + check-in/check-out under `/api/v1/attendance` (leave module)
+- Zod validation via `attendanceSchema`; 409 on double check-in/out; emit `attendance.check_in` / `attendance.check_out` webhooks
+- Document endpoints + events in docs/API.md
 
 ## ✅ Completed
 - Enhanced /api/health with Prisma ping and module stats
@@ -46,6 +45,7 @@
 - **Public API v1 GET/POST allocations** (`/api/v1/allocations`, resource module)
 - **Public API v1 GET/POST change-requests** (`/api/v1/change-requests`, risk module)
 - **Public API v1 GET/POST holidays** (`/api/v1/holidays`, leave module)
+- **Public API v1 GET/POST attendance** (`/api/v1/attendance`, leave module)
 - **2026-07-29 code audit** confirmed Prisma models, API routes, and UI view files exist for all 10 PRD modules
 
 ## 🔧 Needs Fixing
@@ -96,6 +96,7 @@
 - [x] Public API v1 allocations
 - [x] Public API v1 change-requests
 - [x] Public API v1 holidays
+- [x] Public API v1 attendance
 
 ### Phase 2 — AI Integration
 - [ ] AI-assisted task/project creation and summarization
@@ -129,7 +130,7 @@
 - [ ] **Two-way GitHub sync** (inspired by Huly & Plane) — sync Tasks/Issues module with GitHub Issues (bi-directional create/update/comment sync). High priority — fits dev-tool-savvy audience.
 - [ ] **Real-time collaborative Wiki/Docs** (inspired by Plane & Huly) — upgrade `docs-view.tsx` from static docs to real-time collaborative editing (e.g. Yjs/CRDT-based).
 - [ ] **Custom fields / metadata-driven forms per module** (inspired by ERPNext DocTypes) — let self-hosters extend Tasks, KRAs, Risks, etc. with custom fields without forking code. Strong fit for open-core/toggleable-module pitch.
-- [ ] **Public API coverage for remaining modules** (policies/governance, attendance, milestones, cycles via v1). Holidays + allocations + change-requests + documents + budgets/expenses + KRAs done.
+- [ ] **Public API coverage for remaining modules** (policies/governance, milestones, cycles via v1). Attendance + holidays + allocations + change-requests + documents + budgets/expenses + KRAs done.
 
 **Suggested build priority:** GitHub sync → more public API modules (policies, attendance) → Wiki upgrade → Custom fields → self-host deploy polish.
 

@@ -46,6 +46,8 @@ Create keys in **Settings → API Keys & Webhooks**. Keys are shown once at crea
 - `POST /api/v1/leaves` — submit a leave request (`write`; emits `leave.created` webhook)
 - `GET /api/v1/holidays?limit=` — list organization holidays (max 100)
 - `POST /api/v1/holidays` — create a holiday (`write`; unique date per org; emits `holiday.created` webhook)
+- `GET /api/v1/attendance?userId=&date=&from=&to=&limit=` — list attendance records (max 100)
+- `POST /api/v1/attendance` — check-in / check-out (`write`; body: `userId`, `action` = `check_in`|`check_out`, optional `timestamp`; emits `attendance.check_in` / `attendance.check_out`)
 
 ### KRA / KPA (Module 2)
 - `GET /api/v1/kras?userId=&cycle=&status=&limit=` — list KRAs (max 100)
@@ -107,11 +109,13 @@ task.created        task.updated        task.deleted
 task.worklog.created
 booking.confirmed   booking.cancelled
 leave.created       leave.approved      leave.rejected
+holiday.created
+attendance.check_in attendance.check_out
 kra.created         kra.updated
 expense.created     budget.upserted
 document.created    document.updated
-risk.created
-allocation.created
+risk.created        issue.created
+allocation.created  change_request.created
 ```
 
 Subscribe to all with `*`, or use prefix matching like `task.*`.

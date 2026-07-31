@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
       endDate: true,
       createdAt: true,
       updatedAt: true,
-      user: { select: { id: true, name: true, email: true } },
+      user: { select: { id: true, name: true, email: true, designation: true } },
       project: { select: { id: true, name: true, color: true } },
     },
     orderBy: { startDate: 'desc' },
@@ -54,7 +54,6 @@ export async function POST(req: NextRequest) {
   if (error) return error
   if (!data) return apiError('No data', 'invalid_json', 400)
 
-  // Validate user belongs to org
   const user = await db.user.findFirst({
     where: { id: data.userId, orgId: g.ctx!.orgId },
     select: { id: true },
@@ -63,7 +62,6 @@ export async function POST(req: NextRequest) {
     return apiError('userId not found in your organization', 'not_found', 404)
   }
 
-  // Validate project belongs to org
   const project = await db.project.findFirst({
     where: { id: data.projectId, orgId: g.ctx!.orgId },
     select: { id: true },
@@ -92,7 +90,7 @@ export async function POST(req: NextRequest) {
       endDate: true,
       createdAt: true,
       updatedAt: true,
-      user: { select: { id: true, name: true, email: true } },
+      user: { select: { id: true, name: true, email: true, designation: true } },
       project: { select: { id: true, name: true, color: true } },
     },
   })
@@ -103,7 +101,6 @@ export async function POST(req: NextRequest) {
       userId: allocation.userId,
       projectId: allocation.projectId,
       allocationPct: allocation.allocationPct,
-      role: allocation.role,
     },
   })
 

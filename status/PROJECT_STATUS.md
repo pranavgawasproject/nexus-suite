@@ -2,15 +2,15 @@
 
 > **This file is the single source of truth for "where things actually stand."**
 
-**Last reviewed:** 2026-07-30
+**Last reviewed:** 2026-07-31
 **Reviewed by:** Grok (daily maintainer)
 
-## Track A (this run): Public API v1 GET/POST documents
+## Track A (this run): Public API v1 GET/POST allocations + change-requests
 
-**Code files changed:** `src/app/api/v1/documents/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/app/api/v1/allocations/route.ts`, `src/app/api/v1/change-requests/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
 
-- Expose module-gated document list/create under `/api/v1/documents` (collab module)
-- Validate parentId against org; unique slug per org; initial DocumentVersion snapshot; emit `document.created` webhook
+- Expose module-gated allocation list/create under `/api/v1/allocations` (resource module); validate userId/projectId against org; emit `allocation.created` webhook
+- Expose module-gated change-request list/create under `/api/v1/change-requests` (risk module); validate projectId; emit `change_request.created` webhook
 - Document endpoints in docs/API.md
 
 ## ✅ Completed
@@ -88,6 +88,8 @@
 - [x] Public API v1 kras
 - [x] Public API v1 budgets + expenses
 - [x] Public API v1 documents
+- [x] Public API v1 allocations
+- [x] Public API v1 change-requests
 
 ### Phase 2 — AI Integration
 - [ ] AI-assisted task/project creation and summarization
@@ -121,6 +123,6 @@
 - [ ] **Two-way GitHub sync** (inspired by Huly & Plane) — sync Tasks/Issues module with GitHub Issues (bi-directional create/update/comment sync). High priority — fits dev-tool-savvy audience.
 - [ ] **Real-time collaborative Wiki/Docs** (inspired by Plane & Huly) — upgrade `docs-view.tsx` from static docs to real-time collaborative editing (e.g. Yjs/CRDT-based).
 - [ ] **Custom fields / metadata-driven forms per module** (inspired by ERPNext DocTypes) — let self-hosters extend Tasks, KRAs, Risks, etc. with custom fields without forking code. Strong fit for open-core/toggleable-module pitch.
-- [ ] **Public API coverage for remaining modules** (allocations, change-requests). Documents + budgets/expenses + KRAs done.
+- [x] **Public API coverage for remaining modules** (allocations, change-requests). Documents + budgets/expenses + KRAs + allocations + change-requests done.
 
 **Suggested build priority:** GitHub sync → more public API modules → Wiki upgrade → Custom fields → self-host deploy polish.

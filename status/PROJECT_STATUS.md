@@ -5,17 +5,17 @@
 **Last reviewed:** 2026-08-01
 **Reviewed by:** Grok (daily maintainer)
 
-## Track A (this run): Public API v1 GET notifications
+## Track A (this run): Public API v1 PATCH notifications
 
 **Code files changed:** `src/app/api/v1/notifications/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
 
-- Expose core notifications list under `/api/v1/notifications`
-- Filters: userId, category, unreadOnly, limit (max 100)
+- Add write-scoped PATCH on `/api/v1/notifications` to mark one notification read (`id`) or mark all org unread as read (`markAllRead`)
+- Reuses `updateNotificationSchema`; org-scoped multi-tenancy
 - Document endpoint in docs/API.md
 
 ## ✅ Completed
 
-- **Public API v1 GET notifications** (`/api/v1/notifications`, core)
+- **Public API v1 GET + PATCH notifications** (`/api/v1/notifications`, core — list + mark read)
 - **Public API v1 GET audit** (`/api/v1/audit`, governance module)
 - **Public API v1 GET/POST signatures** (`/api/v1/signatures`, governance module)
 - **Public API v1 GET/POST dependencies** (`/api/v1/dependencies`, tasks module)

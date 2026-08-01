@@ -86,6 +86,7 @@ Create keys in **Settings → API Keys & Webhooks**. Keys are shown once at crea
 - `POST /api/v1/policies` — create or upsert policy by type (`write`; one policy per type per org; emits `policy.created` / `policy.updated` webhook)
 - `GET /api/v1/signatures?documentType=&documentId=&status=&limit=` — list e-signature requests (max 100)
 - `POST /api/v1/signatures` — create a signature request (`write`; requires `documentType`, `documentId`, `signerId`, `signerEmail`; optional `expiresAt`; emits `signature.created`)
+- `GET /api/v1/audit?action=&entityType=&actorId=&limit=` — list audit log entries (max 100; filter by action, entityType, or actorId)
 
 ### Disabled modules
 Endpoints for disabled modules return **403** (not 404) with body:

@@ -2,20 +2,21 @@
 
 > **This file is the single source of truth for "where things actually stand."**
 
-**Last reviewed:** 2026-07-31
+**Last reviewed:** 2026-08-01
 **Reviewed by:** Grok (daily maintainer)
 
-## Track A (this run): Public API v1 GET/POST retrospectives
+## Track A (this run): Public API v1 GET/POST dependencies
 
-**Code files changed:** `src/app/api/v1/retrospectives/route.ts`, `src/lib/schemas.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/app/api/v1/dependencies/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
 
-- Expose module-gated sprint retrospectives list + create under `/api/v1/retrospectives` (tasks module)
-- Zod validation via `createPublicRetrospectiveSchema` (optional `authorId` for API-key auth)
-- Emit `retrospective.created` webhook
+- Expose module-gated task dependencies list + create under `/api/v1/dependencies` (tasks module)
+- Reuse `createTaskDependencySchema` (fromTaskId, toTaskId, type)
+- Emit `task.dependency.created` webhook
 - Document endpoints + event in docs/API.md
 
 ## ✅ Completed
 
+- **Public API v1 GET/POST dependencies** (`/api/v1/dependencies`, tasks module)
 - **Public API v1 GET/POST retrospectives** (`/api/v1/retrospectives`, tasks module)
 - **Public API v1 GET/POST comments** (`/api/v1/comments`, tasks module)
 - **Public API v1 GET/POST checklists** (`/api/v1/checklists`, tasks module)

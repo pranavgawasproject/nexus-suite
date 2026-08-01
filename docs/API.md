@@ -29,6 +29,7 @@ Create keys in **Settings → API Keys & Webhooks**. Keys are shown once at crea
 - `GET /api/v1/tasks?projectId=&status=&assigneeId=&limit=` — list tasks (max 100)
 - `POST /api/v1/tasks` — create a task (requires `write` scope)
 - `GET /api/v1/projects?status=` — list projects
+- `POST /api/v1/projects` — create a project (`write`; requires `name`, `createdById`; optional `description`, `color`, `status`, `startDate`, `endDate`; emits `project.created` webhook)
 - `GET /api/v1/cycles?projectId=&status=&limit=` — list cycles / sprints (max 100)
 - `POST /api/v1/cycles` — create a cycle (`write`; emits `cycle.created` webhook)
 - `GET /api/v1/worklogs?taskId=` — list worklogs for a task
@@ -131,6 +132,7 @@ Failed deliveries retry up to 5 times with exponential backoff: 1m, 5m, 25m, 2h,
 ```
 task.created        task.updated        task.deleted
 task.worklog.created
+project.created
 booking.confirmed   booking.cancelled
 leave.created       leave.approved      leave.rejected
 holiday.created

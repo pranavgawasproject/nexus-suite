@@ -647,3 +647,12 @@ export const createPublicRetrospectiveSchema = z.object({
   authorId: z.string().min(1).optional(),
 })
 
+/** Public task dependency create (Gantt foundation). */
+export const createPublicTaskDependencySchema = z.object({
+  fromTaskId: z.string().min(1, 'fromTaskId is required'),
+  toTaskId: z.string().min(1, 'toTaskId is required'),
+  type: dependencyTypeEnum.optional().default('blocks'),
+}).refine((d) => d.fromTaskId !== d.toTaskId, {
+  message: 'fromTaskId and toTaskId must differ',
+  path: ['toTaskId'],
+})

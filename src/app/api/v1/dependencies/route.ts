@@ -1,15 +1,17 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
 import { requirePublicApi, parsePublicBody, apiOk, apiError } from '@/lib/public-api'
-import { createTaskDependencySchema } from '@/lib/schemas'
+import { createPublicTaskDependencySchema } from '@/lib/schemas'
 import { emitEvent } from '@/lib/webhooks'
 
 /**
  * Public API — Task dependencies (Module 1 Tasks).
  * GET list (read), POST create (write). Module-gated via requirePublicApi('tasks').
+ * Foundation for Gantt / dependency-aware tooling.
  */
 
 // GET /api/v1/dependencies?taskId=&limit=
+// Optional taskId filters to deps where the task is from or to.
 export async function GET(req: NextRequest) {
   const g = await requirePublicApi(req, 'tasks')
   if (g.response) return g.response
@@ -51,23 +53,23 @@ export async function GET(req: NextRequest) {
   return apiOk({ dependencies })
 }
 
-// POST /api/v1/dependencies — create dependency (write scope)
-// Body: { fromTaskId, toTaskId, type? }
+// POST /api/v1/dependencies — create a dependency (write scope)
+// Body: { fromTaskId, toTaskId, type? }  type defaults to 'blocks'
 export async function POST(req: NextRequest) {
   const g = await requirePublicApi(req, 'tasks', { scope: 'write' })
   if (g.response) return g.response
 
-  const { data, error } = await parsePublicBody(req, createTaskDependencySchema)
+  const { data, error } = await parsePublicBody(req, createPublicTaskDependencySchema)
   if (error) return error
   if (!data) return apiError('No data', 'invalid_json', 400)
 
   const fromTask = await db.task.findFirst({
     where: { id: data.fromTaskId, orgId: g.ctx!.orgId },
-    select: { id: true, title: true, status: true },
+    select: { id: true, title: true },
   })
   const toTask = await db.task.findFirst({
     where: { id: data.toTaskId, orgId: g.ctx!.orgId },
-    select: { id: true, title: true, status: true },
+    select: { id: true, title: true },
   })
   if (!fromTask || !toTask) {
     return apiError('One or both tasks not found in your org', 'not_found', 404)
@@ -80,7 +82,6 @@ export async function POST(req: NextRequest) {
       toTaskId: data.toTaskId,
       type: data.type,
     },
-    select: { id: true },
   })
   if (existing) {
     return apiError('Dependency already exists', 'conflict', 409)

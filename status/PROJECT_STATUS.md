@@ -7,10 +7,10 @@
 
 ## Track A (this run): Public API v1 GET/POST dependencies
 
-**Code files changed:** `src/app/api/v1/dependencies/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/app/api/v1/dependencies/route.ts`, `src/lib/schemas.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
 
 - Expose module-gated task dependencies list + create under `/api/v1/dependencies` (tasks module)
-- Reuse `createTaskDependencySchema` (fromTaskId, toTaskId, type)
+- Zod validation via `createPublicTaskDependencySchema` (fromTaskId, toTaskId, type defaults to blocks)
 - Emit `task.dependency.created` webhook
 - Document endpoints + event in docs/API.md
 

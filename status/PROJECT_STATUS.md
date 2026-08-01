@@ -5,17 +5,18 @@
 **Last reviewed:** 2026-08-01
 **Reviewed by:** Grok (daily maintainer)
 
-## Track A (this run): Public API v1 GET/POST dependencies
+## Track A (this run): Public API v1 GET/POST signatures
 
-**Code files changed:** `src/app/api/v1/dependencies/route.ts`, `src/lib/schemas.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/app/api/v1/signatures/route.ts`, `src/lib/schemas.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
 
-- Expose module-gated task dependencies list + create under `/api/v1/dependencies` (tasks module)
-- Zod validation via `createPublicTaskDependencySchema` (fromTaskId, toTaskId, type defaults to blocks)
-- Emit `task.dependency.created` webhook
+- Expose module-gated signature requests list + create under `/api/v1/signatures` (governance module)
+- Zod validation via `createPublicSignatureSchema` (documentType, documentId, signerId, signerEmail, optional expiresAt)
+- Validate signer belongs to org; emit `signature.created` webhook
 - Document endpoints + event in docs/API.md
 
 ## ✅ Completed
 
+- **Public API v1 GET/POST signatures** (`/api/v1/signatures`, governance module)
 - **Public API v1 GET/POST dependencies** (`/api/v1/dependencies`, tasks module)
 - **Public API v1 GET/POST retrospectives** (`/api/v1/retrospectives`, tasks module)
 - **Public API v1 GET/POST comments** (`/api/v1/comments`, tasks module)

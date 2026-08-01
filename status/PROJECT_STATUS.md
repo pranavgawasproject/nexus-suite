@@ -5,18 +5,19 @@
 **Last reviewed:** 2026-08-01
 **Reviewed by:** Grok (daily maintainer)
 
-## Track A (this run): Public API v1 GET audit logs
+## Track A (this run): Public API v1 GET notifications
 
-**Code files changed:** `src/app/api/v1/audit/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/app/api/v1/notifications/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
 
-- Expose module-gated audit log list under `/api/v1/audit` (governance module)
-- Filters: action, entityType, actorId, limit (max 100)
+- Expose core notifications list under `/api/v1/notifications`
+- Filters: userId, category, unreadOnly, limit (max 100)
 - Document endpoint in docs/API.md
 
 ## ✅ Completed
 
-- **Public API v1 GET/POST signatures** (`/api/v1/signatures`, governance module)
+- **Public API v1 GET notifications** (`/api/v1/notifications`, core)
 - **Public API v1 GET audit** (`/api/v1/audit`, governance module)
+- **Public API v1 GET/POST signatures** (`/api/v1/signatures`, governance module)
 - **Public API v1 GET/POST dependencies** (`/api/v1/dependencies`, tasks module)
 - **Public API v1 GET/POST signatures** (`/api/v1/signatures`, governance module)
 - **Public API v1 GET/POST retrospectives** (`/api/v1/retrospectives`, tasks module)

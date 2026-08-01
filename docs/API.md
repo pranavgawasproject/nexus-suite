@@ -84,6 +84,7 @@ Create keys in **Settings → API Keys & Webhooks**. Keys are shown once at crea
 ### Core
 - `GET /api/v1/me` — org + scopes + enabled modules for the current API key
 - `GET /api/v1/notifications?userId=&category=&unreadOnly=&limit=` — list notifications (max 100; filter by userId, category, unreadOnly)
+- `PATCH /api/v1/notifications` — mark one notification read (`{ "id": "..." }`) or mark all org unread as read (`{ "markAllRead": true }`) (`write`)
 
 ### Governance & Compliance (Module 10)
 - `GET /api/v1/policies?type=&limit=` — list governance policies (max 100; filter by type)

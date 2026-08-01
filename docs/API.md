@@ -47,6 +47,7 @@ Create keys in **Settings → API Keys & Webhooks**. Keys are shown once at crea
 
 ### Rooms (Module 3)
 - `GET /api/v1/rooms` — list active rooms
+- `POST /api/v1/rooms` — create a room (`write`; requires `name`; optional `location`, `capacity` (default 4), `amenities`, `active` (default true); emits `room.created` webhook)
 - `GET /api/v1/bookings?roomId=&from=&to=` — list bookings
 - `POST /api/v1/bookings` — create a booking (with automatic conflict check)
 
@@ -133,6 +134,7 @@ Failed deliveries retry up to 5 times with exponential backoff: 1m, 5m, 25m, 2h,
 task.created        task.updated        task.deleted
 task.worklog.created
 project.created
+room.created
 booking.confirmed   booking.cancelled
 leave.created       leave.approved      leave.rejected
 holiday.created

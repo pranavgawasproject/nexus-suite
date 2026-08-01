@@ -81,6 +81,10 @@ Create keys in **Settings → API Keys & Webhooks**. Keys are shown once at crea
 - `GET /api/v1/documents?parentId=&limit=` — list documents (max 100; `parentId=root` for top-level)
 - `POST /api/v1/documents` — create a document (`write`; emits `document.created` webhook; creates initial version snapshot)
 
+### Core
+- `GET /api/v1/me` — org + scopes + enabled modules for the current API key
+- `GET /api/v1/notifications?userId=&category=&unreadOnly=&limit=` — list notifications (max 100; filter by userId, category, unreadOnly)
+
 ### Governance & Compliance (Module 10)
 - `GET /api/v1/policies?type=&limit=` — list governance policies (max 100; filter by type)
 - `POST /api/v1/policies` — create or upsert policy by type (`write`; one policy per type per org; emits `policy.created` / `policy.updated` webhook)

@@ -9,6 +9,15 @@
 
 **Code files changed:** `src/app/api/v1/signatures/route.ts`, `src/lib/schemas.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
 
+- Expose module-gated e-signature requests list + create under `/api/v1/signatures` (governance module)
+- Zod validation via `createPublicSignatureSchema`
+- Emit `signature.created` webhook
+- Document endpoints + event in docs/API.md
+
+## Track A (this run): Public API v1 GET/POST signatures
+
+**Code files changed:** `src/app/api/v1/signatures/route.ts`, `src/lib/schemas.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
+
 - Expose module-gated signature requests list + create under `/api/v1/signatures` (governance module)
 - Zod validation via `createPublicSignatureSchema` (documentType, documentId, signerId, signerEmail, optional expiresAt)
 - Validate signer belongs to org; emit `signature.created` webhook
@@ -18,6 +27,7 @@
 
 - **Public API v1 GET/POST signatures** (`/api/v1/signatures`, governance module)
 - **Public API v1 GET/POST dependencies** (`/api/v1/dependencies`, tasks module)
+- **Public API v1 GET/POST signatures** (`/api/v1/signatures`, governance module)
 - **Public API v1 GET/POST retrospectives** (`/api/v1/retrospectives`, tasks module)
 - **Public API v1 GET/POST comments** (`/api/v1/comments`, tasks module)
 - **Public API v1 GET/POST checklists** (`/api/v1/checklists`, tasks module)

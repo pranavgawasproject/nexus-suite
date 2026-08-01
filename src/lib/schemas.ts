@@ -657,18 +657,11 @@ export const createPublicTaskDependencySchema = z.object({
   path: ['toTaskId'],
 })
 
-// ============================================================
-// Signature schemas (Module 10 Governance)
-// ============================================================
-
-export const signatureStatusEnum = z.enum(['pending', 'signed', 'declined', 'expired'])
-export const signatureDocumentTypeEnum = z.enum(['document', 'kra', 'expense', 'change_request'])
-
-/** Public signature create — request a signature on a document (API key auth). */
+/** Public signature create — request e-signature on a document/KRA/etc. */
 export const createPublicSignatureSchema = z.object({
-  documentType: signatureDocumentTypeEnum,
+  documentType: z.enum(['document', 'kra', 'expense', 'change_request']),
   documentId: z.string().min(1, 'documentId is required'),
   signerId: z.string().min(1, 'signerId is required'),
-  signerEmail: z.string().email('valid signerEmail is required'),
-  expiresAt: z.string().datetime().optional().nullable(),
+  signerEmail: z.string().email('valid signerEmail required'),
+  expiresAt: z.string().datetime().optional(),
 })

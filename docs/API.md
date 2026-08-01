@@ -84,8 +84,8 @@ Create keys in **Settings → API Keys & Webhooks**. Keys are shown once at crea
 ### Governance & Compliance (Module 10)
 - `GET /api/v1/policies?type=&limit=` — list governance policies (max 100; filter by type)
 - `POST /api/v1/policies` — create or upsert policy by type (`write`; one policy per type per org; emits `policy.created` / `policy.updated` webhook)
-- `GET /api/v1/signatures?documentType=&documentId=&status=&limit=` — list signature requests (max 100)
-- `POST /api/v1/signatures` — create a signature request (`write`; emits `signature.created` webhook)
+- `GET /api/v1/signatures?documentType=&documentId=&status=&limit=` — list e-signature requests (max 100)
+- `POST /api/v1/signatures` — create a signature request (`write`; requires `documentType`, `documentId`, `signerId`, `signerEmail`; optional `expiresAt`; emits `signature.created`)
 
 ### Disabled modules
 Endpoints for disabled modules return **403** (not 404) with body:
@@ -138,7 +138,6 @@ milestone.created
 retrospective.created
 task.dependency.created
 policy.created      policy.updated
-signature.created
 ```
 
 Subscribe to all with `*`, or use prefix matching like `task.*`.

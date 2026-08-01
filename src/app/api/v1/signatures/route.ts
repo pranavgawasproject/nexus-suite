@@ -36,7 +36,6 @@ export async function GET(req: NextRequest) {
       signerEmail: true,
       status: true,
       signedAt: true,
-      signatureHash: true,
       expiresAt: true,
       createdAt: true,
     },
@@ -47,7 +46,7 @@ export async function GET(req: NextRequest) {
   return apiOk({ signatures })
 }
 
-// POST /api/v1/signatures — create a signature request (write scope)
+// POST /api/v1/signatures — create signature request (write scope)
 // Body: { documentType, documentId, signerId, signerEmail, expiresAt? }
 export async function POST(req: NextRequest) {
   const g = await requirePublicApi(req, 'governance', { scope: 'write' })
@@ -57,7 +56,6 @@ export async function POST(req: NextRequest) {
   if (error) return error
   if (!data) return apiError('No data', 'invalid_json', 400)
 
-  // Validate signer belongs to org
   const signer = await db.user.findFirst({
     where: { id: data.signerId, orgId: g.ctx!.orgId },
     select: { id: true, email: true, name: true },
@@ -84,7 +82,6 @@ export async function POST(req: NextRequest) {
       signerEmail: true,
       status: true,
       signedAt: true,
-      signatureHash: true,
       expiresAt: true,
       createdAt: true,
     },

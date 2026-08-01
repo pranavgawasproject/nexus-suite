@@ -5,16 +5,17 @@
 **Last reviewed:** 2026-08-01
 **Reviewed by:** Grok (daily maintainer)
 
-## Track A (this run): Public API v1 POST projects
+## Track A (this run): Public API v1 POST rooms
 
-**Code files changed:** `src/app/api/v1/projects/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/app/api/v1/rooms/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
 
-- Expose project create under `/api/v1/projects` (tasks module, write scope)
-- Requires `createdById` (org-scoped user); optional description/color/status/dates
-- Emits `project.created` webhook; documented in docs/API.md
+- Expose room create under `/api/v1/rooms` (rooms module, write scope)
+- Requires `name`; optional `location`, `capacity`, `amenities`, `active`
+- Emits `room.created` webhook; documented in docs/API.md
 
 ## ✅ Completed
 
+- **Public API v1 POST rooms** (`/api/v1/rooms`, rooms module)
 - **Public API v1 POST projects** (`/api/v1/projects`, tasks module)
 - **Public API v1 GET/PATCH notifications** (`/api/v1/notifications`, core)
 - **Public API v1 GET/POST signatures** (`/api/v1/signatures`, governance module)
@@ -116,6 +117,7 @@
 - [x] Public API v1 checklists
 - [x] Public API v1 cycles
 - [x] Public API v1 projects POST
+- [x] Public API v1 rooms POST
 
 ### Phase 2 — AI Integration
 - [ ] AI-assisted task/project creation and summarization
@@ -149,6 +151,6 @@
 - [ ] **Two-way GitHub sync** (inspired by Huly & Plane) — sync Tasks/Issues module with GitHub Issues (bi-directional create/update/comment sync). High priority — fits dev-tool-savvy audience.
 - [ ] **Real-time collaborative Wiki/Docs** (inspired by Plane & Huly) — upgrade `docs-view.tsx` from static docs to real-time collaborative editing (e.g. Yjs/CRDT-based).
 - [ ] **Custom fields / metadata-driven forms per module** (inspired by ERPNext DocTypes) — let self-hosters extend Tasks, KRAs, Risks, etc. with custom fields without forking code. Strong fit for open-core/toggleable-module pitch.
-- [x] **Public API coverage for remaining modules** (policies/governance, milestones, cycles via v1 done). Attendance + holidays + allocations + change-requests + documents + budgets/expenses + KRAs + milestones + policies + projects POST done.
+- [x] **Public API coverage for remaining modules** (policies/governance, milestones, cycles via v1 done). Attendance + holidays + allocations + change-requests + documents + budgets/expenses + KRAs + milestones + policies + projects POST + rooms POST done.
 
 **Suggested build priority:** GitHub sync → self-host deploy polish → Wiki upgrade → Custom fields.

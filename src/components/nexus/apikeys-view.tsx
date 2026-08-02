@@ -37,6 +37,18 @@ interface Webhook {
   secretPrefix: string
   createdAt: string
 }
+interface WebhookDelivery {
+  id: string
+  webhookId: string
+  webhookUrl: string
+  event: string
+  status: string
+  responseCode?: number | null
+  attempt: number
+  nextRetryAt?: string | null
+  deliveredAt?: string | null
+  createdAt: string
+}
 
 export function ApiKeysView() {
   const [tab, setTab] = React.useState<'keys' | 'webhooks'>('keys')
@@ -46,14 +58,16 @@ export function ApiKeysView() {
   const [createHookOpen, setCreateHookOpen] = React.useState(false)
   const [newKey, setNewKey] = React.useState<string | null>(null)
   const [newSecret, setNewSecret] = React.useState<string | null>(null)
+  const [deliveries, setDeliveries] = React.useState<WebhookDelivery[]>([])
 
   const load = React.useCallback(async () => {
     try {
-      const [k, w] = await Promise.all([
+      const [k, w, d] = await Promise.all([
         api<{ apiKeys: ApiKey[] }>('/api/api-keys'),
         api<{ webhooks: Webhook[] }>('/api/webhooks'),
+        api<{ deliveries: WebhookDelivery[] }>('/api/webhooks/deliveries?limit=20'),
       ])
-      setKeys(k.apiKeys); setWebhooks(w.webhooks)
+      setKeys(k.apiKeys); setWebhooks(w.webhooks); setDeliveries(d.deliveries)
     } catch {}
   }, [])
   React.useEffect(() => { load() }, [load])
@@ -189,6 +203,56 @@ export function ApiKeysView() {
                 {webhooks.length === 0 && (
                   <div className="py-12 text-center text-sm text-muted-foreground">
                     No webhooks configured. Create one to receive event notifications.
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-base">Recent deliveries</CardTitle>
+                <CardDescription>Last 20 delivery attempts across all webhooks</CardDescription>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => load()}>
+                <Icons.RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Refresh
+              </Button>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y">
+                {deliveries.map((d) => (
+                  <div key={d.id} className="flex items-start gap-3 px-4 py-3">
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                      d.status === 'delivered' ? 'bg-emerald-500/10 text-emerald-600' :
+                      d.status === 'failed' ? 'bg-rose-500/10 text-rose-600' :
+                      'bg-amber-500/10 text-amber-600'
+                    }`}>
+                      {d.status === 'delivered' ? <Icons.CheckCircle2 className="h-4 w-4" /> :
+                       d.status === 'failed' ? <Icons.XCircle className="h-4 w-4" /> :
+                       <Icons.Clock className="h-4 w-4" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <code className="text-xs font-medium">{d.event}</code>
+                        <Badge variant="outline" className="text-[10px] capitalize">{d.status}</Badge>
+                        {d.responseCode != null && (
+                          <span className="text-[10px] text-muted-foreground">HTTP {d.responseCode}</span>
+                        )}
+                        <span className="text-[10px] text-muted-foreground">attempt {d.attempt}</span>
+                      </div>
+                      <div className="mt-0.5 truncate text-xs text-muted-foreground font-mono">{d.webhookUrl}</div>
+                      <div className="mt-0.5 text-[11px] text-muted-foreground">
+                        {relativeTime(d.createdAt)}
+                        {d.deliveredAt && <> · delivered {relativeTime(d.deliveredAt)}</>}
+                        {d.nextRetryAt && d.status === 'retrying' && <> · next retry {relativeTime(d.nextRetryAt)}</>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {deliveries.length === 0 && (
+                  <div className="py-10 text-center text-sm text-muted-foreground">
+                    No deliveries yet. Events will appear here once webhooks fire.
                   </div>
                 )}
               </div>

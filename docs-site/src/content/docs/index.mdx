@@ -1,0 +1,50 @@
+---
+title: Nexus Suite
+description: All-in-one modular enterprise PM + ERP suite. 100% free, open-source, self-hostable forever.
+template: splash
+hero:
+  tagline: All-in-one modular enterprise PM + ERP suite. 100% free and open-source — self-host forever.
+  actions:
+    - text: Get started in 2 minutes
+      link: /quickstart/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/pranavgawasproject/nexus-suite
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## The pitch, in one paragraph
+
+Organizations currently stitch together 3–5 separate tools to run their operations — a PM tool (Jira/Asana), an HR tool (Keka/Lattice), a room booking tool (Robin/Skedda), a budget spreadsheet, and a chat tool. Nexus Suite replaces all of them with **one modular platform** where every module is independently toggleable, sharing one core (users, org, auth, notifications, audit). And unlike most "all-in-one" tools, it's **genuinely free and open-source under AGPL-3.0** — not freemium, not a 14-day trial. Self-host it forever, or let us host it for you.
+
+## Why Nexus Suite
+
+| | Closed SaaS (Monday/Asana/Jira) | Open-source ERP (Odoo/ERPNext) | **Nexus Suite** |
+|---|---|---|---|
+| Pricing | Per-seat, compounds with headcount | Free, but configuration-heavy | **Free forever, flat-rate managed hosting** |
+| Module model | Fixed bundle | Monolithic, install apps you don't need | **Toggle per module — disable what you don't use** |
+| ERP depth | None | Deep (accounting, inventory, manufacturing) | **PM + HR + facilities + budget — the SME middle** |
+| Self-host | No, and licensing forbids it anyway | Yes, but heavy setup | **One-command `docker compose up`** |
+| Open-source | Closed | GPL | **AGPL-3.0 (network-use protected)** |
+| Set up in &lt;1 day | Multi-week sales cycle | Multi-week implementation | **Self-host in 2 minutes** |
+
+The wedge: pre-built modules, toggled per org, self-hosted in minutes, genuinely free — not a feature-count race against Odoo's 260+ modules.
+
+<CardGrid stagger>
+	<Card title="10 modules, all free" icon="puzzle">
+		Tasks, KRA/KPA, Room Booking, Resource Allocation, Budget, Risk, Collaboration, Leave & Attendance, Reporting, and Governance — every module ships open-source, no gating.
+	</Card>
+	<Card title="Self-host in 2 minutes" icon="rocket">
+		`docker compose up -d --build` and you're running, with a seeded demo org to explore immediately.
+	</Card>
+	<Card title="Public API + webhooks" icon="setting">
+		28+ REST endpoint groups, API-key scopes, HMAC-signed webhooks with retry-with-backoff. Free and unlimited on self-hosted installs.
+	</Card>
+	<Card title="Open-core, not bait-and-switch" icon="open-book">
+		Paid tiers only ever sell hosting, support, and compliance add-ons — never module features.
+	</Card>
+</CardGrid>

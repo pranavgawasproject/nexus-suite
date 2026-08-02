@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
 import { requirePublicApi, parsePublicBody, apiOk, apiError } from '@/lib/public-api'
-import { createBookingSchema } from '@/lib/schemas'
+import { createBookingSchema, updateBookingSchema } from '@/lib/schemas'
 import { emitEvent } from '@/lib/webhooks'
 
 // GET /api/v1/bookings — list upcoming bookings
@@ -109,4 +109,56 @@ export async function POST(req: NextRequest) {
   await emitEvent(g.ctx!.orgId, 'booking.confirmed', { booking })
 
   return apiOk({ booking }, 201)
+}
+
+// PATCH /api/v1/bookings — update a booking (write scope).
+// Body: id (required), optional title, description, status, attendees.
+// Emits booking.updated (or booking.cancelled when status becomes cancelled).
+export async function PATCH(req: NextRequest) {
+  const g = await requirePublicApi(req, 'rooms', { scope: 'write' })
+  if (g.response) return g.response
+
+  const { data, error } = await parsePublicBody(req, updateBookingSchema)
+  if (error) return error
+  if (!data) return apiError('No data', 'invalid_json', 400)
+
+  const existing = await db.booking.findFirst({
+    where: { id: data.id, orgId: g.ctx!.orgId },
+  })
+  if (!existing) {
+    return apiError('Booking not found', 'not_found', 404)
+  }
+
+  const booking = await db.booking.update({
+    where: { id: data.id },
+    data: {
+      ...(data.title !== undefined && { title: data.title }),
+      ...(data.description !== undefined && { description: data.description }),
+      ...(data.status !== undefined && { status: data.status }),
+      ...(data.attendees !== undefined && { attendees: data.attendees }),
+    },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      startTime: true,
+      endTime: true,
+      attendees: true,
+      status: true,
+      room: { select: { id: true, name: true } },
+    },
+  })
+
+  const eventName = data.status === 'cancelled' ? 'booking.cancelled' : 'booking.updated'
+  await emitEvent(g.ctx!.orgId, eventName, {
+    booking: {
+      id: booking.id,
+      title: booking.title,
+      status: booking.status,
+      startTime: booking.startTime,
+      endTime: booking.endTime,
+    },
+  })
+
+  return apiOk({ booking })
 }

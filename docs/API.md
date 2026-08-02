@@ -1,6 +1,6 @@
-# Nexus Suite â Public API v1
+# Nexus Suite Ã¢ÂÂ Public API v1
 
-> Fully free and unlimited on self-hosted installs (PRD Â§4.5 v2.1). Rate limits apply only to managed-hosting tier.
+> Fully free and unlimited on self-hosted installs (PRD ÃÂ§4.5 v2.1). Rate limits apply only to managed-hosting tier.
 
 ## Authentication
 
@@ -10,7 +10,7 @@ All `/api/v1/*` endpoints require a Bearer token:
 curl -H "Authorization: Bearer nexus_<your-key>" https://nexus.yourdomain.com/api/v1/me
 ```
 
-Create keys in **Settings â API Keys & Webhooks**. Keys are shown once at creation â store them securely.
+Create keys in **Settings Ã¢ÂÂ API Keys & Webhooks**. Keys are shown once at creation Ã¢ÂÂ store them securely.
 
 ## Scopes
 
@@ -23,80 +23,81 @@ Create keys in **Settings â API Keys & Webhooks**. Keys are shown once at c
 ## Endpoints
 
 ### Identity
-- `GET /api/v1/me` â current org + scopes + enabled modules
+- `GET /api/v1/me` Ã¢ÂÂ current org + scopes + enabled modules
 
 ### Tasks (Module 1)
-- `GET /api/v1/tasks?projectId=&status=&assigneeId=&limit=` â list tasks (max 100)
-- `POST /api/v1/tasks` â create a task (requires `write` scope)
-- `GET /api/v1/projects?status=` â list projects
-- `POST /api/v1/projects` â create a project (`write`; requires `name`, `createdById`; optional `description`, `color`, `status`, `startDate`, `endDate`; emits `project.created` webhook)
-- `GET /api/v1/cycles?projectId=&status=&limit=` â list cycles / sprints (max 100)
-- `POST /api/v1/cycles` â create a cycle (`write`; emits `cycle.created` webhook)
-- `GET /api/v1/worklogs?taskId=` â list worklogs for a task
-- `POST /api/v1/worklogs` â log time against a task (`write`; requires `authorId`; emits `task.worklog.created`)
-- `GET /api/v1/comments?taskId=&limit=` â list comments on a task (max 100)
-- `POST /api/v1/comments` â create a comment (`write`; requires `taskId`, `authorId`, `body`; emits `task.comment.created`)
-- `GET /api/v1/checklists?taskId=&limit=` â list checklist items for a task (max 100)
-- `POST /api/v1/checklists` â create a checklist item (`write`; requires `taskId`, `title`; emits `task.checklist.created`)
-- `GET /api/v1/milestones?projectId=&status=&limit=` â list project milestones (max 100)
-- `POST /api/v1/milestones` â create a milestone (`write`; requires `projectId`, `name`; emits `milestone.created` webhook)
-- `GET /api/v1/retrospectives?cycleId=&status=&limit=` â list sprint retrospectives (max 100)
-- `POST /api/v1/retrospectives` â create a retrospective (`write`; requires `cycleId`, `title`; optional `authorId`, `wentWell`, `toImprove`, `actionItems`, `status`; emits `retrospective.created`)
-- `GET /api/v1/dependencies?taskId=&limit=` â list task dependencies (max 100; optional filter by task)
-- `POST /api/v1/dependencies` â create a dependency (`write`; requires `fromTaskId`, `toTaskId`; optional `type` = `blocks`|`relates`; emits `task.dependency.created`)
+- `GET /api/v1/tasks?projectId=&status=&assigneeId=&limit=` Ã¢ÂÂ list tasks (max 100)
+- `POST /api/v1/tasks` Ã¢ÂÂ create a task (requires `write` scope)
+- `GET /api/v1/projects?status=` Ã¢ÂÂ list projects
+- `POST /api/v1/projects` Ã¢ÂÂ create a project (`write`; requires `name`, `createdById`; optional `description`, `color`, `status`, `startDate`, `endDate`; emits `project.created` webhook)
+- `GET /api/v1/cycles?projectId=&status=&limit=` Ã¢ÂÂ list cycles / sprints (max 100)
+- `POST /api/v1/cycles` Ã¢ÂÂ create a cycle (`write`; emits `cycle.created` webhook)
+- `GET /api/v1/worklogs?taskId=` Ã¢ÂÂ list worklogs for a task
+- `POST /api/v1/worklogs` Ã¢ÂÂ log time against a task (`write`; requires `authorId`; emits `task.worklog.created`)
+- `GET /api/v1/comments?taskId=&limit=` Ã¢ÂÂ list comments on a task (max 100)
+- `POST /api/v1/comments` Ã¢ÂÂ create a comment (`write`; requires `taskId`, `authorId`, `body`; emits `task.comment.created`)
+- `GET /api/v1/checklists?taskId=&limit=` Ã¢ÂÂ list checklist items for a task (max 100)
+- `POST /api/v1/checklists` Ã¢ÂÂ create a checklist item (`write`; requires `taskId`, `title`; emits `task.checklist.created`)
+- `GET /api/v1/milestones?projectId=&status=&limit=` Ã¢ÂÂ list project milestones (max 100)
+- `POST /api/v1/milestones` Ã¢ÂÂ create a milestone (`write`; requires `projectId`, `name`; emits `milestone.created` webhook)
+- `GET /api/v1/retrospectives?cycleId=&status=&limit=` Ã¢ÂÂ list sprint retrospectives (max 100)
+- `POST /api/v1/retrospectives` Ã¢ÂÂ create a retrospective (`write`; requires `cycleId`, `title`; optional `authorId`, `wentWell`, `toImprove`, `actionItems`, `status`; emits `retrospective.created`)
+- `GET /api/v1/dependencies?taskId=&limit=` Ã¢ÂÂ list task dependencies (max 100; optional filter by task)
+- `POST /api/v1/dependencies` Ã¢ÂÂ create a dependency (`write`; requires `fromTaskId`, `toTaskId`; optional `type` = `blocks`|`relates`; emits `task.dependency.created`)
 
 ### Rooms (Module 3)
-- `GET /api/v1/rooms` — list active rooms
-- `POST /api/v1/rooms` — create a room (`write`; requires `name`; optional `location`, `capacity` (default 4), `amenities`, `active` (default true); emits `room.created` webhook)
-- `PATCH /api/v1/rooms` — update a room (`write`; requires `id`; optional `name`, `location`, `capacity`, `amenities`, `active`; emits `room.updated` webhook)
-- `GET /api/v1/bookings?roomId=&from=&to=` — list bookings
-- `POST /api/v1/bookings` — create a booking (with automatic conflict check)
+- `GET /api/v1/rooms` â list active rooms
+- `POST /api/v1/rooms` â create a room (`write`; requires `name`; optional `location`, `capacity` (default 4), `amenities`, `active` (default true); emits `room.created` webhook)
+- `PATCH /api/v1/rooms` â update a room (`write`; requires `id`; optional `name`, `location`, `capacity`, `amenities`, `active`; emits `room.updated` webhook)
+- `GET /api/v1/bookings?roomId=&from=&to=` â list bookings
+- `POST /api/v1/bookings` â create a booking (with automatic conflict check)
+- `PATCH /api/v1/bookings` — update a booking (`write`; requires `id`; optional `title`, `description`, `status`, `attendees`; emits `booking.updated` or `booking.cancelled` webhook)
 
 ### Resource & Capacity (Module 4)
-- `GET /api/v1/allocations?userId=&projectId=&limit=` â list allocations (max 100)
-- `POST /api/v1/allocations` â create an allocation (`write`; requires `userId`, `projectId`, `allocationPct`, `startDate`; emits `allocation.created` webhook)
+- `GET /api/v1/allocations?userId=&projectId=&limit=` Ã¢ÂÂ list allocations (max 100)
+- `POST /api/v1/allocations` Ã¢ÂÂ create an allocation (`write`; requires `userId`, `projectId`, `allocationPct`, `startDate`; emits `allocation.created` webhook)
 
 ### Leave & Attendance (Module 8)
-- `GET /api/v1/leaves?userId=&status=&limit=` â list leave requests (max 100)
-- `POST /api/v1/leaves` â submit a leave request (`write`; emits `leave.created` webhook)
-- `GET /api/v1/holidays?limit=` â list organization holidays (max 100)
-- `POST /api/v1/holidays` â create a holiday (`write`; unique date per org; emits `holiday.created` webhook)
-- `GET /api/v1/attendance?userId=&date=&from=&to=&limit=` â list attendance records (max 100)
-- `POST /api/v1/attendance` â check-in / check-out (`write`; body: `userId`, `action` = `check_in`|`check_out`, optional `timestamp`; emits `attendance.check_in` / `attendance.check_out`)
+- `GET /api/v1/leaves?userId=&status=&limit=` Ã¢ÂÂ list leave requests (max 100)
+- `POST /api/v1/leaves` Ã¢ÂÂ submit a leave request (`write`; emits `leave.created` webhook)
+- `GET /api/v1/holidays?limit=` Ã¢ÂÂ list organization holidays (max 100)
+- `POST /api/v1/holidays` Ã¢ÂÂ create a holiday (`write`; unique date per org; emits `holiday.created` webhook)
+- `GET /api/v1/attendance?userId=&date=&from=&to=&limit=` Ã¢ÂÂ list attendance records (max 100)
+- `POST /api/v1/attendance` Ã¢ÂÂ check-in / check-out (`write`; body: `userId`, `action` = `check_in`|`check_out`, optional `timestamp`; emits `attendance.check_in` / `attendance.check_out`)
 
 ### KRA / KPA (Module 2)
-- `GET /api/v1/kras?userId=&cycle=&status=&limit=` â list KRAs (max 100)
-- `POST /api/v1/kras` â create a KRA (`write`; emits `kra.created` webhook)
+- `GET /api/v1/kras?userId=&cycle=&status=&limit=` Ã¢ÂÂ list KRAs (max 100)
+- `POST /api/v1/kras` Ã¢ÂÂ create a KRA (`write`; emits `kra.created` webhook)
 
 ### Risk & Issue (Module 6)
-- `GET /api/v1/risks?projectId=&status=&category=&limit=` â list risks (max 100)
-- `POST /api/v1/risks` â create a risk (`write`; emits `risk.created` webhook)
-- `GET /api/v1/issues?projectId=&status=&severity=&limit=` â list issues (max 100)
-- `POST /api/v1/issues` â create an issue (`write`; emits `issue.created` webhook)
-- `GET /api/v1/change-requests?projectId=&status=&limit=` — list change requests (max 100)
-- `POST /api/v1/change-requests` — create a change request (`write`; requires `title`; optional `projectId`, `description`, `type` = `minor`|`major`|`critical`, `impactAssessment`, `dueDate`; emits `change_request.created` webhook)
+- `GET /api/v1/risks?projectId=&status=&category=&limit=` Ã¢ÂÂ list risks (max 100)
+- `POST /api/v1/risks` Ã¢ÂÂ create a risk (`write`; emits `risk.created` webhook)
+- `GET /api/v1/issues?projectId=&status=&severity=&limit=` Ã¢ÂÂ list issues (max 100)
+- `POST /api/v1/issues` Ã¢ÂÂ create an issue (`write`; emits `issue.created` webhook)
+- `GET /api/v1/change-requests?projectId=&status=&limit=` â list change requests (max 100)
+- `POST /api/v1/change-requests` â create a change request (`write`; requires `title`; optional `projectId`, `description`, `type` = `minor`|`major`|`critical`, `impactAssessment`, `dueDate`; emits `change_request.created` webhook)
 
 ### Budget & Financial (Module 5)
-- `GET /api/v1/budgets?projectId=&limit=` â list project budgets (max 100)
-- `POST /api/v1/budgets` â create or upsert budget for a project (`write`; emits `budget.upserted` webhook)
-- `GET /api/v1/expenses?projectId=&category=&limit=` â list expenses (max 100)
-- `POST /api/v1/expenses` â create an expense (`write`; requires `incurredById`; emits `expense.created` webhook)
+- `GET /api/v1/budgets?projectId=&limit=` Ã¢ÂÂ list project budgets (max 100)
+- `POST /api/v1/budgets` Ã¢ÂÂ create or upsert budget for a project (`write`; emits `budget.upserted` webhook)
+- `GET /api/v1/expenses?projectId=&category=&limit=` Ã¢ÂÂ list expenses (max 100)
+- `POST /api/v1/expenses` Ã¢ÂÂ create an expense (`write`; requires `incurredById`; emits `expense.created` webhook)
 
 ### Collaboration & Docs (Module 7)
-- `GET /api/v1/documents?parentId=&limit=` â list documents (max 100; `parentId=root` for top-level)
-- `POST /api/v1/documents` â create a document (`write`; emits `document.created` webhook; creates initial version snapshot)
+- `GET /api/v1/documents?parentId=&limit=` Ã¢ÂÂ list documents (max 100; `parentId=root` for top-level)
+- `POST /api/v1/documents` Ã¢ÂÂ create a document (`write`; emits `document.created` webhook; creates initial version snapshot)
 
 ### Core
-- `GET /api/v1/me` â org + scopes + enabled modules for the current API key
-- `GET /api/v1/notifications?userId=&category=&unreadOnly=&limit=` â list notifications (max 100; filter by userId, category, unreadOnly)
-- `PATCH /api/v1/notifications` â mark one notification read (`{ "id": "..." }`) or mark all org unread as read (`{ "markAllRead": true }`) (`write`)
+- `GET /api/v1/me` Ã¢ÂÂ org + scopes + enabled modules for the current API key
+- `GET /api/v1/notifications?userId=&category=&unreadOnly=&limit=` Ã¢ÂÂ list notifications (max 100; filter by userId, category, unreadOnly)
+- `PATCH /api/v1/notifications` Ã¢ÂÂ mark one notification read (`{ "id": "..." }`) or mark all org unread as read (`{ "markAllRead": true }`) (`write`)
 
 ### Governance & Compliance (Module 10)
-- `GET /api/v1/policies?type=&limit=` â list governance policies (max 100; filter by type)
-- `POST /api/v1/policies` â create or upsert policy by type (`write`; one policy per type per org; emits `policy.created` / `policy.updated` webhook)
-- `GET /api/v1/signatures?documentType=&documentId=&status=&limit=` â list e-signature requests (max 100)
-- `POST /api/v1/signatures` â create a signature request (`write`; requires `documentType`, `documentId`, `signerId`, `signerEmail`; optional `expiresAt`; emits `signature.created`)
-- `GET /api/v1/audit?action=&entityType=&actorId=&limit=` â list audit log entries (max 100; filter by action, entityType, or actorId)
+- `GET /api/v1/policies?type=&limit=` Ã¢ÂÂ list governance policies (max 100; filter by type)
+- `POST /api/v1/policies` Ã¢ÂÂ create or upsert policy by type (`write`; one policy per type per org; emits `policy.created` / `policy.updated` webhook)
+- `GET /api/v1/signatures?documentType=&documentId=&status=&limit=` Ã¢ÂÂ list e-signature requests (max 100)
+- `POST /api/v1/signatures` Ã¢ÂÂ create a signature request (`write`; requires `documentType`, `documentId`, `signerId`, `signerEmail`; optional `expiresAt`; emits `signature.created`)
+- `GET /api/v1/audit?action=&entityType=&actorId=&limit=` Ã¢ÂÂ list audit log entries (max 100; filter by action, entityType, or actorId)
 
 ### Disabled modules
 Endpoints for disabled modules return **403** (not 404) with body:
@@ -106,11 +107,11 @@ Endpoints for disabled modules return **403** (not 404) with body:
 
 ## Webhooks
 
-Subscribe to events at **Settings â API Keys & Webhooks**. Each delivery includes:
+Subscribe to events at **Settings Ã¢ÂÂ API Keys & Webhooks**. Each delivery includes:
 
-- `X-Nexus-Signature: sha256=<hmac>` â HMAC-SHA256 of the body using your webhook secret
-- `X-Nexus-Event: task.created` â the event name
-- `X-Nexus-Delivery: <delivery-id>` â idempotency key (dedupe on this)
+- `X-Nexus-Signature: sha256=<hmac>` Ã¢ÂÂ HMAC-SHA256 of the body using your webhook secret
+- `X-Nexus-Event: task.created` Ã¢ÂÂ the event name
+- `X-Nexus-Delivery: <delivery-id>` Ã¢ÂÂ idempotency key (dedupe on this)
 - Body: `{ "event": "task.created", "org_id": "...", "timestamp": "...", "data": {...} }`
 
 ### Verifying the signature (Node.js example)
@@ -129,7 +130,7 @@ function verifySignature(rawBody, signatureHeader, secret) {
 
 ### Retry policy
 
-Failed deliveries retry up to 5 times with exponential backoff: 1m, 5m, 25m, 2h, 10h. After 5 failures, the webhook is marked failed (but not auto-disabled â you can re-enable it in settings).
+Failed deliveries retry up to 5 times with exponential backoff: 1m, 5m, 25m, 2h, 10h. After 5 failures, the webhook is marked failed (but not auto-disabled Ã¢ÂÂ you can re-enable it in settings).
 
 ### Events
 
@@ -158,15 +159,15 @@ Subscribe to all with `*`, or use prefix matching like `task.*`.
 ## Rate limits
 
 - **Self-hosted:** unlimited.
-- **Managed Cloud â Starter:** 100 req/min per org
-- **Managed Cloud â Business:** 1,000 req/min per org
-- **Managed Cloud â Enterprise:** custom
+- **Managed Cloud Ã¢ÂÂ Starter:** 100 req/min per org
+- **Managed Cloud Ã¢ÂÂ Business:** 1,000 req/min per org
+- **Managed Cloud Ã¢ÂÂ Enterprise:** custom
 
 Rate-limited responses return `429 Too Many Requests` with `Retry-After` header.
 
 ## SDKs
 
-Not yet available. The API is plain REST + JSON â use `curl`, `fetch`, or any HTTP client.
+Not yet available. The API is plain REST + JSON Ã¢ÂÂ use `curl`, `fetch`, or any HTTP client.
 
 ## Versioning
 

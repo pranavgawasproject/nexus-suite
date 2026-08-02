@@ -2,14 +2,14 @@
 
 > **This file is the single source of truth for "where things actually stand."**
 
-**Last reviewed:** 2026-08-02 (Track A: audit-view UI filters wired to API)
+**Last reviewed:** 2026-08-02 (Track A: webhook recent deliveries API + UI)
 **Reviewed by:** Autonomous daily maintainer (Grok)
 
-## Track A (2026-08-02 run — UI filters)
+## Track A (2026-08-02 run — webhook deliveries)
 
-**Code files changed:** `src/components/nexus/audit-view.tsx`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/app/api/webhooks/deliveries/route.ts`, `src/components/nexus/apikeys-view.tsx`, `status/PROJECT_STATUS.md`
 
-- **Audit-view UI filters** — date range (from/to), actor select (from `/api/team`), action & entityType selects; all hit server-side `GET /api/audit` query params; quick text filter retained client-side; Clear control
+- **Webhook recent deliveries** — `GET /api/webhooks/deliveries` (org-scoped, optional webhookId, limit up to 100); "Recent deliveries" card on API Keys & Webhooks view with status badges, response codes, refresh
 
 ## ✅ Completed
 
@@ -35,6 +35,7 @@
 - **Public API leave PATCH** (approve/reject/cancel)
 - **Starlight docs site scaffold** (docs-site/)
 - **Audit-view UI filters** (date range, actor, action, entityType → `/api/audit`)
+- **Webhook recent deliveries** API + UI (GET /api/webhooks/deliveries + Recent deliveries card)
 
 ## 🔧 Active Work & Next Priorities
 
@@ -68,6 +69,7 @@
 - [x] Add Google & GitHub OAuth login alongside credentials
 - [x] Scaffold dedicated documentation site (Starlight under docs-site/)
 - [x] Wire audit-view UI filters (API was ready)
+- [x] Webhook recent deliveries API + UI
 - [ ] Deploy a live 1-click interactive demo instance (e.g., `demo.nexussuite.org`)
 - [ ] Upgrade README with rich feature GIFs and screenshots
 - [ ] Expand documentation site content

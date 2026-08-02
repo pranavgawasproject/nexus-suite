@@ -39,11 +39,10 @@
 
 ## 🔧 Active Work & Next Priorities
 
-- **Custom fields UI** — Build React components for custom field configuration and task rendering
-- **Multi-currency support** — Expand financial tracking beyond INR to USD, EUR, GBP
-- **OAuth SSO** — Google & GitHub OAuth integration
 - **Live Demo Instance** — Deploy auto-resetting demo instance (e.g. `demo.nexussuite.org`)
 - **Visual README** — Add high-res screenshots and feature GIFs
+- **Documentation site** — Build dedicated docs site (Starlight/Fumadocs/Mintlify)
+- **Real-time collaborative Wiki/Docs** — Upgrade docs-view to Yjs/CRDT-based collaborative editing
 
 ## 🚀 Future Plan & Strategic Roadmap
 
@@ -65,9 +64,9 @@
 - [x] Custom fields backend & API (ERPNext DocTypes pattern)
 
 ### Phase 3 — Polish, UI Completion & Live Demo (IN PROGRESS ⏳)
-- [ ] Build Custom Fields frontend UI components
-- [ ] Add Multi-currency support (USD, EUR, GBP) alongside INR
-- [ ] Add Google & GitHub OAuth login alongside credentials
+- [x] Build Custom Fields frontend UI components
+- [x] Add Multi-currency support (USD, EUR, GBP) alongside INR
+- [x] Add Google & GitHub OAuth login alongside credentials
 - [ ] Deploy a live 1-click interactive demo instance (e.g., `demo.nexussuite.org`)
 - [ ] Upgrade README with rich feature GIFs and screenshots
 - [ ] Build dedicated documentation site (Starlight/Fumadocs/Mintlify)
@@ -98,7 +97,7 @@
 - [x] **Task checklists** (Plane / Trello)
 - [x] **Task worklogs / time tracking** (OpenProject / Plane)
 - [x] **Two-way GitHub sync** (Huly & Plane) — **DONE**
-- [x] **Custom fields / metadata-driven forms** (ERPNext DocTypes) — **API DONE**
+- [x] **Custom fields / metadata-driven forms** (ERPNext DocTypes) — **API + UI DONE**
 - [ ] **Real-time collaborative Wiki/Docs** (Plane & Huly) — upgrade `docs-view.tsx` to Yjs/CRDT-based collaborative editing
 
-**Suggested build priority:** Custom Fields UI → Multi-currency → Live Demo → Visual README → Public Launch Push.
+**Suggested build priority:** Real-time Wiki upgrade → Live Demo → Visual README → Documentation site → Public Launch Push.

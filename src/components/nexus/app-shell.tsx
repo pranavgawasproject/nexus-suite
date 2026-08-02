@@ -54,6 +54,10 @@ const ApiKeysView = dynamic(
   () => import('./apikeys-view').then((m) => m.ApiKeysView),
   { ssr: false, loading: () => <ViewLoading /> }
 )
+const CustomFieldsView = dynamic(
+  () => import('./custom-fields-manager').then((m) => m.CustomFieldsManager),
+  { ssr: false, loading: () => <ViewLoading /> }
+)
 const RiskView = dynamic(
   () => import('./risk-view').then((m) => m.RiskView),
   { ssr: false, loading: () => <ViewLoading /> }
@@ -160,6 +164,7 @@ export function AppShell() {
             {activeView === 'budget' && <BudgetView />}
             {activeView === 'docs' && <DocsView />}
             {activeView === 'apikeys' && <ApiKeysView />}
+            {activeView === 'customfields' && <CustomFieldsView />}
             {activeView === 'risk' && <RiskView />}
             {activeView === 'governance' && <GovernanceView />}
             {activeView === 'settings' && <SettingsView />}

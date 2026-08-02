@@ -57,6 +57,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
   const settingsNav: NavItem[] = [
     { view: 'settings', label: 'Module Marketplace', icon: 'Store' },
+    { view: 'customfields', label: 'Custom Fields', icon: 'SlidersHorizontal' },
     { view: 'apikeys', label: 'API Keys & Webhooks', icon: 'KeyRound' },
     { view: 'export', label: 'Data Export', icon: 'Download' },
     { view: 'audit', label: 'Audit Log', icon: 'History' },

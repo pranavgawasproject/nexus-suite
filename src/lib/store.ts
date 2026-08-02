@@ -16,6 +16,7 @@ export type ViewKey =
   | 'docs'
   | 'risk'
   | 'governance'
+  | 'customfields'
   | 'settings'
   | 'onboarding'
   | 'export'

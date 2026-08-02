@@ -55,8 +55,25 @@ const CATEGORY_COLORS: Record<string, string> = {
   other: 'bg-slate-500',
 }
 
-const inr = (n: number, currency = 'INR') =>
-  new Intl.NumberFormat('en-IN', { style: 'currency', currency, maximumFractionDigits: 0 }).format(n)
+const inr = (n: number, currency = 'INR') => {
+  try {
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency, maximumFractionDigits: currency === 'INR' || currency === 'JPY' ? 0 : 2 }).format(n)
+  } catch {
+    return `${n.toFixed(2)} ${currency}`
+  }
+}
+
+const CURRENCIES = [
+  { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
+  { code: 'USD', symbol: '$', name: 'US Dollar' },
+  { code: 'EUR', symbol: '€', name: 'Euro' },
+  { code: 'GBP', symbol: '£', name: 'British Pound' },
+  { code: 'AED', symbol: 'AED', name: 'UAE Dirham' },
+  { code: 'SGD', symbol: 'S$', name: 'Singapore Dollar' },
+  { code: 'AUD', symbol: 'A$', name: 'Australian Dollar' },
+  { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' },
+  { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
+]
 
 export function BudgetView() {
   const { isModuleOn } = useAppStore()
@@ -242,6 +259,7 @@ function ExpenseDialog({ open, onOpenChange, projects, onCreated }: { open: bool
   const [projectId, setProjectId] = React.useState('')
   const [title, setTitle] = React.useState('')
   const [amount, setAmount] = React.useState('')
+  const [currency, setCurrency] = React.useState('INR')
   const [category, setCategory] = React.useState('other')
   const [vendor, setVendor] = React.useState('')
   const [incurredDate, setIncurredDate] = React.useState<Date | undefined>(new Date())
@@ -251,7 +269,7 @@ function ExpenseDialog({ open, onOpenChange, projects, onCreated }: { open: bool
     if (!projectId || !title.trim() || !amount || !incurredDate) { toast.error('Project, title, amount, and date are required'); return }
     try {
       const d = new Date(incurredDate); d.setUTCHours(12, 0, 0, 0)
-      await api('/api/expenses', { method: 'POST', body: JSON.stringify({ projectId, title: title.trim(), amount: Number(amount), category, vendor: vendor.trim() || null, incurredDate: d.toISOString(), notes: notes.trim() || null }) })
+      await api('/api/expenses', { method: 'POST', body: JSON.stringify({ projectId, title: title.trim(), amount: Number(amount), currency, category, vendor: vendor.trim() || null, incurredDate: d.toISOString(), notes: notes.trim() || null }) })
       toast.success('Expense logged')
       setTitle(''); setAmount(''); setVendor(''); setNotes('')
       onOpenChange(false); onCreated()
@@ -266,7 +284,7 @@ function ExpenseDialog({ open, onOpenChange, projects, onCreated }: { open: bool
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Log expense</DialogTitle>
-          <DialogDescription>Record a project expense. INR only for Phase 2 — multi-currency deferred to Phase 3.</DialogDescription>
+          <DialogDescription>Record a project expense in any currency. Multi-currency supported.</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <div>
@@ -282,8 +300,14 @@ function ExpenseDialog({ open, onOpenChange, projects, onCreated }: { open: bool
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="amount">Amount (INR) *</Label>
-              <Input id="amount" type="number" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} className="mt-1" placeholder="0" />
+              <Label htmlFor="amount">Amount *</Label>
+              <div className="mt-1 flex gap-2">
+                <Select value={currency} onValueChange={setCurrency}>
+                  <SelectTrigger className="w-[110px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>{CURRENCIES.map((c) => <SelectItem key={c.code} value={c.code}>{c.code}</SelectItem>)}</SelectContent>
+                </Select>
+                <Input id="amount" type="number" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} className="flex-1" placeholder="0" />
+              </div>
             </div>
             <div>
               <Label>Category</Label>
@@ -325,12 +349,13 @@ function ExpenseDialog({ open, onOpenChange, projects, onCreated }: { open: bool
 function BudgetDialog({ open, onOpenChange, projects, onCreated }: { open: boolean; onOpenChange: (o: boolean) => void; projects: Project[]; onCreated: () => void }) {
   const [projectId, setProjectId] = React.useState('')
   const [totalAmount, setTotalAmount] = React.useState('')
+  const [currency, setCurrency] = React.useState('INR')
   const [notes, setNotes] = React.useState('')
 
   const submit = async () => {
     if (!projectId || !totalAmount) { toast.error('Project and amount required'); return }
     try {
-      await api('/api/budgets', { method: 'POST', body: JSON.stringify({ projectId, totalAmount: Number(totalAmount), currency: 'INR', notes: notes.trim() || null }) })
+      await api('/api/budgets', { method: 'POST', body: JSON.stringify({ projectId, totalAmount: Number(totalAmount), currency, notes: notes.trim() || null }) })
       toast.success('Budget set')
       setTotalAmount(''); setNotes('')
       onOpenChange(false); onCreated()
@@ -353,8 +378,14 @@ function BudgetDialog({ open, onOpenChange, projects, onCreated }: { open: boole
             </Select>
           </div>
           <div>
-            <Label htmlFor="total">Total budget (INR)</Label>
-            <Input id="total" type="number" min="0" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} className="mt-1" placeholder="500000" autoFocus />
+            <Label htmlFor="total">Total budget</Label>
+            <div className="mt-1 flex gap-2">
+              <Select value={currency} onValueChange={setCurrency}>
+                <SelectTrigger className="w-[110px]"><SelectValue /></SelectTrigger>
+                <SelectContent>{CURRENCIES.map((c) => <SelectItem key={c.code} value={c.code}>{c.code}</SelectItem>)}</SelectContent>
+              </Select>
+              <Input id="total" type="number" min="0" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} className="flex-1" placeholder="500000" autoFocus />
+            </div>
           </div>
           <div>
             <Label htmlFor="bnotes">Notes</Label>

@@ -17,6 +17,8 @@
 
 - **Public API v1 PATCH rooms** (`/api/v1/rooms`, rooms module)
 - **Public API v1 POST rooms** (`/api/v1/rooms`, rooms module)
+- **Public rooms schema unit tests** + wire public-worklogs/public-rooms into test:all
+- **docs/API.md** change-requests GET/POST documented
 - **Public API v1 POST projects** (`/api/v1/projects`, tasks module)
 - **Public API v1 GET/PATCH notifications** (`/api/v1/notifications`, core)
 - **Public API v1 GET/POST signatures** (`/api/v1/signatures`, governance module)

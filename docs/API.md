@@ -73,6 +73,8 @@ Create keys in **Settings â API Keys & Webhooks**. Keys are shown once at c
 - `POST /api/v1/risks` â create a risk (`write`; emits `risk.created` webhook)
 - `GET /api/v1/issues?projectId=&status=&severity=&limit=` â list issues (max 100)
 - `POST /api/v1/issues` â create an issue (`write`; emits `issue.created` webhook)
+- `GET /api/v1/change-requests?projectId=&status=&limit=` — list change requests (max 100)
+- `POST /api/v1/change-requests` — create a change request (`write`; requires `title`; optional `projectId`, `description`, `type` = `minor`|`major`|`critical`, `impactAssessment`, `dueDate`; emits `change_request.created` webhook)
 
 ### Budget & Financial (Module 5)
 - `GET /api/v1/budgets?projectId=&limit=` â list project budgets (max 100)

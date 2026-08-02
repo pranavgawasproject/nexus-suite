@@ -2,20 +2,21 @@
 
 > **This file is the single source of truth for "where things actually stand."**
 
-**Last reviewed:** 2026-08-01
+**Last reviewed:** 2026-08-02
 **Reviewed by:** Grok (daily maintainer)
 
-## Track A (this run): Public API v1 POST rooms
+## Track A (this run): Public API v1 PATCH rooms
 
 **Code files changed:** `src/app/api/v1/rooms/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
 
-- Expose room create under `/api/v1/rooms` (rooms module, write scope)
-- Requires `name`; optional `location`, `capacity`, `amenities`, `active`
-- Emits `room.created` webhook; documented in docs/API.md
+- Expose room update under `/api/v1/rooms` PATCH (rooms module, write scope)
+- Requires `id`; optional `name`, `location`, `capacity`, `amenities`, `active`
+- Emits `room.updated` webhook; documented in docs/API.md
 
 ## ✅ Completed
 
 - **Public API v1 POST rooms** (`/api/v1/rooms`, rooms module)
+- **Public API v1 PATCH rooms** (`/api/v1/rooms`, rooms module)
 - **Public API v1 POST projects** (`/api/v1/projects`, tasks module)
 - **Public API v1 GET/PATCH notifications** (`/api/v1/notifications`, core)
 - **Public API v1 GET/POST signatures** (`/api/v1/signatures`, governance module)
@@ -118,6 +119,7 @@
 - [x] Public API v1 cycles
 - [x] Public API v1 projects POST
 - [x] Public API v1 rooms POST
+- [x] Public API v1 rooms PATCH
 
 ### Phase 2 — AI Integration
 - [ ] AI-assisted task/project creation and summarization

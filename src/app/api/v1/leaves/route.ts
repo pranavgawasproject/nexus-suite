@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
 import { requirePublicApi, parsePublicBody, apiOk, apiError } from '@/lib/public-api'
-import { createLeaveSchema } from '@/lib/schemas'
+import { createLeaveSchema, updateLeaveSchema } from '@/lib/schemas'
 import { emitEvent } from '@/lib/webhooks'
 
 /**
@@ -104,4 +104,72 @@ export async function POST(req: NextRequest) {
   })
 
   return apiOk({ leave }, 201)
+}
+
+/**
+ * PATCH /api/v1/leaves — approve / reject / cancel a pending leave (write scope).
+ * Body: updateLeaveSchema — id (required), status, optional approverNote.
+ * Only pending leaves can be updated; decidedAt is set on transition.
+ */
+export async function PATCH(req: NextRequest) {
+  const g = await requirePublicApi(req, 'leave', { scope: 'write' })
+  if (g.response) return g.response
+
+  const { data, error } = await parsePublicBody(req, updateLeaveSchema)
+  if (error) return error
+  if (!data) return apiError('No data', 'invalid_json', 400)
+
+  const existing = await db.leave.findFirst({
+    where: { id: data.id, orgId: g.ctx!.orgId },
+  })
+  if (!existing) {
+    return apiError('Leave not found', 'not_found', 404)
+  }
+  if (existing.status !== 'pending') {
+    return apiError(`Leave already ${existing.status}`, 'invalid_state', 400)
+  }
+
+  // Prefer an org admin as attributed approver for API-key driven decisions
+  const adminUser = await db.user.findFirst({
+    where: { orgId: g.ctx!.orgId, role: 'admin' },
+    select: { id: true },
+  })
+
+  const leave = await db.leave.update({
+    where: { id: data.id },
+    data: {
+      status: data.status,
+      approverId: adminUser?.id ?? null,
+      approverNote: data.approverNote ?? null,
+      decidedAt: new Date(),
+    },
+    select: {
+      id: true,
+      type: true,
+      startDate: true,
+      endDate: true,
+      halfDay: true,
+      status: true,
+      reason: true,
+      appliedAt: true,
+      decidedAt: true,
+      approverNote: true,
+      createdAt: true,
+      updatedAt: true,
+      user: { select: { id: true, name: true, email: true } },
+      approver: { select: { id: true, name: true } },
+    },
+  })
+
+  await emitEvent(g.ctx!.orgId, `leave.${data.status}`, {
+    leave: {
+      id: leave.id,
+      userId: leave.user.id,
+      type: leave.type,
+      status: leave.status,
+      decidedAt: leave.decidedAt,
+    },
+  })
+
+  return apiOk({ leave })
 }

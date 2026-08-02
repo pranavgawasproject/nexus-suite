@@ -2,19 +2,16 @@
 
 > **This file is the single source of truth for "where things actually stand."**
 
-**Last reviewed:** 2026-08-02 (Phase 2 complete + Future Roadmap updated)
-**Reviewed by:** Gemini Spark / Pranav Gawas
+**Last reviewed:** 2026-08-02 (Track A: audit filters + public leave PATCH + leave schema tests)
+**Reviewed by:** Autonomous daily maintainer (Grok)
 
-## Track A: AI insights + GitHub sync + custom fields + deploy polish
+## Track A (2026-08-02 run)
 
-**Code files changed:** `src/lib/ai.ts`, `src/lib/github-sync.ts`, `src/app/api/ai/*`, `src/app/api/github-sync/*`, `src/app/api/custom-fields/*`, `prisma/schema.prisma`, `install.sh`, `CONTRIBUTING.md`
+**Code files changed:** `src/app/api/audit/route.ts`, `src/app/api/v1/audit/route.ts`, `src/app/api/v1/leaves/route.ts`, `tests/public-leaves.test.ts`, `package.json`
 
-- **AI dashboard insights** (`POST /api/ai/dashboard-insights`) — heuristic + AI executive summary
-- **AI admin copilot** (`POST /api/ai/admin-copilot`) — governance/compliance checks + KPI suggestions
-- **Two-way GitHub sync** — `GitHubSync` + `GitHubIssueMap` models, `/api/github-sync` CRUD, webhook receiver with HMAC verification, outbound sync via GitHub API
-- **Custom fields** (ERPNext DocTypes style) — `CustomFieldDef` + `CustomFieldValue` models, `/api/custom-fields` + `/api/custom-fields/values` CRUD, supports 8 field types
-- **One-command installer** (`install.sh`) — `curl | bash` style, generates secrets, builds + starts Docker stack
-- **Good first issues** section added to CONTRIBUTING.md (12 concrete scoped tasks for new contributors)
+- **Audit log filtering** — internal `GET /api/audit` now supports `from`, `to`, `actorId`, `action`, `entityType`, `limit`; public `GET /api/v1/audit` gained `from`/`to` date filters
+- **Public leave decisions** — `PATCH /api/v1/leaves` approve/reject/cancel pending leaves (write scope, zod `updateLeaveSchema`, webhook `leave.{status}`)
+- **Leave schema unit tests** — `tests/public-leaves.test.ts` wired into `test:all`
 
 ## ✅ Completed
 
@@ -36,13 +33,17 @@
 - **Verification** — typecheck PASS, lint PASS, build PASS, test:tenant 17/17 PASS
 - **License** — AGPL-3.0-or-later
 - **Open-core business model**
+- **Audit log query filters** (internal + public from/to)
+- **Public API leave PATCH** (approve/reject/cancel)
+- **Starlight docs site scaffold** (docs-site/)
 
 ## 🔧 Active Work & Next Priorities
 
 - **Live Demo Instance** — Deploy auto-resetting demo instance (e.g. `demo.nexussuite.org`)
 - **Visual README** — Add high-res screenshots and feature GIFs
-- **Documentation site** — Build dedicated docs site (Starlight/Fumadocs/Mintlify)
+- **Documentation site content polish** — expand Starlight pages as features ship
 - **Real-time collaborative Wiki/Docs** — Upgrade docs-view to Yjs/CRDT-based collaborative editing
+- **Audit-view UI filters** — wire date-range + actor filters in the governance audit UI (API ready)
 
 ## 🚀 Future Plan & Strategic Roadmap
 
@@ -67,9 +68,10 @@
 - [x] Build Custom Fields frontend UI components
 - [x] Add Multi-currency support (USD, EUR, GBP) alongside INR
 - [x] Add Google & GitHub OAuth login alongside credentials
+- [x] Scaffold dedicated documentation site (Starlight under docs-site/)
 - [ ] Deploy a live 1-click interactive demo instance (e.g., `demo.nexussuite.org`)
 - [ ] Upgrade README with rich feature GIFs and screenshots
-- [ ] Build dedicated documentation site (Starlight/Fumadocs/Mintlify)
+- [ ] Expand documentation site content
 
 ### Phase 4 — Growth, Launch & Community (PLANNED 🎯)
 - [ ] Public launch campaign: Hacker News ("Show HN"), Reddit (`r/selfhosted`, `r/opensource`, `r/webdev`), Product Hunt
@@ -100,4 +102,4 @@
 - [x] **Custom fields / metadata-driven forms** (ERPNext DocTypes) — **API + UI DONE**
 - [ ] **Real-time collaborative Wiki/Docs** (Plane & Huly) — upgrade `docs-view.tsx` to Yjs/CRDT-based collaborative editing
 
-**Suggested build priority:** Real-time Wiki upgrade → Live Demo → Visual README → Documentation site → Public Launch Push.
+**Suggested build priority:** Real-time Wiki upgrade → Live Demo → Visual README → Documentation content → Public Launch Push.

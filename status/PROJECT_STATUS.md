@@ -23,6 +23,7 @@
   - Admin copilot (`POST /api/ai/admin-copilot`)
 - **Two-way GitHub sync (DONE)**
 - **Custom fields / metadata-driven forms (API + DB schema DONE)**
+- **Custom fields zod schema unit tests** (`tests/custom-fields.test.ts`) + schemas extracted to `src/lib/schemas.ts`
 - **One-command installer** (`install.sh`)
 - **Good first issues**
 - **All 10 PRD modules** — full depth (cycles, retros, comments, milestones, dependencies, checklists, worklogs, Gantt, subtasks, CSV import)

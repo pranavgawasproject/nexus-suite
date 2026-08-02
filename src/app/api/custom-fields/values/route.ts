@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getDemoContext } from '@/lib/seed'
 import { parseBody, withErrors } from '@/lib/api-guard'
-import { z } from 'zod'
+import { upsertCustomFieldValueSchema } from '@/lib/schemas'
 
 // GET /api/custom-fields/values?entityType=task&entityId=<id>
 export async function GET(req: NextRequest) {
@@ -27,24 +27,13 @@ export async function GET(req: NextRequest) {
   })
 }
 
-const upsertValueSchema = z.object({
-  entityType: z.string().min(1),
-  entityId: z.string().min(1),
-  fieldDefId: z.string().min(1),
-  valueText: z.string().optional().nullable(),
-  valueNumber: z.number().optional().nullable(),
-  valueDate: z.string().datetime().optional().nullable(),
-  valueBool: z.boolean().optional().nullable(),
-  valueJson: z.string().optional().nullable(),
-})
-
 // POST /api/custom-fields/values — upsert a value
 export async function POST(req: NextRequest) {
   return withErrors(async () => {
     const ctx = await getDemoContext()
     if (!ctx) return NextResponse.json({ error: 'no_org' }, { status: 400 })
 
-    const { data, error } = await parseBody(req, upsertValueSchema)
+    const { data, error } = await parseBody(req, upsertCustomFieldValueSchema)
     if (error) return error
 
     // Verify the field def belongs to this org

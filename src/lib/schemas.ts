@@ -665,3 +665,46 @@ export const createPublicSignatureSchema = z.object({
   signerEmail: z.string().email('valid signerEmail required'),
   expiresAt: z.string().datetime().optional(),
 })
+
+// ============================================================
+// Custom Fields schemas (ERPNext DocTypes-style extensibility)
+// ============================================================
+
+export const customFieldTypeEnum = z.enum([
+  'text', 'number', 'date', 'select', 'multiselect', 'boolean', 'url', 'email',
+])
+
+export const createCustomFieldSchema = z.object({
+  moduleKey: z.string().min(1),
+  entityType: z.string().min(1),
+  key: z.string().min(1).max(60).regex(/^[a-z0-9_]+$/, 'Key must be lowercase snake_case'),
+  label: z.string().min(1).max(120),
+  type: customFieldTypeEnum,
+  options: z.string().optional().nullable(),
+  defaultValue: z.string().optional().nullable(),
+  required: z.boolean().optional().default(false),
+  searchable: z.boolean().optional().default(false),
+  position: z.number().int().min(0).optional().default(0),
+})
+
+export const updateCustomFieldSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1).max(120).optional(),
+  options: z.string().optional().nullable(),
+  defaultValue: z.string().optional().nullable(),
+  required: z.boolean().optional(),
+  searchable: z.boolean().optional(),
+  position: z.number().int().min(0).optional(),
+  active: z.boolean().optional(),
+})
+
+export const upsertCustomFieldValueSchema = z.object({
+  entityType: z.string().min(1),
+  entityId: z.string().min(1),
+  fieldDefId: z.string().min(1),
+  valueText: z.string().optional().nullable(),
+  valueNumber: z.number().optional().nullable(),
+  valueDate: z.string().datetime().optional().nullable(),
+  valueBool: z.boolean().optional().nullable(),
+  valueJson: z.string().optional().nullable(),
+})

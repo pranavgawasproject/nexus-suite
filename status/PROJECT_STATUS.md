@@ -2,16 +2,14 @@
 
 > **This file is the single source of truth for "where things actually stand."**
 
-**Last reviewed:** 2026-08-02 (Track A: audit filters + public leave PATCH + leave schema tests)
+**Last reviewed:** 2026-08-02 (Track A: audit-view UI filters wired to API)
 **Reviewed by:** Autonomous daily maintainer (Grok)
 
-## Track A (2026-08-02 run)
+## Track A (2026-08-02 run — UI filters)
 
-**Code files changed:** `src/app/api/audit/route.ts`, `src/app/api/v1/audit/route.ts`, `src/app/api/v1/leaves/route.ts`, `tests/public-leaves.test.ts`, `package.json`
+**Code files changed:** `src/components/nexus/audit-view.tsx`, `status/PROJECT_STATUS.md`
 
-- **Audit log filtering** — internal `GET /api/audit` now supports `from`, `to`, `actorId`, `action`, `entityType`, `limit`; public `GET /api/v1/audit` gained `from`/`to` date filters
-- **Public leave decisions** — `PATCH /api/v1/leaves` approve/reject/cancel pending leaves (write scope, zod `updateLeaveSchema`, webhook `leave.{status}`)
-- **Leave schema unit tests** — `tests/public-leaves.test.ts` wired into `test:all`
+- **Audit-view UI filters** — date range (from/to), actor select (from `/api/team`), action & entityType selects; all hit server-side `GET /api/audit` query params; quick text filter retained client-side; Clear control
 
 ## ✅ Completed
 
@@ -23,7 +21,6 @@
   - Admin copilot (`POST /api/ai/admin-copilot`)
 - **Two-way GitHub sync (DONE)**
 - **Custom fields / metadata-driven forms (API + DB schema DONE)**
-- **Custom fields zod schema unit tests** (`tests/custom-fields.test.ts`) + schemas extracted to `src/lib/schemas.ts`
 - **One-command installer** (`install.sh`)
 - **Good first issues**
 - **All 10 PRD modules** — full depth (cycles, retros, comments, milestones, dependencies, checklists, worklogs, Gantt, subtasks, CSV import)
@@ -37,6 +34,7 @@
 - **Audit log query filters** (internal + public from/to)
 - **Public API leave PATCH** (approve/reject/cancel)
 - **Starlight docs site scaffold** (docs-site/)
+- **Audit-view UI filters** (date range, actor, action, entityType → `/api/audit`)
 
 ## 🔧 Active Work & Next Priorities
 
@@ -44,7 +42,6 @@
 - **Visual README** — Add high-res screenshots and feature GIFs
 - **Documentation site content polish** — expand Starlight pages as features ship
 - **Real-time collaborative Wiki/Docs** — Upgrade docs-view to Yjs/CRDT-based collaborative editing
-- **Audit-view UI filters** — wire date-range + actor filters in the governance audit UI (API ready)
 
 ## 🚀 Future Plan & Strategic Roadmap
 
@@ -70,6 +67,7 @@
 - [x] Add Multi-currency support (USD, EUR, GBP) alongside INR
 - [x] Add Google & GitHub OAuth login alongside credentials
 - [x] Scaffold dedicated documentation site (Starlight under docs-site/)
+- [x] Wire audit-view UI filters (API was ready)
 - [ ] Deploy a live 1-click interactive demo instance (e.g., `demo.nexussuite.org`)
 - [ ] Upgrade README with rich feature GIFs and screenshots
 - [ ] Expand documentation site content

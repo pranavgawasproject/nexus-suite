@@ -99,6 +99,28 @@ export function GanttView() {
     load()
   }, [load])
 
+  const blockedBy = React.useMemo(() => {
+    const m = new Map<string, string[]>()
+    for (const d of deps) {
+      if (d.type !== 'blocks') continue
+      const list = m.get(d.toTaskId) || []
+      list.push(d.fromTask.title)
+      m.set(d.toTaskId, list)
+    }
+    return m
+  }, [deps])
+
+  const blocks = React.useMemo(() => {
+    const m = new Map<string, string[]>()
+    for (const d of deps) {
+      if (d.type !== 'blocks') continue
+      const list = m.get(d.fromTaskId) || []
+      list.push(d.toTask.title)
+      m.set(d.fromTaskId, list)
+    }
+    return m
+  }, [deps])
+
   if (!isModuleOn('tasks')) {
     return (
       <Card>
@@ -135,28 +157,6 @@ export function GanttView() {
   const totalDays = Math.max(1, daysBetween(rangeStart, rangeEnd))
   const dayTicks: Date[] = []
   for (let i = 0; i <= totalDays; i++) dayTicks.push(addDays(rangeStart, i))
-
-  const blockedBy = React.useMemo(() => {
-    const m = new Map<string, string[]>()
-    for (const d of deps) {
-      if (d.type !== 'blocks') continue
-      const list = m.get(d.toTaskId) || []
-      list.push(d.fromTask.title)
-      m.set(d.toTaskId, list)
-    }
-    return m
-  }, [deps])
-
-  const blocks = React.useMemo(() => {
-    const m = new Map<string, string[]>()
-    for (const d of deps) {
-      if (d.type !== 'blocks') continue
-      const list = m.get(d.fromTaskId) || []
-      list.push(d.toTask.title)
-      m.set(d.fromTaskId, list)
-    }
-    return m
-  }, [deps])
 
   const barStyle = (t: Task) => {
     if (!t.dueDate) return null

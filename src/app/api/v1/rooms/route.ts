@@ -53,7 +53,6 @@ export async function POST(req: NextRequest) {
       amenities: true,
       active: true,
       createdAt: true,
-      updatedAt: true,
     },
   })
 
@@ -103,7 +102,6 @@ export async function PATCH(req: NextRequest) {
       amenities: true,
       active: true,
       createdAt: true,
-      updatedAt: true,
     },
   })
 

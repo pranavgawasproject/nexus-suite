@@ -57,6 +57,9 @@ model Organization {
   taskDependencies TaskDependency[]
   taskChecklistItems TaskChecklistItem[]
   taskWorklogs     TaskWorklog[]
+  githubSyncs      GitHubSync[]
+  customFieldDefs  CustomFieldDef[]
+  customFieldValues CustomFieldValue[]
 }
 
 model User {
@@ -178,6 +181,7 @@ model Project {
   changeRequests ChangeRequest[]
   cycles      Cycle[]
   milestones  Milestone[]
+  githubSyncs GitHubSync[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -212,6 +216,7 @@ model Task {
   dependenciesTo   TaskDependency[] @relation("DepTo")
   checklistItems TaskChecklistItem[]
   worklogs    TaskWorklog[]
+  githubIssueMaps GitHubIssueMap[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -737,3 +742,106 @@ model TaskWorklog {
   @@index([orgId, authorId])
 }
 
+
+// ============================================================
+// GITHUB SYNC — Two-way sync between Tasks and GitHub Issues
+// (Competitor feature inspired by Huly & Plane)
+// ============================================================
+
+model GitHubSync {
+  id              String   @id @default(cuid())
+  orgId           String
+  org             Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  repoOwner       String   // e.g. "pranavgawasproject"
+  repoName        String   // e.g. "nexus-suite"
+  projectId       String   // Nexus project to sync with
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  githubTokenHash String?  // bcrypt-hashed PAT (optional — uses webhook for inbound if not set)
+  webhookSecret   String   // secret to verify inbound GitHub webhook signatures
+  webhookId       Int?     // GitHub webhook ID (for management)
+  active          Boolean  @default(true)
+  // Sync configuration
+  syncDirection   String   @default("two_way") // one_way_out | one_way_in | two_way
+  defaultAssignee String?  // GitHub username to assign new issues to (optional)
+  labelMapping    String?  // JSON: { "nexus_priority_urgent": "P0", ... }
+  statusMapping   String?  // JSON: { "todo": "open", "done": "closed", ... }
+  lastSyncAt      DateTime?
+  lastSyncError   String?
+  issueMaps       GitHubIssueMap[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([orgId, repoOwner, repoName])
+}
+
+model GitHubIssueMap {
+  id              String   @id @default(cuid())
+  orgId           String
+  githubSyncId    String
+  githubSync      GitHubSync @relation(fields: [githubSyncId], references: [id], onDelete: Cascade)
+  taskId          String
+  task            Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  githubIssueNumber Int    // the issue number in the GitHub repo
+  githubIssueUrl  String
+  githubNodeId    String?  // GitHub's global node ID
+  // Sync tracking
+  lastSyncedAt    DateTime @default(now())
+  lastSyncDirection String? // "out" (nexus→github) or "in" (github→nexus)
+  nexusUpdatedAt  DateTime? // timestamp of Nexus task at last sync (for conflict detection)
+  githubUpdatedAt DateTime? // timestamp of GitHub issue at last sync
+  createdAt       DateTime @default(now())
+
+  @@unique([githubSyncId, taskId])
+  @@unique([githubSyncId, githubIssueNumber])
+  @@index([orgId, taskId])
+}
+
+// ============================================================
+// CUSTOM FIELDS — metadata-driven form extensions per module
+// (Inspired by ERPNext DocTypes — lets self-hosters add custom
+// fields to Tasks, KRAs, Risks, etc. without forking code)
+// ============================================================
+
+model CustomFieldDef {
+  id          String   @id @default(cuid())
+  orgId       String
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  moduleKey   String   // "tasks" | "kras" | "risks" | "issues" | "expenses" | ...
+  entityType  String   // "task" | "kra" | "risk" | "issue" | "expense" | ...
+  key         String   // machine-readable field key, e.g. "client_priority"
+  label       String   // human-readable label, e.g. "Client Priority"
+  type        String   // text | number | date | select | multiselect | boolean | url | email
+  options     String?  // JSON: for select/multiselect — { choices: ["A", "B", "C"] }
+  defaultValue String?
+  required    Boolean  @default(false)
+  searchable  Boolean  @default(false) // index for search
+  position    Int      @default(0)     // display order
+  active      Boolean  @default(true)
+  createdById String?
+  fieldValues CustomFieldValue[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([orgId, entityType, key])
+  @@index([orgId, entityType])
+}
+
+model CustomFieldValue {
+  id          String   @id @default(cuid())
+  orgId       String
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  fieldDefId  String
+  fieldDef    CustomFieldDef @relation(fields: [fieldDefId], references: [id], onDelete: Cascade)
+  entityType  String   // "task" | "kra" | etc. (denormalized for query efficiency)
+  entityId    String   // the ID of the entity this value belongs to
+  valueText   String?
+  valueNumber Float?
+  valueDate   DateTime?
+  valueBool   Boolean?
+  valueJson   String?  // for multiselect: JSON array
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([fieldDefId, entityId])
+  @@index([orgId, entityType, entityId])
+}

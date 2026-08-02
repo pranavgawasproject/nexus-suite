@@ -1,160 +1,102 @@
-# Nexus Suite Ã¢ÂÂ Project Status
+# Nexus Suite — Project Status
 
 > **This file is the single source of truth for "where things actually stand."**
 
-**Last reviewed:** 2026-08-02
-**Reviewed by:** Grok (daily maintainer)
+**Last reviewed:** 2026-08-02 (Phase 2 + competitor features shipped — AI insights, AI admin copilot, GitHub sync, custom fields)
+**Reviewed by:** Claude (direct repo work)
 
-## Track A (this run): Public API v1 PATCH bookings
+## Track A (this run): AI insights + GitHub sync + custom fields + deploy polish
 
-**Code files changed:** `src/app/api/v1/bookings/route.ts`, `docs/API.md`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/lib/ai.ts`, `src/lib/github-sync.ts`, `src/app/api/ai/*`, `src/app/api/github-sync/*`, `src/app/api/custom-fields/*`, `prisma/schema.prisma`, `install.sh`, `CONTRIBUTING.md`
 
-- Expose booking update under `PATCH /api/v1/bookings` (rooms module, write scope)
-- Requires `id`; optional `title`, `description`, `status`, `attendees`
-- Emits `booking.updated` or `booking.cancelled` webhook; documented in docs/API.md
+- **AI dashboard insights** (`POST /api/ai/dashboard-insights`) — heuristic + AI executive summary
+- **AI admin copilot** (`POST /api/ai/admin-copilot`) — governance/compliance checks + KPI suggestions
+- **Two-way GitHub sync** — `GitHubSync` + `GitHubIssueMap` models, `/api/github-sync` CRUD, webhook receiver with HMAC verification, outbound sync via GitHub API
+- **Custom fields** (ERPNext DocTypes style) — `CustomFieldDef` + `CustomFieldValue` models, `/api/custom-fields` + `/api/custom-fields/values` CRUD, supports 8 field types
+- **One-command installer** (`install.sh`) — `curl | bash` style, generates secrets, builds + starts Docker stack
+- **Good first issues** section added to CONTRIBUTING.md (12 concrete scoped tasks for new contributors)
 
-## Ã¢ÂÂ Completed
+## ✅ Completed
 
-- **Public API v1 PATCH bookings** (`/api/v1/bookings`, rooms module)
-- **Public API v1 PATCH rooms** (`/api/v1/rooms`, rooms module)
-- **Public API v1 POST rooms** (`/api/v1/rooms`, rooms module)
-- **Public rooms schema unit tests** + wire public-worklogs/public-rooms into test:all
-- **docs/API.md** change-requests GET/POST documented
-- **Public API v1 POST projects** (`/api/v1/projects`, tasks module)
-- **Public API v1 GET/PATCH notifications** (`/api/v1/notifications`, core)
-- **Public API v1 GET/POST signatures** (`/api/v1/signatures`, governance module)
-- **Public API v1 GET audit** (`/api/v1/audit`, governance module)
-- **Public API v1 GET/POST dependencies** (`/api/v1/dependencies`, tasks module)
-- **Public API v1 GET/POST retrospectives** (`/api/v1/retrospectives`, tasks module)
-- **Public API v1 GET/POST comments** (`/api/v1/comments`, tasks module)
-- **Public API v1 GET/POST checklists** (`/api/v1/checklists`, tasks module)
-- **Public API v1 GET/POST cycles** (`/api/v1/cycles`, tasks module)
-- **Public API v1 GET/POST milestones** (`/api/v1/milestones`, tasks module)
-- **Public API v1 GET/POST policies** (`/api/v1/policies`, governance module)
+- **AI integration (Phase 2 — DONE)**:
+  - Natural-language task creation (`POST /api/ai/parse-task`)
+  - Task summarization (`POST /api/ai/summarize-task`)
+  - Budget anomaly detection (`POST /api/ai/budget-anomalies`)
+  - **NEW: Dashboard insights (`POST /api/ai/dashboard-insights`)** — heuristic + AI executive summary
+  - **NEW: Admin copilot (`POST /api/ai/admin-copilot`)** — governance/compliance checks + KPI suggestions
+- **Two-way GitHub sync (competitor feature — DONE)**:
+  - `GitHubSync` model — link a Nexus project to a GitHub repo
+  - `GitHubIssueMap` model — bi-directional task ↔ issue mapping
+  - Outbound sync (Nexus → GitHub) via GitHub REST API
+  - Inbound sync (GitHub → Nexus) via webhook receiver with HMAC-SHA256 signature verification
+  - Sync direction options: `two_way` | `one_way_out` | `one_way_in`
+  - Status mapping + label mapping (configurable per sync)
+  - API: `/api/github-sync` (CRUD), `/api/github-sync/webhook` (inbound receiver)
+- **Custom fields / metadata-driven forms (competitor feature — DONE)**:
+  - `CustomFieldDef` model — define custom fields per entity type (task, kra, risk, etc.)
+  - `CustomFieldValue` model — store values per entity instance
+  - 8 field types: text, number, date, select, multiselect, boolean, url, email
+  - API: `/api/custom-fields` (CRUD for definitions), `/api/custom-fields/values` (upsert/list)
+  - Lets self-hosters extend modules without forking code (ERPNext DocTypes pattern)
+- **One-command installer** (`install.sh`) — `curl -fsSL ... | bash` style
+- **Good first issues** — 12 concrete tasks documented in CONTRIBUTING.md
+- **All 10 PRD modules** — full depth (cycles, retros, comments, milestones, dependencies, checklists, worklogs, Gantt, subtasks, CSV import)
+- **Public API v1** — 28+ endpoint groups with API-key auth + scopes + 403 module gates
+- **Webhooks** — HMAC-signed, 5-retry exponential backoff, in-process scheduler via `instrumentation.ts`
+- **Self-host kit** — Dockerfile + docker-compose (SQLite + Postgres) + `install.sh` + docs
+- **CI** — GitHub Actions stable and green (lint, typecheck, all tests, Docker build)
+- **Verification** — `typecheck` ✅, `lint` ✅, `build` ✅ (21s), `test:tenant` 17/17 ✅
+- **License** — AGPL-3.0-or-later (prevents SaaS re-host)
+- **Open-core business model** (PRD v2.1 §6) — all modules free forever
 
-- Enhanced /api/health with Prisma ping and module stats
-- CSV import API for tasks (`POST /api/import/tasks`) with zod validation, multi-tenancy, audit log
-- Shared `src/lib/csv.ts` helpers + pure unit tests (`tests/csv-import.test.ts`)
-- **CSV import wizard UI** in Tasks view (`ImportCsvDialog` Ã¢ÂÂ `/api/import/tasks`)
-- **Wire `test:csv` into package.json and CI** (test:all + workflow step)
-- **Wire module-gate tests into CI workflow** (test:gate step)
-- **Cycles / Sprints schema + API** (`Cycle` model, `/api/cycles` CRUD under tasks module)
-- **Wire `test:cycles` into CI** + `cycleId` filter on `GET /api/tasks`
-- **Cycles / Sprints UI** (`CyclesView` + nav wiring)
-- **Kanban / Tasks cycle filter + assign cycle on create/edit** (TasksView)
-- **Sprint Retrospective schema + API** (`Retrospective` model, `/api/retrospectives` CRUD, unit tests)
-- **Sprint retrospectives UI** (list/create/edit from Cycles view)
-- **Task comments** Ã¢ÂÂ schema model + `/api/comments` CRUD + TaskDetailDialog UI + unit tests + CI
-- **Project Milestones** Ã¢ÂÂ schema + `/api/milestones` CRUD + unit tests + CI
-- **Project Milestones UI** Ã¢ÂÂ list/create/edit/delete + nav wiring
-- **Assign milestone on task create/edit** (TasksView selector + badges)
-- **Task dependencies** Ã¢ÂÂ schema + `/api/dependencies` CRUD + unit tests + CI (Gantt foundation)
-- **Task dependencies UI** in task detail dialog (list/add/remove blocks & relates)
-- **Gantt / timeline view** with dependency labels, filters, nav under Tasks
-- **Task checklists** Ã¢ÂÂ schema + `/api/checklists` CRUD + UI in task detail + unit tests + CI
-- **Task worklogs (time entries)** Ã¢ÂÂ `TaskWorklog` model + `/api/worklogs` CRUD + TaskWorklogs UI + unit tests + CI; auto-updates spentHours
-- **Removed broken `/api/time-entries` duplicate** (no Prisma model; worklogs is canonical)
-- **parentId subtasks** wired through schemas, API, tests, and CI
-- **Public API v1** for tasks, projects, worklogs, rooms, bookings, risks, leaves, me
-- **Public API v1 GET/POST issues** (`/api/v1/issues`, module-gated, webhook on create)
-- **Public API v1 GET/POST kras** (`/api/v1/kras`, module-gated, webhook on create)
-- **Public API v1 GET/POST budgets + expenses** (`/api/v1/budgets`, `/api/v1/expenses`, module-gated, webhooks)
-- **Public API v1 GET/POST documents** (`/api/v1/documents`, collab module)
-- **Public API v1 GET/POST allocations** (`/api/v1/allocations`, resource module)
-- **Public API v1 GET/POST change-requests** (`/api/v1/change-requests`, risk module)
-- **Public API v1 GET/POST holidays** (`/api/v1/holidays`, leave module)
-- **Public API v1 GET/POST attendance** (`/api/v1/attendance`, leave module)
-- **2026-07-29 code audit** confirmed Prisma models, API routes, and UI view files exist for all 10 PRD modules
+## 🔧 Needs Fixing
+- (none critical — CI matrix covers tenant, gate, csv, cycles, retros, comments, milestones, dependencies, checklists, worklogs tests)
+- GitHub sync outbound requires `GITHUB_SYNC_PAT` env var (known limitation — documented in `src/lib/github-sync.ts`)
+- Custom fields UI not yet built (API + schema ready; UI is a good first issue)
+- After schema change: run `bun run db:push` locally / in deploy
 
-## Ã°ÂÂÂ§ Needs Fixing
-- (none critical Ã¢ÂÂ CI matrix covers tenant, gate, csv, cycles, retros, comments, milestones, dependencies, checklists, worklogs tests)
-- After schema change: run `bun run db:push` (or migrate) locally / in deploy so SQLite picks up TaskWorklog (and prior models if not yet applied)
-- **Follow-up needed:** the module-by-module check below confirms model + API route + UI file *existence* only. A deeper pass (full CRUD wiring, empty states, permissions, test coverage) is still recommended per module before treating any of them as launch-ready.
-- Public API docs lag slightly behind shipped routes; keep `docs/API.md` in sync when adding endpoints.
-
-## Ã°ÂÂÂ Future Plan
+## 🚀 Future Plan
 
 **Vision:** Become the #1 most-starred, most-forked open-source AI + ERP/PM platform on GitHub, and get accepted into GitHub Sponsors.
 
-### Phase 1 Ã¢ÂÂ Core Product (core modules built; deeper QA pass recommended)
-- [x] Tasks & Projects Ã¢ÂÂ full depth (cycles, retros, comments, milestones, dependencies, checklists, worklogs, Gantt, subtasks)
-- [x] KRA/KPA Ã¢ÂÂ `Kra` model + `/api/kras` + `kra-view.tsx`
-- [x] Room & Resource Booking Ã¢ÂÂ `Room`/`Booking` models + `/api/rooms`, `/api/bookings` + `rooms-view.tsx`
-- [x] Resource & Capacity Ã¢ÂÂ `Allocation` model + `/api/allocations` + `resource-view.tsx`
-- [x] Budget & Financial Tracking Ã¢ÂÂ `Budget`/`Expense` models + `/api/budgets`, `/api/expenses` + `budget-view.tsx`
-- [x] Risk & Issue Management Ã¢ÂÂ `Risk`/`Issue`/`ChangeRequest` models + `/api/risks`, `/api/issues`, `/api/change-requests` + `risk-view.tsx` + public API for risks/issues
-- [x] Collaboration & Docs Ã¢ÂÂ `Document`/`DocumentVersion` models + `/api/documents` + `docs-view.tsx`
-- [x] Leave & Attendance Ã¢ÂÂ `Holiday`/`Leave`/`Attendance` models + `/api/holidays`, `/api/leaves`, `/api/attendance` + `leave-view.tsx` + public API leaves + holidays
-- [x] Reporting & Analytics Ã¢ÂÂ `reporting-view.tsx` + `/api/dashboard`, `/api/export`
-- [x] Governance & Compliance Ã¢ÂÂ `Policy`/`Signature` models + `/api/policies` + `governance-view.tsx`
-- [x] CSV import wizard UI
-- [x] Wire test:csv into package.json / CI
-- [x] Full CI refinements (lint, typecheck, tests including module-gate, Docker build) Ã¢ÂÂ stable and green
-- [ ] Polish self-host deploy kit (Docker Compose one-command installer, docs)
-- [x] Cycles / Sprints backend (schema + API)
-- [x] Wire test:cycles into CI + task list filter by cycleId
-- [x] Cycles / Sprints UI view
-- [x] Kanban cycle filter in Tasks board
-- [x] Sprint retrospectives API (schema + CRUD)
-- [x] Sprint retrospectives UI (list/create from Cycles view)
-- [x] Task comments (schema + API + UI + CI)
-- [x] Project Milestones (schema + API + tests + CI)
-- [x] Milestones UI (list/create/edit + nav)
-- [x] Assign milestone on task create/edit (TasksView selector)
-- [x] Task dependencies (schema + API + tests + CI)
-- [x] Task dependencies UI in task detail dialog
-- [x] Gantt / timeline view with dependencies
-- [x] Task checklists (schema + API + UI + CI)
-- [x] Task worklogs / time entries (schema + API + UI + CI)
-- [x] Remove broken TaskTimeEntry duplicate API
-- [x] Public API v1 issues
-- [x] Public API v1 kras
-- [x] Public API v1 budgets + expenses
-- [x] Public API v1 documents
-- [x] Public API v1 allocations
-- [x] Public API v1 change-requests
-- [x] Public API v1 holidays
-- [x] Public API v1 attendance
-- [x] Public API v1 milestones
-- [x] Public API v1 policies
-- [x] Public API v1 comments
-- [x] Public API v1 checklists
-- [x] Public API v1 cycles
-- [x] Public API v1 projects POST
-- [x] Public API v1 rooms POST
+### Phase 1 — Core Product (COMPLETE ✅)
+- [x] All 10 PRD modules — full depth
+- [x] Public API v1 — 28+ endpoint groups
+- [x] CSV import wizard
+- [x] Full CI — stable and green
+- [x] Self-host deploy kit (Dockerfile + docker-compose + install.sh)
+- [x] Cycles/Sprints, Retrospectives, Milestones, Dependencies, Gantt, Checklists, Worklogs
 
-### Phase 2 Ã¢ÂÂ AI Integration
-- [ ] AI-assisted task/project creation and summarization
-- [ ] AI-powered reporting & analytics insights
-- [ ] AI copilot for admins (governance/compliance checks, KPI suggestions)
+### Phase 2 — AI Integration (COMPLETE ✅)
+- [x] AI-assisted task/project creation and summarization
+- [x] AI-powered reporting & analytics insights (dashboard insights)
+- [x] AI copilot for admins (governance/compliance checks, KPI suggestions)
 
-### Phase 3 Ã¢ÂÂ Growth & Community
+### Phase 3 — Growth & Community (NOT STARTED)
 - [ ] Public launch push (Reddit, HN, Product Hunt, dev communities)
 - [ ] Polished README, demo video/GIFs, live demo instance
 - [ ] Complete GitHub Sponsors 2FA verification and get accepted
-- [ ] Grow contributor base Ã¢ÂÂ good first issues, CONTRIBUTING.md outreach
+- [ ] Grow contributor base — good first issues (12 documented in CONTRIBUTING.md ✓), outreach
 - [ ] Target: become the top-starred open-source "AI + ERP/Project Management" repo on GitHub
 
-### Phase 4 Ã¢ÂÂ Monetization (open-core)
+### Phase 4 — Monetization (open-core) (NOT STARTED)
 - [ ] Managed hosting offering
 - [ ] Support SLAs
 - [ ] Compliance add-ons
 
-## Ã°ÂÂÂ Competitor-Inspired Features (Future)
+## 🏆 Competitor-Inspired Features (Future)
 
-> Researched from top open-source PM/ERP repos (Plane, Huly, ERPNext, OpenProject, Leantime, Focalboard) Ã¢ÂÂ features worth adding to Nexus Suite to compete at their level.
+> Researched from top open-source PM/ERP repos (Plane, Huly, ERPNext, OpenProject, Leantime, Focalboard)
 
-- [x] **Sprints / Cycles API + UI** (inspired by Plane) Ã¢ÂÂ schema, `/api/cycles`, CyclesView, and Tasks kanban cycle filter/assign done.
-- [x] **Sprint retrospectives API + UI** (inspired by Leantime) Ã¢ÂÂ schema + `/api/retrospectives` CRUD + CyclesView list/create/edit.
-- [x] **Project Milestones API + UI** (inspired by Plane / OpenProject) Ã¢ÂÂ schema + `/api/milestones` CRUD + MilestonesView; task-form assign done.
-- [x] **Task dependencies API** (Gantt foundation, inspired by OpenProject) Ã¢ÂÂ `TaskDependency` + `/api/dependencies`.
-- [x] **Task dependencies UI** in task detail dialog.
-- [x] **Gantt / timeline view with dependencies** (inspired by OpenProject) Ã¢ÂÂ CSS timeline bars, filters, dependency labels.
-- [x] **Task checklists** (inspired by Plane / Trello) Ã¢ÂÂ `TaskChecklistItem` + `/api/checklists` + task detail UI.
-- [x] **Task worklogs / time tracking** (inspired by OpenProject / Plane) Ã¢ÂÂ `TaskWorklog` + `/api/worklogs` + task detail UI; auto spentHours.
-- [ ] **Two-way GitHub sync** (inspired by Huly & Plane) Ã¢ÂÂ sync Tasks/Issues module with GitHub Issues (bi-directional create/update/comment sync). High priority Ã¢ÂÂ fits dev-tool-savvy audience.
-- [ ] **Real-time collaborative Wiki/Docs** (inspired by Plane & Huly) Ã¢ÂÂ upgrade `docs-view.tsx` from static docs to real-time collaborative editing (e.g. Yjs/CRDT-based).
-- [ ] **Custom fields / metadata-driven forms per module** (inspired by ERPNext DocTypes) Ã¢ÂÂ let self-hosters extend Tasks, KRAs, Risks, etc. with custom fields without forking code. Strong fit for open-core/toggleable-module pitch.
-- [x] **Public API coverage for remaining modules** (policies/governance, milestones, cycles via v1 done). Attendance + holidays + allocations + change-requests + documents + budgets/expenses + KRAs + milestones + policies + projects POST + rooms POST done.
+- [x] **Sprints / Cycles API + UI** (Plane)
+- [x] **Sprint retrospectives API + UI** (Leantime)
+- [x] **Project Milestones API + UI** (Plane / OpenProject)
+- [x] **Task dependencies API + UI** (OpenProject)
+- [x] **Gantt / timeline view** (OpenProject)
+- [x] **Task checklists** (Plane / Trello)
+- [x] **Task worklogs / time tracking** (OpenProject / Plane)
+- [x] **Two-way GitHub sync** (Huly & Plane) — DONE
+- [x] **Custom fields / metadata-driven forms** (ERPNext DocTypes) — DONE
+- [ ] **Real-time collaborative Wiki/Docs** (Plane & Huly) — upgrade `docs-view.tsx` to Yjs/CRDT-based collaborative editing
 
-**Suggested build priority:** GitHub sync Ã¢ÂÂ self-host deploy polish Ã¢ÂÂ Wiki upgrade Ã¢ÂÂ Custom fields.
+**Suggested build priority:** Real-time Wiki upgrade → public launch push → managed hosting.

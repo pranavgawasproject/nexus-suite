@@ -190,7 +190,17 @@ export function RiskView() {
                     </div>
                   </div>
                 ))}
-                {risks.length === 0 && <div className="py-12 text-center text-sm text-muted-foreground">No risks logged.</div>}
+                {risks.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+                    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+                      <Icons.ShieldAlert className="h-7 w-7 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm font-medium">No risks logged yet</p>
+                    <p className="mt-1 max-w-xs text-xs text-muted-foreground">
+                      Track likelihood, impact, and mitigation plans for project and org risks.
+                    </p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -236,7 +246,17 @@ export function RiskView() {
                     </div>
                   </div>
                 ))}
-                {issues.length === 0 && <div className="py-12 text-center text-sm text-muted-foreground">No issues logged.</div>}
+                {issues.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+                    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+                      <Icons.AlertCircle className="h-7 w-7 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm font-medium">No issues logged yet</p>
+                    <p className="mt-1 max-w-xs text-xs text-muted-foreground">
+                      Log blockers and escalations (L1/L2/L3) so nothing falls through the cracks.
+                    </p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -257,7 +277,17 @@ export function RiskView() {
                 {crs.map((c) => (
                   <CRRow key={c.id} cr={c} onDecide={load} />
                 ))}
-                {crs.length === 0 && <div className="py-12 text-center text-sm text-muted-foreground">No change requests.</div>}
+                {crs.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+                    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+                      <Icons.GitPullRequest className="h-7 w-7 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm font-medium">No change requests yet</p>
+                    <p className="mt-1 max-w-xs text-xs text-muted-foreground">
+                      Submit and approve scope, schedule, or process changes with a clear audit trail.
+                    </p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

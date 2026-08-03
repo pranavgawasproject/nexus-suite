@@ -2,14 +2,14 @@
 
 > **This file is the single source of truth for "where things actually stand."**
 
-**Last reviewed:** 2026-08-03 (Track A: sign-in page shadcn refactor)
+**Last reviewed:** 2026-08-03 (Track A: illustrated empty states for Risk + Docs)
 **Reviewed by:** Autonomous daily maintainer (Grok)
 
-## Track A (2026-08-03 run — sign-in UI)
+## Track A (2026-08-03 evening run — empty states UI)
 
-**Code files changed:** `src/app/signin/page.tsx`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/components/nexus/risk-view.tsx`, `src/components/nexus/docs-view.tsx`, `status/PROJECT_STATUS.md`
 
-- **Sign-in page refactor** — Migrated `/signin` from plain Tailwind inputs/buttons to shadcn/ui `Card`, `Input`, `Button`, `Label`, `Separator` for consistency with the rest of the app (good-first-issue from CONTRIBUTING.md)
+- **Illustrated empty states** — Replaced plain "No X yet" text in Risk (risks / issues / change requests) and Docs views with lucide icon + short description empty states (good-first-issue from CONTRIBUTING.md)
 
 ## ✅ Completed
 
@@ -37,6 +37,7 @@
 - **Audit-view UI filters** (date range, actor, action, entityType → `/api/audit`)
 - **Webhook recent deliveries** API + UI (GET /api/webhooks/deliveries + Recent deliveries card)
 - **Sign-in page shadcn refactor** (Card/Input/Button/Label/Separator)
+- **Illustrated empty states** (Risk register tabs + Docs list)
 
 ## 🔧 Active Work & Next Priorities
 
@@ -44,6 +45,8 @@
 - **Visual README** — Add high-res screenshots and feature GIFs
 - **Documentation site content polish** — expand Starlight pages as features ship
 - **Real-time collaborative Wiki/Docs** — Upgrade docs-view to Yjs/CRDT-based collaborative editing
+- **Empty states** — Remaining module views (if any) can follow the same pattern
+- **Dark mode / mobile audit** — still listed as good-first-issue items in CONTRIBUTING.md
 
 ## 🚀 Future Plan & Strategic Roadmap
 
@@ -71,6 +74,8 @@
 - [x] Scaffold dedicated documentation site (Starlight under docs-site/)
 - [x] Wire audit-view UI filters (API was ready)
 - [x] Webhook recent deliveries API + UI
+- [x] Sign-in page shadcn refactor
+- [x] Illustrated empty states (Risk + Docs)
 - [ ] Deploy a live 1-click interactive demo instance (e.g., `demo.nexussuite.org`)
 - [ ] Upgrade README with rich feature GIFs and screenshots
 - [ ] Expand documentation site content

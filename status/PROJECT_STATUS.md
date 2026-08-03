@@ -2,14 +2,14 @@
 
 > **This file is the single source of truth for "where things actually stand."**
 
-**Last reviewed:** 2026-08-02 (Track A: webhook recent deliveries API + UI)
+**Last reviewed:** 2026-08-03 (Track A: sign-in page shadcn refactor)
 **Reviewed by:** Autonomous daily maintainer (Grok)
 
-## Track A (2026-08-02 run — webhook deliveries)
+## Track A (2026-08-03 run — sign-in UI)
 
-**Code files changed:** `src/app/api/webhooks/deliveries/route.ts`, `src/components/nexus/apikeys-view.tsx`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/app/signin/page.tsx`, `status/PROJECT_STATUS.md`
 
-- **Webhook recent deliveries** — `GET /api/webhooks/deliveries` (org-scoped, optional webhookId, limit up to 100); "Recent deliveries" card on API Keys & Webhooks view with status badges, response codes, refresh
+- **Sign-in page refactor** — Migrated `/signin` from plain Tailwind inputs/buttons to shadcn/ui `Card`, `Input`, `Button`, `Label`, `Separator` for consistency with the rest of the app (good-first-issue from CONTRIBUTING.md)
 
 ## ✅ Completed
 
@@ -36,6 +36,7 @@
 - **Starlight docs site scaffold** (docs-site/)
 - **Audit-view UI filters** (date range, actor, action, entityType → `/api/audit`)
 - **Webhook recent deliveries** API + UI (GET /api/webhooks/deliveries + Recent deliveries card)
+- **Sign-in page shadcn refactor** (Card/Input/Button/Label/Separator)
 
 ## 🔧 Active Work & Next Priorities
 

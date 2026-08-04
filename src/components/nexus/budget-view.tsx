@@ -156,7 +156,17 @@ export function BudgetView() {
                 </div>
               )
             })}
-            {budgets.length === 0 && <div className="text-sm text-muted-foreground py-4 text-center">No budgets set.</div>}
+            {budgets.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                  <Icons.Wallet className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <p className="text-sm font-medium">No budgets set</p>
+                <p className="mt-1 max-w-xs text-xs text-muted-foreground">
+                  Create project or org budgets to track planned vs actual spend.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -187,7 +197,17 @@ export function BudgetView() {
                   </div>
                 )
               })}
-              {totalSpent === 0 && <div className="text-sm text-muted-foreground py-4 text-center">No expenses logged yet.</div>}
+              {totalSpent === 0 && (
+                <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                    <Icons.Receipt className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <p className="text-sm font-medium">No expenses logged yet</p>
+                  <p className="mt-1 max-w-xs text-xs text-muted-foreground">
+                    Log expenses against budgets to see category breakdowns and remaining balance.
+                  </p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

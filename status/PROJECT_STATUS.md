@@ -2,14 +2,14 @@
 
 > **This file is the single source of truth for "where things actually stand."**
 
-**Last reviewed:** 2026-08-03 (Track A: illustrated empty states for Risk + Docs)
+**Last reviewed:** 2026-08-04 (Track A: illustrated empty states for Rooms, Budget, Cycles retros)
 **Reviewed by:** Autonomous daily maintainer (Grok)
 
-## Track A (2026-08-03 evening run — empty states UI)
+## Track A (2026-08-04 run — empty states UI)
 
-**Code files changed:** `src/components/nexus/risk-view.tsx`, `src/components/nexus/docs-view.tsx`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/components/nexus/rooms-view.tsx`, `src/components/nexus/budget-view.tsx`, `src/components/nexus/cycles-view.tsx`, `status/PROJECT_STATUS.md`
 
-- **Illustrated empty states** — Replaced plain "No X yet" text in Risk (risks / issues / change requests) and Docs views with lucide icon + short description empty states (good-first-issue from CONTRIBUTING.md)
+- **Illustrated empty states** — Replaced plain empty text in Rooms (room list), Budget (budgets + expenses category), and Cycles (retrospectives list) with lucide icon + short description empty states, matching the Risk/Docs pattern from 2026-08-03
 
 ## ✅ Completed
 
@@ -38,6 +38,7 @@
 - **Webhook recent deliveries** API + UI (GET /api/webhooks/deliveries + Recent deliveries card)
 - **Sign-in page shadcn refactor** (Card/Input/Button/Label/Separator)
 - **Illustrated empty states** (Risk register tabs + Docs list)
+- **Illustrated empty states** (Rooms list, Budget budgets/expenses, Cycles retrospectives)
 
 ## 🔧 Active Work & Next Priorities
 
@@ -45,7 +46,7 @@
 - **Visual README** — Add high-res screenshots and feature GIFs
 - **Documentation site content polish** — expand Starlight pages as features ship
 - **Real-time collaborative Wiki/Docs** — Upgrade docs-view to Yjs/CRDT-based collaborative editing
-- **Empty states** — Remaining module views (if any) can follow the same pattern
+- **Empty states** — Most major list views covered; remaining filter-only empties (e.g. tasks sub-panels) are lower priority
 - **Dark mode / mobile audit** — still listed as good-first-issue items in CONTRIBUTING.md
 
 ## 🚀 Future Plan & Strategic Roadmap
@@ -76,6 +77,7 @@
 - [x] Webhook recent deliveries API + UI
 - [x] Sign-in page shadcn refactor
 - [x] Illustrated empty states (Risk + Docs)
+- [x] Illustrated empty states (Rooms, Budget, Cycles retros)
 - [ ] Deploy a live 1-click interactive demo instance (e.g., `demo.nexussuite.org`)
 - [ ] Upgrade README with rich feature GIFs and screenshots
 - [ ] Expand documentation site content

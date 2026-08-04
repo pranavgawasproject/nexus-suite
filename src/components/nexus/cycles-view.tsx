@@ -636,8 +636,14 @@ export function CyclesView() {
           </DialogHeader>
           <div className="space-y-3 py-2">
             {cycleRetros.length === 0 ? (
-              <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-                No retrospectives yet for this cycle.
+              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 px-4 text-center">
+                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                  <Icons.MessageSquareQuote className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <p className="text-sm font-medium">No retrospectives yet</p>
+                <p className="mt-1 max-w-xs text-xs text-muted-foreground">
+                  Capture what went well, what to improve, and action items for this cycle.
+                </p>
               </div>
             ) : (
               cycleRetros.map((retro) => {

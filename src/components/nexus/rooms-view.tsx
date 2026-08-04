@@ -231,8 +231,14 @@ export function RoomsView() {
         })}
         {rooms.length === 0 && !loading && (
           <Card className="col-span-full">
-            <CardContent className="p-8 text-center text-sm text-muted-foreground">
-              No rooms yet. Add one to start booking.
+            <CardContent className="flex flex-col items-center justify-center py-16 px-4 text-center">
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+                <Icons.DoorOpen className="h-7 w-7 text-muted-foreground" />
+              </div>
+              <p className="text-sm font-medium">No rooms yet</p>
+              <p className="mt-1 max-w-xs text-xs text-muted-foreground">
+                Add meeting rooms and facilities so your team can book them on the shared calendar.
+              </p>
             </CardContent>
           </Card>
         )}

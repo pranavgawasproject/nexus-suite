@@ -2,16 +2,19 @@
 
 > **This file is the single source of truth for "where things actually stand."**
 
-**Last reviewed:** 2026-08-04 (Track A: illustrated empty states for Rooms, Budget, Cycles retros)
+**Last reviewed:** 2026-08-04 (Track A: illustrated empty states for Leave & Attendance)
 **Reviewed by:** Autonomous daily maintainer (Grok)
 
-## Track A (2026-08-04 run — empty states UI)
+## Track A (2026-08-04 evening run — Leave empty states)
 
-**Code files changed:** `src/components/nexus/rooms-view.tsx`, `src/components/nexus/budget-view.tsx`, `src/components/nexus/cycles-view.tsx`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/components/nexus/leave-view.tsx`, `status/PROJECT_STATUS.md`
 
-- **Illustrated empty states** — Replaced plain empty text in Rooms (room list), Budget (budgets + expenses category), and Cycles (retrospectives list) with lucide icon + short description empty states, matching the Risk/Docs pattern from 2026-08-03
+- **Illustrated empty states** — Replaced plain empty text in Leave requests, Attendance, and Holidays tabs with lucide icon + short description empty states, matching the Rooms/Risk/Docs pattern
 
 ## ✅ Completed
+
+- **Illustrated empty states** (Leave requests, Attendance, Holidays)
+
 
 - **AI integration (Phase 2 - DONE)**:
   - Natural-language task creation (`POST /api/ai/parse-task`)
@@ -46,7 +49,7 @@
 - **Visual README** — Add high-res screenshots and feature GIFs
 - **Documentation site content polish** — expand Starlight pages as features ship
 - **Real-time collaborative Wiki/Docs** — Upgrade docs-view to Yjs/CRDT-based collaborative editing
-- **Empty states** — Most major list views covered; remaining filter-only empties (e.g. tasks sub-panels) are lower priority
+- **Empty states** — Leave & Attendance, Rooms, Budget, Cycles, Risk, Docs covered; remaining filter-only empties (e.g. tasks sub-panels) are lower priority
 - **Dark mode / mobile audit** — still listed as good-first-issue items in CONTRIBUTING.md
 
 ## 🚀 Future Plan & Strategic Roadmap
@@ -78,6 +81,7 @@
 - [x] Sign-in page shadcn refactor
 - [x] Illustrated empty states (Risk + Docs)
 - [x] Illustrated empty states (Rooms, Budget, Cycles retros)
+- [x] Illustrated empty states (Leave requests, Attendance, Holidays)
 - [ ] Deploy a live 1-click interactive demo instance (e.g., `demo.nexussuite.org`)
 - [ ] Upgrade README with rich feature GIFs and screenshots
 - [ ] Expand documentation site content

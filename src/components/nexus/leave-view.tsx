@@ -193,7 +193,15 @@ export function LeaveView() {
                   </div>
                 ))}
                 {filteredLeaves.length === 0 && (
-                  <div className="py-12 text-center text-sm text-muted-foreground">No leave requests.</div>
+                  <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+                    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+                      <Icons.CalendarOff className="h-7 w-7 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm font-medium">No leave requests</p>
+                    <p className="mt-1 max-w-xs text-xs text-muted-foreground">
+                      Apply for leave or adjust filters to see pending and past requests from the team.
+                    </p>
+                  </div>
                 )}
               </div>
             </CardContent>
@@ -227,7 +235,15 @@ export function LeaveView() {
                   </div>
                 ))}
                 {attendance.length === 0 && (
-                  <div className="py-12 text-center text-sm text-muted-foreground">No attendance records.</div>
+                  <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+                    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+                      <Icons.Clock className="h-7 w-7 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm font-medium">No attendance records yet</p>
+                    <p className="mt-1 max-w-xs text-xs text-muted-foreground">
+                      Check in and out to track daily attendance and work mode for the team.
+                    </p>
+                  </div>
                 )}
               </div>
             </CardContent>
@@ -256,7 +272,15 @@ export function LeaveView() {
                   </div>
                 ))}
                 {holidays.length === 0 && (
-                  <div className="py-12 text-center text-sm text-muted-foreground">No holidays configured.</div>
+                  <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+                    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+                      <Icons.PartyPopper className="h-7 w-7 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm font-medium">No holidays configured</p>
+                    <p className="mt-1 max-w-xs text-xs text-muted-foreground">
+                      Add organisation holidays so leave calculations and calendars stay accurate.
+                    </p>
+                  </div>
                 )}
               </div>
             </CardContent>

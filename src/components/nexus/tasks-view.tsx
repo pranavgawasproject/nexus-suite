@@ -369,7 +369,15 @@ export function TasksView() {
                   </button>
                 ))}
               {visibleTasks.length === 0 && (
-                <div className="py-12 text-center text-sm text-muted-foreground">No tasks match these filters.</div>
+                <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+                  <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+                    <Icons.ListTodo className="h-7 w-7 text-muted-foreground" />
+                  </div>
+                  <p className="text-sm font-medium">No tasks match these filters</p>
+                  <p className="mt-1 max-w-xs text-xs text-muted-foreground">
+                    Create a task or clear filters to see work items for this project.
+                  </p>
+                </div>
               )}
             </div>
           </CardContent>
@@ -850,7 +858,13 @@ function TaskComments({ taskId }: { taskId: string }) {
           <Icons.Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading commentsâ¦
         </div>
       ) : comments.length === 0 ? (
-        <p className="text-xs text-muted-foreground py-2">No comments yet. Start the discussion.</p>
+        <div className="flex flex-col items-center justify-center py-6 px-2 text-center">
+          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+            <Icons.MessageSquare className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <p className="text-xs font-medium">No comments yet</p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">Start the discussion on this task.</p>
+        </div>
       ) : (
         <ul className="space-y-3 max-h-56 overflow-y-auto pr-1">
           {comments.map((c) => (
@@ -1057,7 +1071,13 @@ function TaskDependencies({ taskId }: { taskId: string }) {
           <Icons.Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading dependencies…
         </div>
       ) : deps.length === 0 ? (
-        <p className="text-xs text-muted-foreground py-2">No dependencies yet. Link related or blocking tasks.</p>
+        <div className="flex flex-col items-center justify-center py-6 px-2 text-center">
+          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+            <Icons.GitBranch className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <p className="text-xs font-medium">No dependencies yet</p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">Link related or blocking tasks.</p>
+        </div>
       ) : (
         <ul className="space-y-2 max-h-40 overflow-y-auto pr-1">
           {deps.map((dep) => {
@@ -1235,7 +1255,13 @@ function TaskWorklogs({ taskId }: { taskId: string }) {
           <Icons.Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading worklogs…
         </p>
       ) : items.length === 0 ? (
-        <p className="text-xs text-muted-foreground py-2">No time entries yet. Log hours spent on this task.</p>
+        <div className="flex flex-col items-center justify-center py-6 px-2 text-center">
+          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+            <Icons.Timer className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <p className="text-xs font-medium">No time entries yet</p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">Log hours spent on this task.</p>
+        </div>
       ) : (
         <ul className="space-y-1.5 max-h-40 overflow-y-auto">
           {items.map((item) => (
@@ -1377,7 +1403,13 @@ function TaskChecklist({ taskId }: { taskId: string }) {
           <Icons.Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading checklist…
         </p>
       ) : items.length === 0 ? (
-        <p className="text-xs text-muted-foreground py-2">No checklist items yet. Break the task into steps.</p>
+        <div className="flex flex-col items-center justify-center py-6 px-2 text-center">
+          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+            <Icons.CheckSquare className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <p className="text-xs font-medium">No checklist items yet</p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">Break the task into steps.</p>
+        </div>
       ) : (
         <ul className="space-y-1.5">
           {items.map((item) => (

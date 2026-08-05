@@ -2,17 +2,18 @@
 
 > **This file is the single source of truth for "where things actually stand."**
 
-**Last reviewed:** 2026-08-04 (Track A: illustrated empty states for Leave & Attendance)
+**Last reviewed:** 2026-08-05 (Track A: illustrated empty states for Tasks, KRA, Gantt)
 **Reviewed by:** Autonomous daily maintainer (Grok)
 
-## Track A (2026-08-04 evening run — Leave empty states)
+## Track A (2026-08-05 — Tasks / KRA / Gantt empty states)
 
-**Code files changed:** `src/components/nexus/leave-view.tsx`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/components/nexus/tasks-view.tsx`, `src/components/nexus/kra-view.tsx`, `src/components/nexus/gantt-view.tsx`, `status/PROJECT_STATUS.md`
 
-- **Illustrated empty states** — Replaced plain empty text in Leave requests, Attendance, and Holidays tabs with lucide icon + short description empty states, matching the Rooms/Risk/Docs pattern
+- **Illustrated empty states** — Tasks list + sub-panels (comments, dependencies, worklogs, checklist), KRA list, and Gantt timeline now use lucide icon + short description empty states
 
 ## ✅ Completed
 
+- **Illustrated empty states** (Tasks list + comments/deps/worklogs/checklist, KRA list, Gantt filters)
 - **Illustrated empty states** (Leave requests, Attendance, Holidays)
 
 
@@ -49,7 +50,7 @@
 - **Visual README** — Add high-res screenshots and feature GIFs
 - **Documentation site content polish** — expand Starlight pages as features ship
 - **Real-time collaborative Wiki/Docs** — Upgrade docs-view to Yjs/CRDT-based collaborative editing
-- **Empty states** — Leave & Attendance, Rooms, Budget, Cycles, Risk, Docs covered; remaining filter-only empties (e.g. tasks sub-panels) are lower priority
+- **Empty states** — Leave, Rooms, Budget, Cycles, Risk, Docs, Tasks (list + sub-panels), KRA, Gantt covered; remaining inline empties (e.g. per-user allocations) are lower priority
 - **Dark mode / mobile audit** — still listed as good-first-issue items in CONTRIBUTING.md
 
 ## 🚀 Future Plan & Strategic Roadmap
@@ -82,6 +83,7 @@
 - [x] Illustrated empty states (Risk + Docs)
 - [x] Illustrated empty states (Rooms, Budget, Cycles retros)
 - [x] Illustrated empty states (Leave requests, Attendance, Holidays)
+- [x] Illustrated empty states (Tasks list + sub-panels, KRA, Gantt)
 - [ ] Deploy a live 1-click interactive demo instance (e.g., `demo.nexussuite.org`)
 - [ ] Upgrade README with rich feature GIFs and screenshots
 - [ ] Expand documentation site content

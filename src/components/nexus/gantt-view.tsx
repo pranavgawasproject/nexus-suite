@@ -224,8 +224,14 @@ export function GanttView() {
         </div>
       ) : filtered.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center text-sm text-muted-foreground">
-            No tasks match the current filters.
+          <CardContent className="flex flex-col items-center justify-center py-16 px-4 text-center">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+              <Icons.GanttChart className="h-7 w-7 text-muted-foreground" />
+            </div>
+            <p className="text-sm font-medium">No tasks match the current filters</p>
+            <p className="mt-1 max-w-xs text-xs text-muted-foreground">
+              Adjust project or status filters to see the timeline, or create tasks with due dates.
+            </p>
           </CardContent>
         </Card>
       ) : (

@@ -72,7 +72,7 @@ export function ResourceView() {
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Resource &amp; Capacity</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Resource & Capacity</h1>
           <p className="text-sm text-muted-foreground">{allocations.length} active allocations across {team.length} people</p>
         </div>
         <AllocationDialog open={createOpen} onOpenChange={setCreateOpen} team={team} projects={projects} onCreated={load} />
@@ -91,38 +91,53 @@ export function ResourceView() {
           <CardDescription>Per-person allocation across projects</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {byUser.map(({ user, allocations: userAllocs, total }) => (
-            <div key={user.id} className="rounded-lg border p-3">
-              <div className="flex items-center gap-3 mb-2">
-                <Avatar className="h-8 w-8"><AvatarFallback className="text-[10px]">{initials(user.name)}</AvatarFallback></Avatar>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium">{user.name}</div>
-                  <div className="text-xs text-muted-foreground">{user.designation || '—'}</div>
-                </div>
-                <Badge variant={total >= 100 ? 'default' : total >= 50 ? 'secondary' : 'outline'} className="tabular-nums">
-                  {total}%
-                </Badge>
+          {team.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+                <Icons.Users className="h-7 w-7 text-muted-foreground" />
               </div>
-              <Progress value={total} className="h-1.5 mb-2" />
-              {userAllocs.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {userAllocs.map((a) => (
-                    <div key={a.id} className="group flex items-center gap-2 rounded-md border bg-card px-2 py-1 text-xs">
-                      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: a.project.color }} />
-                      <span className="font-medium">{a.project.name}</span>
-                      <span className="text-muted-foreground">{a.allocationPct}%</span>
-                      {a.role && <Badge variant="outline" className="text-[9px]">{a.role}</Badge>}
-                      <button onClick={() => remove(a.id)} className="opacity-0 group-hover:opacity-100 text-rose-600 hover:text-rose-700">
-                        <Icons.X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-xs text-muted-foreground">No active allocations</div>
-              )}
+              <p className="text-sm font-medium">No team members yet</p>
+              <p className="mt-1 max-w-xs text-xs text-muted-foreground">
+                Invite people to your org, then allocate them to projects to track capacity.
+              </p>
             </div>
-          ))}
+          ) : (
+            byUser.map(({ user, allocations: userAllocs, total }) => (
+              <div key={user.id} className="rounded-lg border p-3">
+                <div className="flex items-center gap-3 mb-2">
+                  <Avatar className="h-8 w-8"><AvatarFallback className="text-[10px]">{initials(user.name)}</AvatarFallback></Avatar>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium">{user.name}</div>
+                    <div className="text-xs text-muted-foreground">{user.designation || '—'}</div>
+                  </div>
+                  <Badge variant={total >= 100 ? 'default' : total >= 50 ? 'secondary' : 'outline'} className="tabular-nums">
+                    {total}%
+                  </Badge>
+                </div>
+                <Progress value={total} className="h-1.5 mb-2" />
+                {userAllocs.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {userAllocs.map((a) => (
+                      <div key={a.id} className="group flex items-center gap-2 rounded-md border bg-card px-2 py-1 text-xs">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: a.project.color }} />
+                        <span className="font-medium">{a.project.name}</span>
+                        <span className="text-muted-foreground">{a.allocationPct}%</span>
+                        {a.role && <Badge variant="outline" className="text-[9px]">{a.role}</Badge>}
+                        <button onClick={() => remove(a.id)} className="opacity-0 group-hover:opacity-100 text-rose-600 hover:text-rose-700">
+                          <Icons.X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 rounded-md border border-dashed bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+                    <Icons.CircleDashed className="h-3.5 w-3.5 shrink-0" />
+                    <span>No active allocations — free capacity</span>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
         </CardContent>
       </Card>
     </div>
@@ -213,7 +228,7 @@ function DisabledState() {
     <Card>
       <CardContent className="p-12 text-center">
         <Icons.Lock className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
-        <h3 className="text-lg font-semibold">Resource &amp; Capacity is disabled</h3>
+        <h3 className="text-lg font-semibold">Resource & Capacity is disabled</h3>
         <p className="mt-1 text-sm text-muted-foreground">Enable this module in the Marketplace.</p>
         <Button className="mt-4" onClick={() => setActiveView('settings')}><Icons.Store className="mr-2 h-4 w-4" /> Open Marketplace</Button>
       </CardContent>

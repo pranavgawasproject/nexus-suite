@@ -2,17 +2,18 @@
 
 > **This file is the single source of truth for "where things actually stand."**
 
-**Last reviewed:** 2026-08-05 (Track A: illustrated empty states for Resource capacity)
+**Last reviewed:** 2026-08-06 (Track A: public API zod tests for projects + risks/issues)
 **Reviewed by:** Autonomous daily maintainer (Grok)
 
-## Track A (2026-08-05 — Resource capacity empty states)
+## Track A (2026-08-06 — Public API schema unit tests)
 
-**Code files changed:** `src/components/nexus/resource-view.tsx`, `status/PROJECT_STATUS.md`
+**Code files changed:** `tests/public-projects.test.ts`, `tests/public-risks.test.ts`, `status/PROJECT_STATUS.md`
 
-- **Illustrated empty states** — Resource & Capacity: overall empty when no team members (Users icon + description); per-user free-capacity row uses dashed border + CircleDashed icon instead of plain text
+- **Public API tests** — zod unit tests for `createProjectSchema` / `updateProjectSchema` and Risk/Issue create+update schemas (good-first-issue backlog item from CONTRIBUTING.md)
 
 ## ✅ Completed
 
+- **Public API schema unit tests** (projects + risks/issues)
 - **Illustrated empty states** (Resource capacity — no team + per-user free capacity)
 - **Illustrated empty states** (Tasks list + comments/deps/worklogs/checklist, KRA list, Gantt filters)
 - **Illustrated empty states** (Leave requests, Attendance, Holidays)
@@ -51,8 +52,8 @@
 - **Visual README** — Add high-res screenshots and feature GIFs
 - **Documentation site content polish** — expand Starlight pages as features ship
 - **Real-time collaborative Wiki/Docs** — Upgrade docs-view to Yjs/CRDT-based collaborative editing
-- **Empty states** — Leave, Rooms, Budget, Cycles, Risk, Docs, Tasks (list + sub-panels), KRA, Gantt, Resource capacity covered; remaining lower-priority inline empties only
 - **Dark mode / mobile audit** — still listed as good-first-issue items in CONTRIBUTING.md
+- **Remaining public API schema tests** — budgets, kras, bookings, etc. (follow public-projects/risks pattern)
 
 ## 🚀 Future Plan & Strategic Roadmap
 
@@ -86,6 +87,7 @@
 - [x] Illustrated empty states (Leave requests, Attendance, Holidays)
 - [x] Illustrated empty states (Tasks list + sub-panels, KRA, Gantt)
 - [x] Illustrated empty states (Resource capacity — no team + per-user free capacity)
+- [x] Public API schema unit tests (projects + risks/issues)
 - [ ] Deploy a live 1-click interactive demo instance (e.g., `demo.nexussuite.org`)
 - [ ] Upgrade README with rich feature GIFs and screenshots
 - [ ] Expand documentation site content
@@ -120,4 +122,3 @@
 - [ ] **Real-time collaborative Wiki/Docs** (Plane & Huly) — upgrade `docs-view.tsx` to Yjs/CRDT-based collaborative editing
 
 **Suggested build priority:** Real-time Wiki upgrade → Live Demo → Visual README → Documentation content → Public Launch Push.
-

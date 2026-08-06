@@ -2,17 +2,18 @@
 
 > **This file is the single source of truth for "where things actually stand."**
 
-**Last reviewed:** 2026-08-06 (Track A: public API zod tests for projects + risks/issues)
+**Last reviewed:** 2026-08-06 (Track A: public API zod tests for budgets + KRAs)
 **Reviewed by:** Autonomous daily maintainer (Grok)
 
 ## Track A (2026-08-06 — Public API schema unit tests)
 
-**Code files changed:** `tests/public-projects.test.ts`, `tests/public-risks.test.ts`, `status/PROJECT_STATUS.md`
+**Code files changed:** `tests/public-budgets.test.ts`, `tests/public-kras.test.ts`, `status/PROJECT_STATUS.md`
 
-- **Public API tests** — zod unit tests for `createProjectSchema` / `updateProjectSchema` and Risk/Issue create+update schemas (good-first-issue backlog item from CONTRIBUTING.md)
+- **Public API tests** — zod unit tests for `createBudgetSchema` / `createExpenseSchema` / `updateExpenseSchema` and `createKraSchema` / `updateKraSchema` (remaining good-first-issue backlog from CONTRIBUTING.md / status)
 
 ## ✅ Completed
 
+- **Public API schema unit tests** (budgets/expenses + KRAs)
 - **Public API schema unit tests** (projects + risks/issues)
 - **Illustrated empty states** (Resource capacity — no team + per-user free capacity)
 - **Illustrated empty states** (Tasks list + comments/deps/worklogs/checklist, KRA list, Gantt filters)
@@ -53,7 +54,7 @@
 - **Documentation site content polish** — expand Starlight pages as features ship
 - **Real-time collaborative Wiki/Docs** — Upgrade docs-view to Yjs/CRDT-based collaborative editing
 - **Dark mode / mobile audit** — still listed as good-first-issue items in CONTRIBUTING.md
-- **Remaining public API schema tests** — budgets, kras, bookings, etc. (follow public-projects/risks pattern)
+- **Remaining public API schema tests** — bookings (create/updateBookingSchema), allocations, cycles, etc. if not already covered
 
 ## 🚀 Future Plan & Strategic Roadmap
 
@@ -88,6 +89,7 @@
 - [x] Illustrated empty states (Tasks list + sub-panels, KRA, Gantt)
 - [x] Illustrated empty states (Resource capacity — no team + per-user free capacity)
 - [x] Public API schema unit tests (projects + risks/issues)
+- [x] Public API schema unit tests (budgets/expenses + KRAs)
 - [ ] Deploy a live 1-click interactive demo instance (e.g., `demo.nexussuite.org`)
 - [ ] Upgrade README with rich feature GIFs and screenshots
 - [ ] Expand documentation site content
@@ -122,3 +124,4 @@
 - [ ] **Real-time collaborative Wiki/Docs** (Plane & Huly) — upgrade `docs-view.tsx` to Yjs/CRDT-based collaborative editing
 
 **Suggested build priority:** Real-time Wiki upgrade → Live Demo → Visual README → Documentation content → Public Launch Push.
+

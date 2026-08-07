@@ -2,17 +2,18 @@
 
 > **This file is the single source of truth for "where things actually stand."**
 
-**Last reviewed:** 2026-08-06 (Track A: public API zod tests for budgets + KRAs)
+**Last reviewed:** 2026-08-07 (Track A: public API zod tests for bookings + allocations)
 **Reviewed by:** Autonomous daily maintainer (Grok)
 
-## Track A (2026-08-06 — Public API schema unit tests)
+## Track A (2026-08-07 — Public API schema unit tests)
 
-**Code files changed:** `tests/public-budgets.test.ts`, `tests/public-kras.test.ts`, `status/PROJECT_STATUS.md`
+**Code files changed:** `tests/public-bookings.test.ts`, `tests/public-allocations.test.ts`, `status/PROJECT_STATUS.md`
 
-- **Public API tests** — zod unit tests for `createBudgetSchema` / `createExpenseSchema` / `updateExpenseSchema` and `createKraSchema` / `updateKraSchema` (remaining good-first-issue backlog from CONTRIBUTING.md / status)
+- **Public API tests** — zod unit tests for `createBookingSchema` / `updateBookingSchema` and `createAllocationSchema` / `updateAllocationSchema` (remaining good-first-issue backlog from CONTRIBUTING.md / status)
 
 ## ✅ Completed
 
+- **Public API schema unit tests** (bookings + allocations)
 - **Public API schema unit tests** (budgets/expenses + KRAs)
 - **Public API schema unit tests** (projects + risks/issues)
 - **Illustrated empty states** (Resource capacity — no team + per-user free capacity)
@@ -54,7 +55,7 @@
 - **Documentation site content polish** — expand Starlight pages as features ship
 - **Real-time collaborative Wiki/Docs** — Upgrade docs-view to Yjs/CRDT-based collaborative editing
 - **Dark mode / mobile audit** — still listed as good-first-issue items in CONTRIBUTING.md
-- **Remaining public API schema tests** — bookings (create/updateBookingSchema), allocations, cycles, etc. if not already covered
+- **Remaining public API schema tests** — cycles, milestones, retrospectives, etc. if not already covered
 
 ## 🚀 Future Plan & Strategic Roadmap
 
@@ -90,6 +91,7 @@
 - [x] Illustrated empty states (Resource capacity — no team + per-user free capacity)
 - [x] Public API schema unit tests (projects + risks/issues)
 - [x] Public API schema unit tests (budgets/expenses + KRAs)
+- [x] Public API schema unit tests (bookings + allocations)
 - [ ] Deploy a live 1-click interactive demo instance (e.g., `demo.nexussuite.org`)
 - [ ] Upgrade README with rich feature GIFs and screenshots
 - [ ] Expand documentation site content

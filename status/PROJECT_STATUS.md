@@ -2,17 +2,18 @@
 
 > **This file is the single source of truth for "where things actually stand."**
 
-**Last reviewed:** 2026-08-07 (Track A: public API zod tests for cycles + milestones + retrospectives)
+**Last reviewed:** 2026-08-08 (Track A: public API zod tests for comments + dependencies)
 **Reviewed by:** Autonomous daily maintainer (Grok)
 
-## Track A (2026-08-07 — Public API schema unit tests)
+## Track A (2026-08-08 — Public API schema unit tests)
 
-**Code files changed:** `tests/public-cycles.test.ts`, `tests/public-milestones.test.ts`, `tests/public-retrospectives.test.ts`, `status/PROJECT_STATUS.md`
+**Code files changed:** `tests/public-comments.test.ts`, `tests/public-dependencies.test.ts`, `status/PROJECT_STATUS.md`
 
-- **Public API tests** — zod unit tests for `createCycleSchema` / `updateCycleSchema`, `createMilestoneSchema` / `updateMilestoneSchema`, and `createRetrospectiveSchema` / `updateRetrospectiveSchema` / `createPublicRetrospectiveSchema` (remaining good-first-issue backlog from CONTRIBUTING.md / status)
+- **Public API tests** — zod unit tests for `createPublicTaskCommentSchema` and `createPublicTaskDependencySchema` (remaining good-first-issue backlog from CONTRIBUTING.md / status)
 
 ## ✅ Completed
 
+- **Public API schema unit tests** (comments + dependencies)
 - **Public API schema unit tests** (cycles + milestones + retrospectives)
 - **Public API schema unit tests** (bookings + allocations)
 - **Public API schema unit tests** (budgets/expenses + KRAs)
@@ -56,7 +57,7 @@
 - **Documentation site content polish** — expand Starlight pages as features ship
 - **Real-time collaborative Wiki/Docs** — Upgrade docs-view to Yjs/CRDT-based collaborative editing
 - **Dark mode / mobile audit** — still listed as good-first-issue items in CONTRIBUTING.md
-- **Remaining public API schema tests** — worklogs, rooms, leaves, comments, dependencies, etc. if gaps remain
+- **Remaining public API schema tests** — signatures, checklists, attendance, updateRoom, etc. if gaps remain
 
 ## 🚀 Future Plan & Strategic Roadmap
 
@@ -94,6 +95,7 @@
 - [x] Public API schema unit tests (budgets/expenses + KRAs)
 - [x] Public API schema unit tests (bookings + allocations)
 - [x] Public API schema unit tests (cycles + milestones + retrospectives)
+- [x] Public API schema unit tests (comments + dependencies)
 - [ ] Deploy a live 1-click interactive demo instance (e.g., `demo.nexussuite.org`)
 - [ ] Upgrade README with rich feature GIFs and screenshots
 - [ ] Expand documentation site content

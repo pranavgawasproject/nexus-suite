@@ -15,7 +15,6 @@
 
 - **Public API schema unit tests** (change requests + policies)
 - **Public API schema unit tests** (signatures + checklists + attendance + updateRoom)
-- **Public API schema unit tests** (signatures + checklists + attendance + updateRoom)
 - **Public API schema unit tests** (comments + dependencies)
 - **Public API schema unit tests** (cycles + milestones + retrospectives)
 - **Public API schema unit tests** (bookings + allocations)

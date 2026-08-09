@@ -2,17 +2,19 @@
 
 > **This file is the single source of truth for "where things actually stand."**
 
-**Last reviewed:** 2026-08-08 (Track A: public API zod tests for signatures + checklists + attendance + updateRoom)
+**Last reviewed:** 2026-08-09 (Track A: public API zod tests for change requests + policies)
 **Reviewed by:** Autonomous daily maintainer (Grok)
 
-## Track A (2026-08-08 — Public API schema unit tests)
+## Track A (2026-08-09 — Public API schema unit tests)
 
-**Code files changed:** `tests/public-signatures.test.ts`, `tests/public-checklists.test.ts`, `tests/public-attendance.test.ts`, `status/PROJECT_STATUS.md`
+**Code files changed:** `tests/public-change-requests.test.ts`, `status/PROJECT_STATUS.md`
 
-- **Public API tests** — zod unit tests for `createPublicSignatureSchema`, checklist item schemas, `attendanceSchema`, and `updateRoomSchema` (remaining good-first-issue / status backlog)
+- **Public API tests** — zod unit tests for `createChangeRequestSchema`, `updateChangeRequestSchema`, and `upsertPolicySchema` (remaining schema coverage from public API / governance)
 
 ## ✅ Completed
 
+- **Public API schema unit tests** (change requests + policies)
+- **Public API schema unit tests** (signatures + checklists + attendance + updateRoom)
 - **Public API schema unit tests** (signatures + checklists + attendance + updateRoom)
 - **Public API schema unit tests** (comments + dependencies)
 - **Public API schema unit tests** (cycles + milestones + retrospectives)

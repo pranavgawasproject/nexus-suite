@@ -129,6 +129,7 @@ export const completeOnboardingSchema = z.object({
 export const updateNotificationSchema = z.object({
   id: z.string().optional(),
   markAllRead: z.boolean().optional(),
+  userId: z.string().optional(),
 })
 
 // ============================================================

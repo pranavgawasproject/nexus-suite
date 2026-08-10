@@ -2,17 +2,18 @@
 
 > **This file is the single source of truth for "where things actually stand."**
 
-**Last reviewed:** 2026-08-09 (Track A: public API zod tests for tasks + documents + holidays)
+**Last reviewed:** 2026-08-10 (Track A: public notifications schema + route shared zod)
 **Reviewed by:** Autonomous daily maintainer (Grok)
 
-## Track A (2026-08-09 — Public API schema unit tests)
+## Track A (2026-08-10 — Public notifications schema consolidation + unit tests)
 
-**Code files changed:** `tests/public-tasks.test.ts`, `tests/public-documents.test.ts`, `tests/public-holidays.test.ts`, `status/PROJECT_STATUS.md`
+**Code files changed:** `src/lib/schemas.ts`, `src/app/api/v1/notifications/route.ts`, `tests/public-notifications.test.ts`, `status/PROJECT_STATUS.md`
 
-- **Public API tests** — zod unit tests for `createTaskSchema`, `createDocumentSchema` (mirrored), and `createHolidaySchema` (mirrored) covering remaining public create endpoints without prior unit coverage
+- **Public notifications** — extended `updateNotificationSchema` with `userId`, switched public PATCH route to shared schema (removed inline zod), added pure unit tests
 
 ## ✅ Completed
 
+- **Public API schema unit tests + route consolidation** (notifications)
 - **Public API schema unit tests** (tasks + documents + holidays)
 - **Public API schema unit tests** (change requests + policies)
 - **Public API schema unit tests** (signatures + checklists + attendance + updateRoom)

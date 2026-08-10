@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
-import { z } from 'zod'
 import { db } from '@/lib/db'
 import { requirePublicApi, apiOk, parsePublicBody, apiError } from '@/lib/public-api'
+import { updateNotificationSchema } from '@/lib/schemas'
 
 /**
  * Public API — Notifications (Core).
@@ -12,11 +12,6 @@ import { requirePublicApi, apiOk, parsePublicBody, apiError } from '@/lib/public
  * PATCH body: { id?: string, markAllRead?: boolean, userId?: string }
  */
 
-const patchSchema = z.object({
-  id: z.string().optional(),
-  markAllRead: z.boolean().optional(),
-  userId: z.string().optional(),
-})
 
 // GET /api/v1/notifications?userId=&category=&unreadOnly=&limit=
 export async function GET(req: NextRequest) {
@@ -61,7 +56,7 @@ export async function PATCH(req: NextRequest) {
   const g = await requirePublicApi(req, 'tasks', { scope: 'write' })
   if (g.response) return g.response
 
-  const { data, error } = await parsePublicBody(req, patchSchema)
+  const { data, error } = await parsePublicBody(req, updateNotificationSchema)
   if (error) return error
 
   if (data.markAllRead) {

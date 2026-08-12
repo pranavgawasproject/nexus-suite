@@ -2,8 +2,17 @@
 
 > **This file is the single source of truth for "where things actually stand."**
 
-**Last reviewed:** 2026-08-10 (Track A: public notifications schema + route shared zod)
+**Last reviewed:** 2026-08-12 (Track A: on-page SEO — metadataBase, OG/Twitter, canonical, sitemap, robots)
 **Reviewed by:** Autonomous daily maintainer (Grok)
+
+## Track A (2026-08-12 — On-page SEO for live Vercel property)
+
+**Code files changed:** `src/app/layout.tsx`, `public/robots.txt`, `public/sitemap.xml`, `status/PROJECT_STATUS.md`
+
+- **Root metadata** — added `metadataBase`, title template, canonical, Open Graph (title/description/image/url/siteName), Twitter Card (`summary_large_image`), and robots index/follow
+- **robots.txt** — added `Sitemap: https://nexus-suite-tau.vercel.app/sitemap.xml`
+- **sitemap.xml** — new public sitemap covering `/` and `/signin` (public routes)
+- **Note:** GSC property for `https://nexus-suite-tau.vercel.app/` is not yet verified in connected accounts — flag for human verification; do not mark indexing issues resolved until property is verified and sitemap is submitted
 
 ## Track A (2026-08-10 — Public notifications schema consolidation + unit tests)
 
@@ -13,6 +22,7 @@
 
 ## ✅ Completed
 
+- **On-page SEO (2026-08-12)** — metadataBase, OG/Twitter, canonical, sitemap.xml, robots Sitemap directive
 - **Public API schema unit tests + route consolidation** (notifications)
 - **Public API schema unit tests** (tasks + documents + holidays)
 - **Public API schema unit tests** (change requests + policies)
@@ -56,6 +66,8 @@
 
 ## 🔧 Active Work & Next Priorities
 
+- **GSC property** — verify `https://nexus-suite-tau.vercel.app/` in Search Console and submit sitemap
+- **JSON-LD** — add Organization / SoftwareApplication structured data on root layout (Track A candidate)
 - **Live Demo Instance** — Deploy auto-resetting demo instance (e.g. `demo.nexussuite.org`)
 - **Visual README** — Add high-res screenshots and feature GIFs
 - **Documentation site content polish** — expand Starlight pages as features ship
@@ -102,6 +114,7 @@
 - [x] Public API schema unit tests (signatures + checklists + attendance + updateRoom)
 - [x] Public API schema unit tests (change requests + policies)
 - [x] Public API schema unit tests (tasks + documents + holidays)
+- [x] On-page SEO (metadataBase, OG/Twitter, canonical, sitemap)
 - [ ] Deploy a live 1-click interactive demo instance (e.g., `demo.nexussuite.org`)
 - [ ] Upgrade README with rich feature GIFs and screenshots
 - [ ] Expand documentation site content

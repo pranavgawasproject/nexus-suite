@@ -12,3 +12,5 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+Sitemap: https://nexus-suite-tau.vercel.app/sitemap.xml

@@ -75,6 +75,42 @@ export const metadata: Metadata = {
   },
 };
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      name: "Nexus Suite",
+      url: siteUrl,
+      logo: `${siteUrl}/logo.svg`,
+      description:
+        "All-in-one modular enterprise project management platform — tasks, room booking, reporting, and more. Free and open-source under AGPL-3.0.",
+    },
+    {
+      "@type": "SoftwareApplication",
+      name: "Nexus Suite",
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Web",
+      url: siteUrl,
+      description:
+        "Modular enterprise PM + ERP suite. Toggle only the modules you need. Self-hostable and open-source under AGPL-3.0.",
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+      },
+      license: "https://www.gnu.org/licenses/agpl-3.0.html",
+    },
+    {
+      "@type": "WebSite",
+      name: "Nexus Suite",
+      url: siteUrl,
+      description:
+        "All-in-one modular enterprise project management platform. Free and open-source under AGPL-3.0.",
+    },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -85,6 +121,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(jsonLd),
+          }}
+        />
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
